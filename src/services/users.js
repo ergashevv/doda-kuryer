@@ -1,3 +1,5 @@
+import { normalizeLang } from "../i18n.js";
+
 export async function getProfile(client, telegramId) {
   const r = await client.query("SELECT * FROM user_profiles WHERE telegram_id = $1", [
     telegramId,
@@ -46,7 +48,8 @@ export async function syncTelegramInfo(client, telegramId, from) {
 
 export async function updateProfile(client, telegramId, fields) {
   const p = await ensureProfile(client, telegramId);
-  const language = fields.language !== undefined ? fields.language : p.language;
+  const language =
+    fields.language !== undefined ? normalizeLang(fields.language) : normalizeLang(p.language);
   const service = fields.service !== undefined ? fields.service : p.service;
   const tariff = fields.tariff !== undefined ? fields.tariff : p.tariff;
   const city = fields.city !== undefined ? fields.city : p.city;

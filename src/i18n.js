@@ -229,8 +229,16 @@ export const STRINGS = {
   },
 };
 
+/** Profil yoki DB dan kelgan til kodini faqat qo‘llab-quvvatlanadigan qiymatlarga moslaydi. */
+export function normalizeLang(lang) {
+  if (lang == null || typeof lang !== "string") return "uz";
+  const l = lang.trim().toLowerCase();
+  if (STRINGS[l]) return l;
+  return "uz";
+}
+
 export function t(lang, key, kwargs = {}) {
-  const lg = STRINGS[lang] ? lang : "uz";
+  const lg = normalizeLang(lang);
   const block = STRINGS[lg];
   const val = block[key];
   if (val === undefined) return key;
@@ -249,7 +257,7 @@ export function t(lang, key, kwargs = {}) {
 }
 
 export function docLabel(lang, docKey) {
-  const lg = STRINGS[lang] ? lang : "uz";
+  const lg = normalizeLang(lang);
   const labels = STRINGS[lg].labels;
   return String(labels[docKey] || docKey);
 }
@@ -268,11 +276,12 @@ const KEY_TO_MSG = {
 };
 
 export function checklistLines(lang, tariff) {
+  const lg = normalizeLang(lang);
   const keys = requiredDocKeys(tariff);
-  const lines = [t(lang, "checklist_title")];
+  const lines = [t(lg, "checklist_title")];
   for (const k of keys) {
     const mk = KEY_TO_MSG[k];
-    if (mk) lines.push(t(lang, mk));
+    if (mk) lines.push(t(lg, mk));
   }
   return lines;
 }
@@ -280,17 +289,18 @@ export function checklistLines(lang, tariff) {
 /** Shahar qabul qilingandan keyin — telefon va Telegram ismi qisqa blok. */
 export function formatUserSummary(lang, profile) {
   if (!profile) return "";
+  const lg = normalizeLang(lang);
   const parts = [];
   if (profile.phone) {
-    parts.push(t(lang, "summary_phone", { phone: profile.phone }));
+    parts.push(t(lg, "summary_phone", { phone: profile.phone }));
   }
   const name = [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim();
   if (name) {
-    parts.push(t(lang, "summary_name", { name }));
+    parts.push(t(lg, "summary_name", { name }));
   }
   if (profile.username) {
-    parts.push(t(lang, "summary_username", { username: profile.username }));
+    parts.push(t(lg, "summary_username", { username: profile.username }));
   }
   if (parts.length === 0) return "";
-  return `${t(lang, "user_summary_title")}\n${parts.join("\n")}`;
+  return `${t(lg, "user_summary_title")}\n${parts.join("\n")}`;
 }

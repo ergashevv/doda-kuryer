@@ -1,5 +1,11 @@
 import { isPhotoDoc, nextPending } from "../flow.js";
-import { checklistLines, docLabel, formatUserSummary, t } from "../i18n.js";
+import {
+  checklistLines,
+  docLabel,
+  formatUserSummary,
+  normalizeLang,
+  t,
+} from "../i18n.js";
 import {
   backOnlyKb,
   languageKb,
@@ -23,8 +29,8 @@ const TRF_MAP = { trf_fb: "foot_bike", trf_car: "car", trf_truck: "truck" };
 function promptForDoc(lang, docKey) {
   if (docKey === "phone") return t(lang, "send_phone_contact");
   if (docKey === "bank") return t(lang, "send_bank");
-  const label = docLabel(lang, docKey);
-  return t(lang, "send_photo_or_file", { label });
+  const label = docLabel(lg, docKey);
+  return t(lg, "send_photo_or_file", { label });
 }
 
 async function tryAcceptDoc(client, ctx, profile, uid, doc, msg) {
@@ -72,7 +78,7 @@ export function registerHandlers(bot) {
       const p = await resetRegistration(client, uid);
       await syncTelegramInfo(client, uid, ctx.from);
       await logChat(client, uid, "user", "/start");
-      const lang = p?.language || "uz";
+      const lang = normalizeLang(p?.language);
       text = t(lang, "greet");
       await logChat(client, uid, "assistant", text);
     });
@@ -96,20 +102,19 @@ export function registerHandlers(bot) {
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
-      const lang = profile.language;
+      let lang = normalizeLang(profile.language);
 
       if (data.startsWith("lang_")) {
-        const lg = data.replace("lang_", "");
-        if (["uz", "ru", "tg", "ky"].includes(lg)) {
-          await updateProfile(client, uid, {
-            language: lg,
-            session_state: "service",
-          });
-          await logChat(client, uid, "user", `[callback] ${data}`);
-          const msg = t(lg, "pick_service");
-          await logChat(client, uid, "assistant", msg);
-          await ctx.editMessageText(msg, serviceKb(lg));
-        }
+        const raw = data.replace("lang_", "").toLowerCase();
+        if (!["uz", "ru", "tg", "ky"].includes(raw)) return;
+        await updateProfile(client, uid, {
+          language: raw,
+          session_state: "service",
+        });
+        await logChat(client, uid, "user", `[callback] ${data}`);
+        const msg = t(raw, "pick_service");
+        await logChat(client, uid, "assistant", msg);
+        await ctx.editMessageText(msg, serviceKb(raw));
         return;
       }
 
@@ -139,6 +144,7 @@ export function registerHandlers(bot) {
 
       if (data === "act_start") {
         profile = await ensureProfile(client, uid);
+        lang = normalizeLang(profile.language);
         if (!profile.tariff) return;
         await updateProfile(client, uid, {
           session_state: "collect",
@@ -183,6 +189,7 @@ export function registerHandlers(bot) {
 
       if (data === "act_back_collect") {
         profile = await ensureProfile(client, uid);
+        lang = normalizeLang(profile.language);
         const td = { ...(profile.session_data || {}) };
         let completed = [...(td.completed_docs || [])];
         if (completed.length === 0) {
@@ -221,7 +228,7 @@ export function registerHandlers(bot) {
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
-      const lang = profile.language;
+      const lang = normalizeLang(profile.language);
       const state = profile.session_state;
 
       if (state === "phone") {
