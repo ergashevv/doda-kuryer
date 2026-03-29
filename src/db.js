@@ -107,6 +107,11 @@ CREATE TABLE IF NOT EXISTS uploaded_files (
 );
 
 CREATE INDEX IF NOT EXISTS ix_uploaded_files_telegram_user_id ON uploaded_files (telegram_user_id);
+
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
 `;
 
 export async function initDb() {

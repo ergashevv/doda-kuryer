@@ -1,7 +1,6 @@
 /** Document collection order per tariff (internal keys) */
 export const FOOT_BIKE_DOCS = [
   "passport",
-  "phone",
   "patent_front",
   "patent_back",
   "registration",
@@ -15,7 +14,6 @@ export const CAR_TRUCK_DOCS = [
   "passport",
   "license",
   "sts",
-  "phone",
   "patent_front",
   "patent_back",
   "registration",

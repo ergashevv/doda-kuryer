@@ -8,6 +8,13 @@ export const STRINGS = {
     pick_language: "Тилни танланг:",
     pick_service: "Қайси сервисда ишламоқчи сиз?",
     pick_tariff: "Қайси тарифда ишламоқчи сиз?",
+    ask_phone_step:
+      "📱 Мобил телефон\n\nИшчи мобил рақамингизни ёзинг ёки контакт юборинг (📎 → Контакт).",
+    invalid_phone_step: "Илтимос, тўғри мобил рақам ёки контакт юборинг.",
+    user_summary_title: "👤 Маълумотларингиз:",
+    summary_phone: "📱 Телефон: {phone}",
+    summary_name: "👤 Исм: {name}",
+    summary_username: "✉️ Telegram: @{username}",
     ask_city: "Қайси шаҳарда ишламоқчисиз? Шаҳар номини ёзинг.",
     city_received: "Қабул қилинди: {city}",
     checklist_title: "Керакли ҳужжатлар рўйхати:",
@@ -58,6 +65,13 @@ export const STRINGS = {
     pick_language: "Выберите язык:",
     pick_service: "В каком сервисе хотите работать?",
     pick_tariff: "На каком тарифе хотите работать?",
+    ask_phone_step:
+      "📱 Мобильный телефон\n\nУкажите рабочий номер текстом или отправьте контакт (📎 → Контакт).",
+    invalid_phone_step: "Пожалуйста, укажите корректный номер или отправьте контакт.",
+    user_summary_title: "👤 Ваши данные:",
+    summary_phone: "📱 Телефон: {phone}",
+    summary_name: "👤 Имя: {name}",
+    summary_username: "✉️ Telegram: @{username}",
     ask_city: "В каком городе планируете работать? Напишите название города.",
     city_received: "Принято: {city}",
     checklist_title: "Список необходимых документов:",
@@ -108,6 +122,13 @@ export const STRINGS = {
     pick_language: "Забонро интихоб кунед:",
     pick_service: "Дар кадом хизматрасонӣ кор кардан мехоҳед?",
     pick_tariff: "Дар кадом тариф кор кардан мехоҳед?",
+    ask_phone_step:
+      "📱 Телефони мобилӣ\n\nРақами кории худро нависед ё контакт фиристед (📎 → Контакт).",
+    invalid_phone_step: "Лутфан рақами дуруст ё контакт фиристед.",
+    user_summary_title: "👤 Маълумоти шумо:",
+    summary_phone: "📱 Телефон: {phone}",
+    summary_name: "👤 Ном: {name}",
+    summary_username: "✉️ Telegram: @{username}",
     ask_city: "Дар кадом шаҳр кор кардан мехоҳед? Номи шаҳрро нависед.",
     city_received: "Қабул шуд: {city}",
     checklist_title: "Рӯйхати ҳуҷҷатҳои лозима:",
@@ -156,6 +177,13 @@ export const STRINGS = {
     pick_language: "Тилди тандаңыз:",
     pick_service: "Кайсы кызматта иштегиңиз келет?",
     pick_tariff: "Кайсы тарифте иштегиңиз келет?",
+    ask_phone_step:
+      "📱 Мобилдик телефон\n\nИштөөчү номериңизди жазыңыз же контакт жөнөтүңүз (📎 → Контакт).",
+    invalid_phone_step: "Сураныч, туура номер же контакт жөнөтүңүз.",
+    user_summary_title: "👤 Маалыматыңыз:",
+    summary_phone: "📱 Телефон: {phone}",
+    summary_name: "👤 Аты: {name}",
+    summary_username: "✉️ Telegram: @{username}",
     ask_city: "Кайсы шаарда иштегиңиз келет? Шаардын атын жазыңыз.",
     city_received: "Кабыл алынды: {city}",
     checklist_title: "Керектүү документтердин тизмеси:",
@@ -230,7 +258,6 @@ const KEY_TO_MSG = {
   passport: "doc_passport",
   license: "doc_license",
   sts: "doc_sts",
-  phone: "doc_phone",
   patent_front: "doc_patent_front",
   patent_back: "doc_patent_back",
   registration: "doc_registration",
@@ -248,4 +275,22 @@ export function checklistLines(lang, tariff) {
     if (mk) lines.push(t(lang, mk));
   }
   return lines;
+}
+
+/** Shahar qabul qilingandan keyin — telefon va Telegram ismi qisqa blok. */
+export function formatUserSummary(lang, profile) {
+  if (!profile) return "";
+  const parts = [];
+  if (profile.phone) {
+    parts.push(t(lang, "summary_phone", { phone: profile.phone }));
+  }
+  const name = [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim();
+  if (name) {
+    parts.push(t(lang, "summary_name", { name }));
+  }
+  if (profile.username) {
+    parts.push(t(lang, "summary_username", { username: profile.username }));
+  }
+  if (parts.length === 0) return "";
+  return `${t(lang, "user_summary_title")}\n${parts.join("\n")}`;
 }
