@@ -203,9 +203,6 @@ STRINGS: dict[str, dict[str, Any]] = {
 def t(lang: str, key: str, **kwargs: Any) -> str:
     lg = lang if lang in STRINGS else "uz"
     block = STRINGS[lg]
-    if key == "labels":
-        inner = kwargs.get("sub", "")
-        return str(block["labels"].get(inner, inner))
     val = block.get(key, key)
     if isinstance(val, dict):
         return str(val)

@@ -61,6 +61,7 @@ async def update_profile(
 
 async def reset_registration(session: AsyncSession, telegram_id: int) -> UserProfile:
     p = await ensure_profile(session, telegram_id)
+    p.language = "uz"
     p.service = None
     p.tariff = None
     p.city = None
