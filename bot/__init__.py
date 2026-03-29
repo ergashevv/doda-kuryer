@@ -1,1 +1,0 @@
-"""Telegram registration bot package."""

@@ -1,16 +1,15 @@
-FROM python:3.11-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
+ENV NODE_ENV=production \
     STORAGE_PATH=/data/uploads
 
 RUN mkdir -p /data/uploads
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-COPY bot ./bot
+COPY src ./src
 
-CMD ["python", "-m", "bot.main"]
+CMD ["node", "src/index.js"]

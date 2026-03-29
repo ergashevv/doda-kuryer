@@ -1,0 +1,307 @@
+import { isPhotoDoc, nextPending } from "../flow.js";
+import { checklistLines, docLabel, t } from "../i18n.js";
+import {
+  backOnlyKb,
+  languageKb,
+  serviceKb,
+  startDocsKb,
+  tariffKb,
+} from "../keyboards.js";
+import { logChat } from "../services/chatLog.js";
+import { downloadTelegramFile } from "../services/storage.js";
+import { ensureProfile, resetRegistration, updateProfile } from "../services/users.js";
+import { withTransaction } from "../db.js";
+
+const SVC_MAP = { svc_eda: "yandex_eda", svc_lavka: "yandex_lavka", svc_tax: "taximeter" };
+const TRF_MAP = { trf_fb: "foot_bike", trf_car: "car", trf_truck: "truck" };
+
+function promptForDoc(lang, docKey) {
+  if (docKey === "phone") return t(lang, "send_phone_contact");
+  if (docKey === "bank") return t(lang, "send_bank");
+  const label = docLabel(lang, docKey);
+  return t(lang, "send_photo_or_file", { label });
+}
+
+async function tryAcceptDoc(client, ctx, profile, uid, doc, msg) {
+  if (doc === "phone") {
+    let phone = null;
+    if (msg.contact?.phone_number) phone = msg.contact.phone_number;
+    else if (msg.text) phone = msg.text.replace(/\s+/g, "");
+    if (phone && phone.length >= 8) {
+      const td = { ...(profile.session_data || {}) };
+      const coll = { ...(td.collected || {}) };
+      coll.phone = phone;
+      td.collected = coll;
+      await updateProfile(client, uid, { session_data: td });
+      return true;
+    }
+    return false;
+  }
+
+  if (doc === "bank") {
+    if (!msg.text) return false;
+    const raw = msg.text.trim();
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length < 16) return false;
+    const td = { ...(profile.session_data || {}) };
+    const coll = { ...(td.collected || {}) };
+    coll.bank = raw;
+    td.collected = coll;
+    await updateProfile(client, uid, { session_data: td });
+    return true;
+  }
+
+  if (!isPhotoDoc(doc)) return false;
+
+  let fileId = null;
+  let mime = null;
+  if (msg.photo?.length) {
+    fileId = msg.photo[msg.photo.length - 1].file_id;
+    mime = "image/jpeg";
+  } else if (msg.document) {
+    fileId = msg.document.file_id;
+    mime = msg.document.mime_type;
+  }
+  if (!fileId) return false;
+
+  const path = await downloadTelegramFile(ctx.telegram, fileId, uid, doc, mime);
+  await client.query(
+    `INSERT INTO uploaded_files (telegram_user_id, doc_type, telegram_file_id, local_path)
+     VALUES ($1, $2, $3, $4)`,
+    [uid, doc, fileId, path]
+  );
+  return true;
+}
+
+export function registerHandlers(bot) {
+  bot.command("start", async (ctx) => {
+    const uid = ctx.from?.id;
+    if (!uid || !ctx.message) return;
+    let text;
+    await withTransaction(async (client) => {
+      const p = await resetRegistration(client, uid);
+      await logChat(client, uid, "user", "/start");
+      const lang = p?.language || "uz";
+      text = t(lang, "greet");
+      await logChat(client, uid, "assistant", text);
+    });
+    await ctx.reply(text, languageKb());
+  });
+
+  bot.on("callback_query", async (ctx) => {
+    const q = ctx.callbackQuery;
+    const data = q?.data;
+    const uid = ctx.from?.id;
+    if (!data || !uid) {
+      await ctx.answerCbQuery();
+      return;
+    }
+    if (!/^(lang_|svc_|trf_|act_)/.test(data)) {
+      await ctx.answerCbQuery();
+      return;
+    }
+    await ctx.answerCbQuery();
+
+    await withTransaction(async (client) => {
+      let profile = await ensureProfile(client, uid);
+      const lang = profile.language;
+
+      if (data.startsWith("lang_")) {
+        const lg = data.replace("lang_", "");
+        if (["uz", "ru", "tg", "ky"].includes(lg)) {
+          await updateProfile(client, uid, {
+            language: lg,
+            session_state: "service",
+          });
+          await logChat(client, uid, "user", `[callback] ${data}`);
+          const msg = t(lg, "pick_service");
+          await logChat(client, uid, "assistant", msg);
+          await ctx.editMessageText(msg, serviceKb(lg));
+        }
+        return;
+      }
+
+      if (SVC_MAP[data]) {
+        await updateProfile(client, uid, {
+          service: SVC_MAP[data],
+          session_state: "tariff",
+        });
+        await logChat(client, uid, "user", `[callback] ${data}`);
+        const msg = t(lang, "pick_tariff");
+        await logChat(client, uid, "assistant", msg);
+        await ctx.editMessageText(msg, tariffKb(lang));
+        return;
+      }
+
+      if (TRF_MAP[data]) {
+        await updateProfile(client, uid, {
+          tariff: TRF_MAP[data],
+          session_state: "city",
+        });
+        await logChat(client, uid, "user", `[callback] ${data}`);
+        const msg = t(lang, "ask_city");
+        await logChat(client, uid, "assistant", msg);
+        await ctx.editMessageText(msg);
+        return;
+      }
+
+      if (data === "act_start") {
+        profile = await ensureProfile(client, uid);
+        if (!profile.tariff) return;
+        await updateProfile(client, uid, {
+          session_state: "collect",
+          session_data: { completed_docs: [] },
+        });
+        await logChat(client, uid, "user", "[callback] act_start");
+        profile = await ensureProfile(client, uid);
+        const doc = nextPending([], profile.tariff);
+        if (!doc) return;
+        const prompt = promptForDoc(lang, doc);
+        await logChat(client, uid, "assistant", prompt);
+        await ctx.editMessageText(prompt, backOnlyKb(lang, "act_back_collect"));
+        return;
+      }
+
+      if (data === "act_back_lang") {
+        await updateProfile(client, uid, { session_state: "language" });
+        await logChat(client, uid, "user", "[callback] act_back_lang");
+        const msg = t(lang, "pick_language");
+        await logChat(client, uid, "assistant", msg);
+        await ctx.editMessageText(msg, languageKb());
+        return;
+      }
+
+      if (data === "act_back_svc") {
+        await updateProfile(client, uid, { session_state: "service" });
+        await logChat(client, uid, "user", "[callback] act_back_svc");
+        const msg = t(lang, "pick_service");
+        await logChat(client, uid, "assistant", msg);
+        await ctx.editMessageText(msg, serviceKb(lang));
+        return;
+      }
+
+      if (data === "act_back_tariff") {
+        await updateProfile(client, uid, { session_state: "tariff", city: null });
+        await logChat(client, uid, "user", "[callback] act_back_tariff");
+        const msg = t(lang, "pick_tariff");
+        await logChat(client, uid, "assistant", msg);
+        await ctx.editMessageText(msg, tariffKb(lang));
+        return;
+      }
+
+      if (data === "act_back_collect") {
+        profile = await ensureProfile(client, uid);
+        const td = { ...(profile.session_data || {}) };
+        let completed = [...(td.completed_docs || [])];
+        if (completed.length === 0) {
+          await updateProfile(client, uid, { session_state: "city" });
+          await logChat(client, uid, "user", "[callback] act_back_collect -> city");
+          const msg = t(lang, "ask_city");
+          await logChat(client, uid, "assistant", msg);
+          await ctx.editMessageText(msg);
+          return;
+        }
+        completed.pop();
+        td.completed_docs = completed;
+        await updateProfile(client, uid, { session_data: td });
+        profile = await ensureProfile(client, uid);
+        const doc = nextPending(completed, profile.tariff || "foot_bike");
+        if (!doc) {
+          await updateProfile(client, uid, { session_state: "done" });
+          return;
+        }
+        const prompt = promptForDoc(lang, doc);
+        await logChat(client, uid, "assistant", prompt);
+        await ctx.editMessageText(prompt, backOnlyKb(lang, "act_back_collect"));
+        return;
+      }
+    });
+  });
+
+  bot.on("message", async (ctx) => {
+    const uid = ctx.from?.id;
+    const msg = ctx.message;
+    if (!uid || !msg) return;
+    if (!msg.text && !msg.photo && !msg.document && !msg.contact) return;
+
+    const text = (msg.text || "").trim();
+
+    await withTransaction(async (client) => {
+      let profile = await ensureProfile(client, uid);
+      const lang = profile.language;
+      const state = profile.session_state;
+
+      if (state === "city" && !text && (msg.photo || msg.document)) {
+        await logChat(client, uid, "user", "[media instead of city]");
+        await logChat(client, uid, "assistant", t(lang, "ask_city"));
+        await ctx.reply(t(lang, "ask_city"));
+        return;
+      }
+
+      if (state === "city" && text) {
+        await updateProfile(client, uid, { city: text, session_state: "ready" });
+        await logChat(client, uid, "user", text);
+        const ack = t(lang, "city_received", { city: text });
+        const lines = checklistLines(lang, profile.tariff || "foot_bike");
+        const body = lines.join("\n");
+        const full = `${ack}\n\n${body}`;
+        await logChat(client, uid, "assistant", full);
+        await ctx.reply(full, startDocsKb(lang));
+        return;
+      }
+
+      if (state === "collect" && profile.tariff) {
+        let td = { ...(profile.session_data || {}) };
+        let completed = [...(td.completed_docs || [])];
+        let doc = nextPending(completed, profile.tariff);
+        if (!doc) {
+          await updateProfile(client, uid, { session_state: "done" });
+          await logChat(client, uid, "user", text || "[media]");
+          const done = t(lang, "completed");
+          await logChat(client, uid, "assistant", done);
+          await ctx.reply(done);
+          return;
+        }
+
+        await logChat(client, uid, "user", text || "[media]", { doc });
+        profile = await ensureProfile(client, uid);
+        const ok = await tryAcceptDoc(client, ctx, profile, uid, doc, msg);
+        if (!ok) {
+          await logChat(client, uid, "assistant", t(lang, "invalid_input"));
+          await ctx.reply(t(lang, "invalid_input"), backOnlyKb(lang, "act_back_collect"));
+          return;
+        }
+
+        profile = await ensureProfile(client, uid);
+        td = { ...(profile.session_data || {}) };
+        completed = [...(td.completed_docs || [])];
+        completed.push(doc);
+        td.completed_docs = completed;
+        await updateProfile(client, uid, { session_data: td });
+        profile = await ensureProfile(client, uid);
+
+        const nxt = nextPending(completed, profile.tariff);
+        const label = docLabel(lang, doc);
+        const saved = t(lang, "saved", { label });
+        await logChat(client, uid, "assistant", saved);
+        if (!nxt) {
+          await updateProfile(client, uid, { session_state: "done" });
+          const done = t(lang, "completed");
+          await logChat(client, uid, "assistant", done);
+          await ctx.reply(`${saved}\n\n${done}`);
+          return;
+        }
+        const nPrompt = promptForDoc(lang, nxt);
+        await logChat(client, uid, "assistant", nPrompt);
+        await ctx.reply(`${saved}\n\n${nPrompt}`, backOnlyKb(lang, "act_back_collect"));
+        return;
+      }
+
+      if (text) {
+        await logChat(client, uid, "user", text);
+        await logChat(client, uid, "assistant", t(lang, "use_buttons"));
+        await ctx.reply(t(lang, "use_buttons"));
+      }
+    });
+  });
+}
