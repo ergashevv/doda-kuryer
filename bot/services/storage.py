@@ -4,7 +4,6 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-import aiofiles
 from telegram import Bot
 
 STORAGE_ROOT = Path(os.environ.get("STORAGE_PATH", "./uploads")).resolve()
