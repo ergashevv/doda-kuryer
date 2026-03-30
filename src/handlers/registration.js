@@ -22,13 +22,53 @@ import {
   updateProfile,
 } from "../services/users.js";
 import { withTransaction } from "../db.js";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const SVC_MAP = { svc_eda: "yandex_eda", svc_lavka: "yandex_lavka", svc_tax: "taximeter" };
 const TRF_MAP = { trf_fb: "foot_bike", trf_car: "car", trf_truck: "truck" };
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+/** Loyiha ildizidagi MTK / brend rasmi (servis tanlash ekrani). */
+const DODA_JPG = path.join(__dirname, "../../doda.jpg");
+
+/**
+ * «Қайси сервисда…» — matn + doda.jpg; fayl bo‘lmasa oddiy matn tahriri.
+ */
+async function showPickServiceScreen(ctx, lang) {
+  const lg = normalizeLang(lang);
+  const msg = t(lg, "pick_service");
+  const kb = serviceKb(lg);
+  if (fs.existsSync(DODA_JPG)) {
+    try {
+      await ctx.deleteMessage();
+    } catch {
+      /* xabar o‘chirib bo‘lmasa ham yangi rasm yuboriladi */
+    }
+    await ctx.replyWithPhoto({ source: DODA_JPG }, { caption: msg, ...kb });
+  } else {
+    await ctx.editMessageText(msg, kb);
+  }
+}
+
+/** Telegram rasm xabarini oddiy matn bilan tahrirlab bo‘lmaydi — o‘chirib yangisini yuboramiz. */
+async function editOrReplacePhotoMessage(ctx, text, markup) {
+  if (ctx.callbackQuery?.message?.photo) {
+    try {
+      await ctx.deleteMessage();
+    } catch {
+      /* ignore */
+    }
+    await ctx.reply(text, markup);
+  } else {
+    await ctx.editMessageText(text, markup);
+  }
+}
+
 function promptForDoc(lang, docKey) {
-  if (docKey === "phone") return t(lang, "send_phone_contact");
-  if (docKey === "bank") return t(lang, "send_bank");
+  const lg = normalizeLang(lang);
+  if (docKey === "bank") return t(lg, "send_bank");
   const label = docLabel(lg, docKey);
   return t(lg, "send_photo_or_file", { label });
 }
@@ -114,7 +154,7 @@ export function registerHandlers(bot) {
         await logChat(client, uid, "user", `[callback] ${data}`);
         const msg = t(raw, "pick_service");
         await logChat(client, uid, "assistant", msg);
-        await ctx.editMessageText(msg, serviceKb(raw));
+        await showPickServiceScreen(ctx, raw);
         return;
       }
 
@@ -126,7 +166,7 @@ export function registerHandlers(bot) {
         await logChat(client, uid, "user", `[callback] ${data}`);
         const msg = t(lang, "pick_tariff");
         await logChat(client, uid, "assistant", msg);
-        await ctx.editMessageText(msg, tariffKb(lang));
+        await editOrReplacePhotoMessage(ctx, msg, tariffKb(lang));
         return;
       }
 
@@ -165,7 +205,7 @@ export function registerHandlers(bot) {
         await logChat(client, uid, "user", "[callback] act_back_lang");
         const msg = t(lang, "pick_language");
         await logChat(client, uid, "assistant", msg);
-        await ctx.editMessageText(msg, languageKb());
+        await editOrReplacePhotoMessage(ctx, msg, languageKb());
         return;
       }
 
@@ -174,7 +214,7 @@ export function registerHandlers(bot) {
         await logChat(client, uid, "user", "[callback] act_back_svc");
         const msg = t(lang, "pick_service");
         await logChat(client, uid, "assistant", msg);
-        await ctx.editMessageText(msg, serviceKb(lang));
+        await showPickServiceScreen(ctx, lang);
         return;
       }
 

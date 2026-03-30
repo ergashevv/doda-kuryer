@@ -10,6 +10,7 @@ RUN mkdir -p /data/uploads
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
+COPY doda.jpg ./
 COPY src ./src
 
 CMD ["node", "src/index.js"]
