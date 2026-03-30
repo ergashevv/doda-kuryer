@@ -1,11 +1,11 @@
-import { validateApiRequest, unauthorizedResponse } from "@/lib/auth-api";
+import { isDashboardAuthorized, unauthorizedJson } from "@/lib/dashboard-auth";
 import { getUserDetail } from "@/lib/queries";
 
 type Params = { params: Promise<{ telegramId: string }> };
 
 export async function GET(request: Request, context: Params) {
-  if (!validateApiRequest(request)) {
-    return unauthorizedResponse();
+  if (!(await isDashboardAuthorized(request))) {
+    return unauthorizedJson();
   }
   const { telegramId } = await context.params;
   if (!/^\d+$/.test(telegramId)) {

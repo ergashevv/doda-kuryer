@@ -47,12 +47,14 @@ export async function POST(request: Request) {
   }
 
   const res = NextResponse.json({ ok: true });
+  /** Brauzer cheklovi ~400 kun; amalda “cheksiz” sessiya uchun maksimal muddat. */
+  const tenYears = 60 * 60 * 24 * 365 * 10;
   res.cookies.set(DASHBOARD_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: tenYears,
   });
   return res;
 }

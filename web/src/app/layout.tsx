@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Doda — kuryer dashboard",
-  description: "Telegram bot foydalanuvchilari va yuklamalar",
+  title: "Doda — kuryerlar",
+  description: "Telegram bot ma’lumotlari va hujjatlar",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="uz">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

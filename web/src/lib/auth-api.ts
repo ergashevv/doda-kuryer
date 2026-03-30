@@ -1,10 +1,13 @@
 export function validateApiRequest(request: Request): boolean {
-  const key = (process.env.DASHBOARD_API_KEY || "").trim();
-  if (!key) return false;
+  const apiKey = (process.env.DASHBOARD_API_KEY || "").trim();
+  const password = (process.env.DASHBOARD_PASSWORD || "").trim();
   const auth = request.headers.get("authorization")?.trim();
-  if (auth === `Bearer ${key}`) return true;
+  const bearer = auth?.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (apiKey && bearer === apiKey) return true;
+  if (password && bearer === password) return true;
   const headerKey = request.headers.get("x-api-key")?.trim();
-  if (headerKey === key) return true;
+  if (apiKey && headerKey === apiKey) return true;
+  if (password && headerKey === password) return true;
   return false;
 }
 

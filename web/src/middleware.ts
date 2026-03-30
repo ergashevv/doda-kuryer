@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { DASHBOARD_COOKIE_NAME, isValidSessionCookie } from "@/lib/session";
+import { validateApiRequest } from "@/lib/auth-api";
+
+async function isApiAuthorized(request: NextRequest): Promise<boolean> {
+  if (validateApiRequest(request)) return true;
+  const cookie = request.cookies.get(DASHBOARD_COOKIE_NAME)?.value;
+  return isValidSessionCookie(cookie);
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -14,6 +21,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/api/")) {
+    if (!(await isApiAuthorized(request))) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.next();
   }
 

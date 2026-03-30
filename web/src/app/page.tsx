@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { listUsers } from "@/lib/queries";
+import { DashboardShell } from "@/components/DashboardShell";
 import { LogoutButton } from "@/components/LogoutButton";
+import { listUsers } from "@/lib/queries";
 import { userDisplayName } from "@/lib/userDisplay";
 
 export const dynamic = "force-dynamic";
@@ -15,35 +16,33 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <header className="border-b border-zinc-800 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-xl font-semibold tracking-tight">Kuryerlar — foydalanuvchilar</h1>
-          <LogoutButton />
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        {error ? (
-          <p className="rounded-lg border border-red-900/50 bg-red-950/40 px-4 py-3 text-red-200">{error}</p>
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-zinc-800">
-            <table className="w-full min-w-[800px] text-left text-sm">
-              <thead className="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
+    <DashboardShell
+      title="Kuryerlar"
+      subtitle="Barcha ro‘yxatdan o‘tgan foydalanuvchilar (PostgreSQL)"
+      actions={<LogoutButton />}
+    >
+      {error ? (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[880px] text-left text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50 text-slate-600">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Ism</th>
-                  <th className="px-4 py-3 font-medium">@username</th>
-                  <th className="px-4 py-3 font-medium">Telefon</th>
-                  <th className="px-4 py-3 font-medium">Shahar</th>
-                  <th className="px-4 py-3 font-medium">Servis</th>
-                  <th className="px-4 py-3 font-medium">Holat</th>
-                  <th className="px-4 py-3 font-medium">Telegram ID</th>
-                  <th className="px-4 py-3 font-medium">Yangilangan</th>
+                  <th className="px-4 py-3 font-semibold">Ism</th>
+                  <th className="px-4 py-3 font-semibold">@username</th>
+                  <th className="px-4 py-3 font-semibold">Telefon</th>
+                  <th className="px-4 py-3 font-semibold">Shahar</th>
+                  <th className="px-4 py-3 font-semibold">Servis</th>
+                  <th className="px-4 py-3 font-semibold">Holat</th>
+                  <th className="px-4 py-3 font-semibold">Telegram ID</th>
+                  <th className="px-4 py-3 font-semibold">Yangilangan</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-slate-100">
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
+                    <td colSpan={8} className="px-4 py-10 text-center text-slate-500">
                       Hozircha foydalanuvchi yo‘q.
                     </td>
                   </tr>
@@ -51,26 +50,26 @@ export default async function DashboardPage() {
                   users.map((u) => {
                     const label = userDisplayName(u);
                     return (
-                      <tr key={u.telegram_id} className="hover:bg-zinc-900/40">
-                        <td className="px-4 py-3 font-medium text-zinc-100">
+                      <tr key={u.telegram_id} className="hover:bg-slate-50/80">
+                        <td className="px-4 py-3 font-medium text-slate-900">
                           <Link
                             href={`/users/${u.telegram_id}`}
-                            className="text-amber-400/95 hover:text-amber-300 hover:underline"
+                            className="text-sky-800 underline-offset-2 hover:text-sky-900 hover:underline"
                           >
                             {label}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-zinc-400">
-                          {u.username ? `@${u.username}` : "—"}
-                        </td>
+                        <td className="px-4 py-3 text-slate-600">{u.username ? `@${u.username}` : "—"}</td>
                         <td className="px-4 py-3">{u.phone || "—"}</td>
                         <td className="px-4 py-3">{u.city || "—"}</td>
                         <td className="px-4 py-3">{u.service || "—"}</td>
-                        <td className="px-4 py-3 text-zinc-400">{u.session_state}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-zinc-500">{u.telegram_id}</td>
-                        <td className="px-4 py-3 text-zinc-500">
+                        <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.session_state}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.telegram_id}</td>
+                        <td className="px-4 py-3 text-slate-500">
                           {u.updated_at
-                            ? new Date(u.updated_at).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })
+                            ? new Date(u.updated_at).toLocaleString("uz-UZ", {
+                                timeZone: "Asia/Tashkent",
+                              })
                             : "—"}
                         </td>
                       </tr>
@@ -80,12 +79,13 @@ export default async function DashboardPage() {
               </tbody>
             </table>
           </div>
-        )}
-        <p className="mt-6 text-xs text-zinc-600">
-          API: <code className="text-zinc-400">GET /api/users</code> —{" "}
-          <code className="text-zinc-400">Authorization: Bearer …</code>
-        </p>
-      </main>
-    </div>
+        </div>
+      )}
+      <p className="mt-6 text-xs text-slate-500">
+        REST: <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">GET /api/users</code> —{" "}
+        <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">Authorization: Bearer …</code> yoki
+        brauzer sessiyasi.
+      </p>
+    </DashboardShell>
   );
 }

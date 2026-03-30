@@ -11,7 +11,7 @@ function LoginForm() {
 
   return (
     <form
-      className="mx-auto flex max-w-sm flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-950 p-8 shadow-xl"
+      className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-xl border border-slate-200 bg-white p-8 shadow-lg"
       onSubmit={async (e) => {
         e.preventDefault();
         setErr(null);
@@ -35,23 +35,30 @@ function LoginForm() {
         }
       }}
     >
-      <h1 className="text-lg font-semibold text-zinc-100">Doda — dashboard</h1>
-      <p className="text-sm text-zinc-500">Parolni kiriting (DASHBOARD_PASSWORD yoki API kalit).</p>
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="text-zinc-400">Parol</span>
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900">Doda</h1>
+        <p className="mt-1 text-sm text-slate-600">Kuryerlar boshqaruv paneli</p>
+      </div>
+      <p className="text-sm text-slate-500">
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">DASHBOARD_API_KEY</code> yoki{" "}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">DASHBOARD_PASSWORD</code> bilan
+        kiriting.
+      </p>
+      <label className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium text-slate-700">Parol / kalit</span>
         <input
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 outline-none focus:ring-2 focus:ring-amber-600/50"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none ring-slate-400 focus:ring-2"
         />
       </label>
-      {err ? <p className="text-sm text-red-400">{err}</p> : null}
+      {err ? <p className="text-sm text-red-600">{err}</p> : null}
       <button
         type="submit"
         disabled={loading}
-        className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-amber-500 disabled:opacity-50"
+        className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
       >
         {loading ? "…" : "Kirish"}
       </button>
@@ -61,8 +68,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
-      <Suspense fallback={<p className="text-zinc-500">Yuklanmoqda…</p>}>
+    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <Suspense fallback={<p className="text-slate-600">Yuklanmoqda…</p>}>
         <LoginForm />
       </Suspense>
     </div>

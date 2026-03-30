@@ -88,3 +88,17 @@ export async function getUserDetail(telegramId: string) {
     messages: messages.rows.map((row) => bigIntToString(row) as ChatMessageRow),
   };
 }
+
+export async function getUploadedFileForUser(
+  telegramId: string,
+  fileId: string
+): Promise<UploadedFileRow | null> {
+  const pool = getPool();
+  const r = await pool.query(
+    `SELECT id, telegram_user_id, doc_type, telegram_file_id, local_path, created_at
+     FROM uploaded_files WHERE id = $1 AND telegram_user_id = $2`,
+    [BigInt(fileId), BigInt(telegramId)]
+  );
+  if (!r.rows[0]) return null;
+  return bigIntToString(r.rows[0]) as UploadedFileRow;
+}

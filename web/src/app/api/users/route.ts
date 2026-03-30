@@ -1,9 +1,9 @@
-import { validateApiRequest, unauthorizedResponse } from "@/lib/auth-api";
+import { isDashboardAuthorized, unauthorizedJson } from "@/lib/dashboard-auth";
 import { listUsers } from "@/lib/queries";
 
 export async function GET(request: Request) {
-  if (!validateApiRequest(request)) {
-    return unauthorizedResponse();
+  if (!(await isDashboardAuthorized(request))) {
+    return unauthorizedJson();
   }
   try {
     const { searchParams } = new URL(request.url);
