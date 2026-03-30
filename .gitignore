@@ -1,5 +1,7 @@
 .env
 node_modules/
+web/.next/
+web/out/
 .venv/
 venv/
 __pycache__/

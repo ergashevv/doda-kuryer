@@ -17,6 +17,8 @@ export const STRINGS = {
     summary_username: "✉️ Telegram: @{username}",
     ask_city: "Қайси шаҳарда ишламоқчисиз? Шаҳар номини ёзинг.",
     city_received: "Қабул қилинди: {city}",
+    docs_collect_intro:
+      "Кейинги қадамда керакли ҳужжатларни битта-битта сўраймиз — аввал бирини юборинг, кейин навбатдагиси сўралади. Бошлаш учун тугмани босинг.",
     checklist_title: "Керакли ҳужжатлар рўйхати:",
     doc_passport: "• Паспорт (фото)",
     doc_license: "• Ҳайдовчилик гувоҳномаси",
@@ -46,6 +48,19 @@ export const STRINGS = {
     tariff_foot_bike: "🚶 Пеша & 🚲 Велосипед",
     tariff_car: "🚗 Авто",
     tariff_truck: "🚚 Юк машинаси",
+    lang_display_uz: "O‘zbek",
+    lang_display_ru: "Русский",
+    lang_display_tg: "Тоҷикӣ",
+    lang_display_ky: "Кыргызча",
+    cb_pick_lang: "Тил танланди: {lang}",
+    cb_pick_service: "Сервис: {name}",
+    cb_pick_tariff: "Тариф: {name}",
+    cb_act_start: "Босилди: «Юклашни бошлаш»",
+    cb_back_lang: "Орқага — тил танлаш",
+    cb_back_service: "Орқага — сервис",
+    cb_back_tariff: "Орқага — тариф",
+    cb_back_docs: "Орқага — олдинги ҳужжат",
+    cb_back_city: "Орқага — шаҳар киритиш",
     labels: {
       passport: "паспорт",
       license: "гувоҳнома",
@@ -74,6 +89,8 @@ export const STRINGS = {
     summary_username: "✉️ Telegram: @{username}",
     ask_city: "В каком городе планируете работать? Напишите название города.",
     city_received: "Принято: {city}",
+    docs_collect_intro:
+      "Дальше мы запросим документы по одному: сначала отправьте один, затем появится запрос следующего. Нажмите кнопку, чтобы начать.",
     checklist_title: "Список необходимых документов:",
     doc_passport: "• Паспорт (фото)",
     doc_license: "• Водительское удостоверение",
@@ -103,6 +120,19 @@ export const STRINGS = {
     tariff_foot_bike: "🚶 Пешком & 🚲 Велосипед",
     tariff_car: "🚗 Авто",
     tariff_truck: "🚚 Грузовой",
+    lang_display_uz: "Узбекский",
+    lang_display_ru: "Русский",
+    lang_display_tg: "Таджикский",
+    lang_display_ky: "Кыргызский",
+    cb_pick_lang: "Выбран язык: {lang}",
+    cb_pick_service: "Сервис: {name}",
+    cb_pick_tariff: "Тариф: {name}",
+    cb_act_start: "Нажато: «Начать загрузку»",
+    cb_back_lang: "«Назад» — выбор языка",
+    cb_back_service: "«Назад» — сервис",
+    cb_back_tariff: "«Назад» — тариф",
+    cb_back_docs: "«Назад» — предыдущий документ",
+    cb_back_city: "«Назад» — ввод города",
     labels: {
       passport: "паспорт",
       license: "права",
@@ -131,6 +161,8 @@ export const STRINGS = {
     summary_username: "✉️ Telegram: @{username}",
     ask_city: "Дар кадом шаҳр кор кардан мехоҳед? Номи шаҳрро нависед.",
     city_received: "Қабул шуд: {city}",
+    docs_collect_intro:
+      "Дар қадами навбатӣ ҳуҷҷатҳоро як-як мепурсем — аввал якро фиристед, баъд навбатӣ пурсидан мешавад. Барои оғоз тугмаро пахш кунед.",
     checklist_title: "Рӯйхати ҳуҷҷатҳои лозима:",
     doc_passport: "• Паспорт (акс)",
     doc_license: "• Гувоҳиномаи ронандагӣ",
@@ -158,6 +190,19 @@ export const STRINGS = {
     tariff_foot_bike: "🚶 Пиёда & 🚲 Дучарха",
     tariff_car: "🚗 Мошин",
     tariff_truck: "🚚 Боркаш",
+    lang_display_uz: "Ӯзбекӣ",
+    lang_display_ru: "Русӣ",
+    lang_display_tg: "Тоҷикӣ",
+    lang_display_ky: "Қирғизӣ",
+    cb_pick_lang: "Забон интихоб шуд: {lang}",
+    cb_pick_service: "Хизматрасонӣ: {name}",
+    cb_pick_tariff: "Тариф: {name}",
+    cb_act_start: "Пахш шуд: «Оғози боргирӣ»",
+    cb_back_lang: "Бозгашт — интихоби забон",
+    cb_back_service: "Бозгашт — хизмат",
+    cb_back_tariff: "Бозгашт — тариф",
+    cb_back_docs: "Бозгашт — ҳуҷҷати қаблӣ",
+    cb_back_city: "Бозгашт — вориди шаҳр",
     labels: {
       passport: "паспорт",
       license: "гуваҳнома",
@@ -186,6 +231,8 @@ export const STRINGS = {
     summary_username: "✉️ Telegram: @{username}",
     ask_city: "Кайсы шаарда иштегиңиз келет? Шаардын атын жазыңыз.",
     city_received: "Кабыл алынды: {city}",
+    docs_collect_intro:
+      "Кийинки кадамда керектүү документтерди бири-бирден сурайбыз — алгач бирин жөнөтүңүз, андан кийин кийинкиси суралат. Баштоо үчүн баскычты басыңыз.",
     checklist_title: "Керектүү документтердин тизмеси:",
     doc_passport: "• Паспорт (сүрөт)",
     doc_license: "• Айдоочулук күбөлүгү",
@@ -213,6 +260,19 @@ export const STRINGS = {
     tariff_foot_bike: "🚶 Жөө & 🚲 Велосипед",
     tariff_car: "🚗 Унаа",
     tariff_truck: "🚚 Жүк ташуучу",
+    lang_display_uz: "Өзбекче",
+    lang_display_ru: "Орусча",
+    lang_display_tg: "Тажикче",
+    lang_display_ky: "Кыргызча",
+    cb_pick_lang: "Тил тандалды: {lang}",
+    cb_pick_service: "Кызмат: {name}",
+    cb_pick_tariff: "Тариф: {name}",
+    cb_act_start: "Басылды: «Жүктөөнү баштоо»",
+    cb_back_lang: "Артка — тил тандоо",
+    cb_back_service: "Артка — кызмат",
+    cb_back_tariff: "Артка — тариф",
+    cb_back_docs: "Артка — мурунку документ",
+    cb_back_city: "Артка — шаар киргизүү",
     labels: {
       passport: "паспорт",
       license: "күбөлүк",
@@ -303,4 +363,41 @@ export function formatUserSummary(lang, profile) {
   }
   if (parts.length === 0) return "";
   return `${t(lg, "user_summary_title")}\n${parts.join("\n")}`;
+}
+
+const SVC_CALLBACK_I18N = {
+  svc_eda: "service_yandex_eda",
+  svc_lavka: "service_yandex_lavka",
+  svc_tax: "service_taximeter",
+};
+
+const TRF_CALLBACK_I18N = {
+  trf_fb: "tariff_foot_bike",
+  trf_car: "tariff_car",
+  trf_truck: "tariff_truck",
+};
+
+/** Inline tugma bosilganda chat log uchun tushunarli matn (callback_data emas). */
+export function describeCallbackData(data, lang) {
+  const lg = normalizeLang(lang);
+  if (!data || typeof data !== "string") return "";
+  if (data.startsWith("lang_")) {
+    const code = data.replace("lang_", "").toLowerCase();
+    if (!["uz", "ru", "tg", "ky"].includes(code)) return data;
+    const langName = t(lg, `lang_display_${code}`);
+    return t(lg, "cb_pick_lang", { lang: langName });
+  }
+  if (SVC_CALLBACK_I18N[data]) {
+    return t(lg, "cb_pick_service", { name: t(lg, SVC_CALLBACK_I18N[data]) });
+  }
+  if (TRF_CALLBACK_I18N[data]) {
+    return t(lg, "cb_pick_tariff", { name: t(lg, TRF_CALLBACK_I18N[data]) });
+  }
+  if (data === "act_start") return t(lg, "cb_act_start");
+  if (data === "act_back_lang") return t(lg, "cb_back_lang");
+  if (data === "act_back_svc") return t(lg, "cb_back_service");
+  if (data === "act_back_tariff") return t(lg, "cb_back_tariff");
+  if (data === "act_back_collect_city") return t(lg, "cb_back_city");
+  if (data === "act_back_collect") return t(lg, "cb_back_docs");
+  return data;
 }

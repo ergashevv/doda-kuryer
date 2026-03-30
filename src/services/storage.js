@@ -17,9 +17,10 @@ function extFromMime(mime) {
   return "bin";
 }
 
-export async function downloadTelegramFile(bot, fileId, telegramUserId, docType, mimeType) {
+/** `telegram` — `ctx.telegram` (Telegraf Telegram client), `Telegraf` emas. */
+export async function downloadTelegramFile(telegram, fileId, telegramUserId, docType, mimeType) {
   await ensureStorage();
-  const link = await bot.telegram.getFileLink(fileId);
+  const link = await telegram.getFileLink(fileId);
   const ext = extFromMime(mimeType);
   const ts = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15).replace("T", "_");
   const userDir = path.join(STORAGE_ROOT, String(telegramUserId));

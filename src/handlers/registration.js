@@ -1,6 +1,6 @@
 import { isPhotoDoc, nextPending } from "../flow.js";
 import {
-  checklistLines,
+  describeCallbackData,
   docLabel,
   formatUserSummary,
   normalizeLang,
@@ -14,6 +14,11 @@ import {
   tariffKb,
 } from "../keyboards.js";
 import { logChat } from "../services/chatLog.js";
+import {
+  notifyGroupDocReceived,
+  notifyGroupSessionComplete,
+  notifyGroupSessionStart,
+} from "../services/groupInbox.js";
 import { downloadTelegramFile } from "../services/storage.js";
 import {
   ensureProfile,
@@ -73,21 +78,22 @@ function promptForDoc(lang, docKey) {
   return t(lg, "send_photo_or_file", { label });
 }
 
+/** Muvaffaqiyat: `{ bankText }` yoki `{ localPath, mime }`; xato: `null`. */
 async function tryAcceptDoc(client, ctx, profile, uid, doc, msg) {
   if (doc === "bank") {
-    if (!msg.text) return false;
+    if (!msg.text) return null;
     const raw = msg.text.trim();
     const digits = raw.replace(/\D/g, "");
-    if (digits.length < 16) return false;
+    if (digits.length < 16) return null;
     const td = { ...(profile.session_data || {}) };
     const coll = { ...(td.collected || {}) };
     coll.bank = raw;
     td.collected = coll;
     await updateProfile(client, uid, { session_data: td });
-    return true;
+    return { bankText: raw };
   }
 
-  if (!isPhotoDoc(doc)) return false;
+  if (!isPhotoDoc(doc)) return null;
 
   let fileId = null;
   let mime = null;
@@ -98,7 +104,7 @@ async function tryAcceptDoc(client, ctx, profile, uid, doc, msg) {
     fileId = msg.document.file_id;
     mime = msg.document.mime_type;
   }
-  if (!fileId) return false;
+  if (!fileId) return null;
 
   const path = await downloadTelegramFile(ctx.telegram, fileId, uid, doc, mime);
   await client.query(
@@ -106,7 +112,7 @@ async function tryAcceptDoc(client, ctx, profile, uid, doc, msg) {
      VALUES ($1, $2, $3, $4)`,
     [uid, doc, fileId, path]
   );
-  return true;
+  return { localPath: path, mime };
 }
 
 export function registerHandlers(bot) {
@@ -139,6 +145,7 @@ export function registerHandlers(bot) {
     }
     await ctx.answerCbQuery();
 
+    let groupNotifySessionStart = null;
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
@@ -151,7 +158,7 @@ export function registerHandlers(bot) {
           language: raw,
           session_state: "service",
         });
-        await logChat(client, uid, "user", `[callback] ${data}`);
+        await logChat(client, uid, "user", describeCallbackData(data, lang));
         const msg = t(raw, "pick_service");
         await logChat(client, uid, "assistant", msg);
         await showPickServiceScreen(ctx, raw);
@@ -163,7 +170,7 @@ export function registerHandlers(bot) {
           service: SVC_MAP[data],
           session_state: "tariff",
         });
-        await logChat(client, uid, "user", `[callback] ${data}`);
+        await logChat(client, uid, "user", describeCallbackData(data, lang));
         const msg = t(lang, "pick_tariff");
         await logChat(client, uid, "assistant", msg);
         await editOrReplacePhotoMessage(ctx, msg, tariffKb(lang));
@@ -175,7 +182,7 @@ export function registerHandlers(bot) {
           tariff: TRF_MAP[data],
           session_state: "phone",
         });
-        await logChat(client, uid, "user", `[callback] ${data}`);
+        await logChat(client, uid, "user", describeCallbackData(data, lang));
         const msg = t(lang, "ask_phone_step");
         await logChat(client, uid, "assistant", msg);
         await ctx.editMessageText(msg, backOnlyKb(lang, "act_back_tariff"));
@@ -190,10 +197,11 @@ export function registerHandlers(bot) {
           session_state: "collect",
           session_data: { completed_docs: [] },
         });
-        await logChat(client, uid, "user", "[callback] act_start");
+        await logChat(client, uid, "user", describeCallbackData("act_start", lang));
         profile = await ensureProfile(client, uid);
         const doc = nextPending([], profile.tariff);
         if (!doc) return;
+        groupNotifySessionStart = { profile };
         const prompt = promptForDoc(lang, doc);
         await logChat(client, uid, "assistant", prompt);
         await ctx.editMessageText(prompt, backOnlyKb(lang, "act_back_collect"));
@@ -202,7 +210,7 @@ export function registerHandlers(bot) {
 
       if (data === "act_back_lang") {
         await updateProfile(client, uid, { session_state: "language" });
-        await logChat(client, uid, "user", "[callback] act_back_lang");
+        await logChat(client, uid, "user", describeCallbackData("act_back_lang", lang));
         const msg = t(lang, "pick_language");
         await logChat(client, uid, "assistant", msg);
         await editOrReplacePhotoMessage(ctx, msg, languageKb());
@@ -211,7 +219,7 @@ export function registerHandlers(bot) {
 
       if (data === "act_back_svc") {
         await updateProfile(client, uid, { session_state: "service" });
-        await logChat(client, uid, "user", "[callback] act_back_svc");
+        await logChat(client, uid, "user", describeCallbackData("act_back_svc", lang));
         const msg = t(lang, "pick_service");
         await logChat(client, uid, "assistant", msg);
         await showPickServiceScreen(ctx, lang);
@@ -220,7 +228,7 @@ export function registerHandlers(bot) {
 
       if (data === "act_back_tariff") {
         await updateProfile(client, uid, { session_state: "tariff", city: null, phone: null });
-        await logChat(client, uid, "user", "[callback] act_back_tariff");
+        await logChat(client, uid, "user", describeCallbackData("act_back_tariff", lang));
         const msg = t(lang, "pick_tariff");
         await logChat(client, uid, "assistant", msg);
         await ctx.editMessageText(msg, tariffKb(lang));
@@ -234,7 +242,7 @@ export function registerHandlers(bot) {
         let completed = [...(td.completed_docs || [])];
         if (completed.length === 0) {
           await updateProfile(client, uid, { session_state: "city" });
-          await logChat(client, uid, "user", "[callback] act_back_collect -> city");
+          await logChat(client, uid, "user", describeCallbackData("act_back_collect_city", lang));
           const msg = t(lang, "ask_city");
           await logChat(client, uid, "assistant", msg);
           await ctx.editMessageText(msg);
@@ -255,6 +263,9 @@ export function registerHandlers(bot) {
         return;
       }
     });
+    if (groupNotifySessionStart?.profile) {
+      await notifyGroupSessionStart(ctx.telegram, groupNotifySessionStart.profile);
+    }
   });
 
   bot.on("message", async (ctx) => {
@@ -264,6 +275,9 @@ export function registerHandlers(bot) {
     if (!msg.text && !msg.photo && !msg.document && !msg.contact) return;
 
     const text = (msg.text || "").trim();
+
+    let groupNotifyDoc = null;
+    let groupNotifyComplete = null;
 
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
@@ -311,11 +325,10 @@ export function registerHandlers(bot) {
         await logChat(client, uid, "user", text);
         const ack = t(lang, "city_received", { city: text });
         const summaryBlock = formatUserSummary(lang, profile);
-        const lines = checklistLines(lang, profile.tariff || "foot_bike");
-        const body = lines.join("\n");
+        const intro = t(lang, "docs_collect_intro");
         const full = summaryBlock
-          ? `${ack}\n\n${summaryBlock}\n\n${body}`
-          : `${ack}\n\n${body}`;
+          ? `${ack}\n\n${summaryBlock}\n\n${intro}`
+          : `${ack}\n\n${intro}`;
         await logChat(client, uid, "assistant", full);
         await ctx.reply(full, startDocsKb(lang));
         return;
@@ -336,8 +349,8 @@ export function registerHandlers(bot) {
 
         await logChat(client, uid, "user", text || "[media]", { doc });
         profile = await ensureProfile(client, uid);
-        const ok = await tryAcceptDoc(client, ctx, profile, uid, doc, msg);
-        if (!ok) {
+        const accepted = await tryAcceptDoc(client, ctx, profile, uid, doc, msg);
+        if (!accepted) {
           await logChat(client, uid, "assistant", t(lang, "invalid_input"));
           await ctx.reply(t(lang, "invalid_input"), backOnlyKb(lang, "act_back_collect"));
           return;
@@ -355,9 +368,12 @@ export function registerHandlers(bot) {
         const label = docLabel(lang, doc);
         const saved = t(lang, "saved", { label });
         await logChat(client, uid, "assistant", saved);
+
+        groupNotifyDoc = { profile, doc, result: accepted };
         if (!nxt) {
           await updateProfile(client, uid, { session_state: "done" });
           profile = await ensureProfile(client, uid);
+          groupNotifyComplete = { profile };
           const done = t(lang, "completed");
           const summaryBlock = formatUserSummary(lang, profile);
           const tail = summaryBlock ? `${done}\n\n${summaryBlock}` : done;
@@ -377,5 +393,17 @@ export function registerHandlers(bot) {
         await ctx.reply(t(lang, "use_buttons"));
       }
     });
+
+    if (groupNotifyDoc?.profile && groupNotifyDoc.result) {
+      await notifyGroupDocReceived(
+        ctx.telegram,
+        groupNotifyDoc.profile,
+        groupNotifyDoc.doc,
+        groupNotifyDoc.result
+      );
+    }
+    if (groupNotifyComplete?.profile) {
+      await notifyGroupSessionComplete(ctx.telegram, groupNotifyComplete.profile);
+    }
   });
 }

@@ -22,6 +22,10 @@ async function main() {
   await initDb();
   await ensureStorage();
   log("Database initialized; storage ready");
+  const gid = (process.env.DOCS_GROUP_ID || "").trim();
+  if (gid) {
+    log("DOCS_GROUP_ID set — submissions will be mirrored to group", gid);
+  }
 
   const token = process.env.BOT_TOKEN.trim();
   const bot = new Telegraf(token);
