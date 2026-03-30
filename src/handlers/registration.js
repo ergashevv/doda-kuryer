@@ -10,7 +10,6 @@ import {
   backOnlyKb,
   languageKb,
   serviceKb,
-  startDocsKb,
   tariffKb,
 } from "../keyboards.js";
 import { logChat } from "../services/chatLog.js";
@@ -310,17 +309,24 @@ export function registerHandlers(bot) {
       }
 
       if (state === "city" && text) {
-        await updateProfile(client, uid, { city: text, session_state: "ready" });
+        await updateProfile(client, uid, {
+          city: text,
+          session_state: "collect",
+          session_data: { completed_docs: [] },
+        });
         profile = await ensureProfile(client, uid);
         await logChat(client, uid, "user", text);
         const ack = t(lang, "city_received", { city: text });
-        const summaryBlock = formatUserSummary(lang, profile);
-        const intro = t(lang, "docs_collect_intro");
-        const full = summaryBlock
-          ? `${ack}\n\n${summaryBlock}\n\n${intro}`
-          : `${ack}\n\n${intro}`;
-        await logChat(client, uid, "assistant", full);
-        await ctx.reply(full, startDocsKb(lang));
+        const first = nextPending([], profile.tariff || "foot_bike");
+        if (!first) {
+          await updateProfile(client, uid, { session_state: "done" });
+          await logChat(client, uid, "assistant", t(lang, "completed"));
+          await ctx.reply(t(lang, "completed"));
+          return;
+        }
+        const ask = `${ack}\n\n${promptForDoc(lang, first)}`;
+        await logChat(client, uid, "assistant", ask);
+        await ctx.reply(ask, backOnlyKb(lang, "act_back_collect"));
         return;
       }
 

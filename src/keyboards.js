@@ -32,13 +32,6 @@ export function tariffKb(lang) {
   ]);
 }
 
-export function startDocsKb(lang) {
-  return Markup.inlineKeyboard([
-    [Markup.button.callback(t(lang, "start_upload"), "act_start")],
-    [Markup.button.callback(t(lang, "back"), "act_back_tariff")],
-  ]);
-}
-
 export function backOnlyKb(lang, backData = "act_back_collect") {
   return Markup.inlineKeyboard([
     [Markup.button.callback(t(lang, "back"), backData)],
