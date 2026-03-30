@@ -14,11 +14,7 @@ import {
   tariffKb,
 } from "../keyboards.js";
 import { logChat } from "../services/chatLog.js";
-import {
-  notifyGroupDocReceived,
-  notifyGroupSessionComplete,
-  notifyGroupSessionStart,
-} from "../services/groupInbox.js";
+import { notifyGroupFullSubmission } from "../services/groupInbox.js";
 import { downloadTelegramFile } from "../services/storage.js";
 import {
   ensureProfile,
@@ -145,7 +141,6 @@ export function registerHandlers(bot) {
     }
     await ctx.answerCbQuery();
 
-    let groupNotifySessionStart = null;
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
@@ -201,7 +196,6 @@ export function registerHandlers(bot) {
         profile = await ensureProfile(client, uid);
         const doc = nextPending([], profile.tariff);
         if (!doc) return;
-        groupNotifySessionStart = { profile };
         const prompt = promptForDoc(lang, doc);
         await logChat(client, uid, "assistant", prompt);
         await ctx.editMessageText(prompt, backOnlyKb(lang, "act_back_collect"));
@@ -263,9 +257,6 @@ export function registerHandlers(bot) {
         return;
       }
     });
-    if (groupNotifySessionStart?.profile) {
-      await notifyGroupSessionStart(ctx.telegram, groupNotifySessionStart.profile);
-    }
   });
 
   bot.on("message", async (ctx) => {
@@ -276,7 +267,6 @@ export function registerHandlers(bot) {
 
     const text = (msg.text || "").trim();
 
-    let groupNotifyDoc = null;
     let groupNotifyComplete = null;
 
     await withTransaction(async (client) => {
@@ -369,7 +359,6 @@ export function registerHandlers(bot) {
         const saved = t(lang, "saved", { label });
         await logChat(client, uid, "assistant", saved);
 
-        groupNotifyDoc = { profile, doc, result: accepted };
         if (!nxt) {
           await updateProfile(client, uid, { session_state: "done" });
           profile = await ensureProfile(client, uid);
@@ -394,16 +383,8 @@ export function registerHandlers(bot) {
       }
     });
 
-    if (groupNotifyDoc?.profile && groupNotifyDoc.result) {
-      await notifyGroupDocReceived(
-        ctx.telegram,
-        groupNotifyDoc.profile,
-        groupNotifyDoc.doc,
-        groupNotifyDoc.result
-      );
-    }
     if (groupNotifyComplete?.profile) {
-      await notifyGroupSessionComplete(ctx.telegram, groupNotifyComplete.profile);
+      await notifyGroupFullSubmission(ctx.telegram, groupNotifyComplete.profile);
     }
   });
 }

@@ -1,5 +1,7 @@
+import fs from "node:fs";
 import { Input } from "telegraf";
 import { docLabel } from "../i18n.js";
+import { getPool } from "../db.js";
 
 const SERVICE_RU = {
   yandex_eda: "Яндекс Еда",
@@ -25,8 +27,7 @@ export function getDocsGroupChatId() {
   return Number.isFinite(n) ? n : null;
 }
 
-function formatProfileBlock(profile) {
-  const id = profile.telegram_id;
+function formatAdminProfile(profile) {
   const un = profile.username ? `@${profile.username}` : "—";
   const name = [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "—";
   const phone = profile.phone || "—";
@@ -34,96 +35,72 @@ function formatProfileBlock(profile) {
   const svc = SERVICE_RU[profile.service] || profile.service || "—";
   const trf = TARIFF_RU[profile.tariff] || profile.tariff || "—";
   return [
-    `════════════════════`,
-    `ID: ${id}`,
     `TG: ${un}`,
     `Имя: ${name}`,
     `Тел: ${phone}  |  Город: ${city}`,
     `Сервис: ${svc}  |  Тариф: ${trf}`,
-    `════════════════════`,
   ].join("\n");
 }
 
-function docCaptionLine(docKey) {
+function docCaptionShort(docKey) {
   const ru = docLabel("ru", docKey);
-  return `Документ: ${ru} (${docKey})`;
-}
-
-/** Har bir media uchun — ID va asosiy maydonlar (aralashmaslik uchun). */
-function shortDocCaption(profile, docKey) {
-  const id = profile.telegram_id;
-  const un = profile.username ? `@${profile.username}` : "—";
-  const phone = profile.phone || "—";
-  const city = profile.city || "—";
-  return [`[ID:${id}]`, docCaptionLine(docKey), `TG: ${un} | Тел: ${phone} | Город: ${city}`].join("\n");
+  return `Документ: ${ru}`;
 }
 
 /**
- * Yuklash boshlanganda — bitta foydalanuvchini boshqalardan ajratib ko‘rsatadi.
+ * Barcha hujjatlar yig‘ilgach — bitta «paket»: profil, keyin DB dagi fayllar tartibda, oxirida bank.
+ * Yig‘ish davomida guruhga hech narsa yuborilmaydi.
  */
-export async function notifyGroupSessionStart(telegram, profile) {
+export async function notifyGroupFullSubmission(telegram, profile) {
   const chatId = getDocsGroupChatId();
   if (!chatId || !profile) return;
+
+  const uid = profile.telegram_id;
+  const td = profile.session_data || {};
+  const completedDocs = td.completed_docs || [];
+  const bankText = td.collected?.bank;
+  const photoDocs = completedDocs.filter((d) => d !== "bank");
+
   try {
-    const body = [
-      `▶ НАЧАЛО ЗАГРУЗКИ ДОКУМЕНТОВ`,
-      formatProfileBlock(profile),
-      `Дальше по одному сообщению — каждый файл с ID выше.`,
+    const pool = getPool();
+    let rows = [];
+    if (photoDocs.length > 0) {
+      const r = await pool.query(
+        `SELECT doc_type, local_path FROM uploaded_files
+         WHERE telegram_user_id = $1 AND doc_type = ANY($2::text[])
+         ORDER BY array_position($2::text[], doc_type::text)`,
+        [uid, photoDocs]
+      );
+      rows = r.rows;
+    }
+
+    const header = [
+      `✅ Новая заявка — все документы`,
+      `──────────────`,
+      formatAdminProfile(profile),
+      `──────────────`,
+      `Файлы ниже по порядку.`,
     ].join("\n");
-    await telegram.sendMessage(chatId, cap(body));
-  } catch (e) {
-    console.error("[groupInbox] notifyGroupSessionStart:", e?.message || e);
-  }
-}
+    await telegram.sendMessage(chatId, cap(header));
 
-/**
- * Bitta hujjat (foto/fayl yoki bank matni).
- */
-export async function notifyGroupDocReceived(telegram, profile, docKey, payload) {
-  const chatId = getDocsGroupChatId();
-  if (!chatId || !profile || !payload) return;
-
-  try {
-    if (payload.bankText != null) {
-      const text = [
-        shortDocCaption(profile, docKey),
-        "",
-        "─── Банк (текст) ───",
-        payload.bankText,
-        "",
-        formatProfileBlock(profile),
-      ].join("\n");
-      await telegram.sendMessage(chatId, cap(text));
-      return;
+    for (const row of rows) {
+      if (!row.local_path || !fs.existsSync(row.local_path)) continue;
+      const caption = cap(docCaptionShort(row.doc_type));
+      const lower = row.local_path.toLowerCase();
+      const asPdf = lower.endsWith(".pdf");
+      if (asPdf) {
+        await telegram.sendDocument(chatId, Input.fromLocalFile(row.local_path), { caption });
+      } else {
+        await telegram.sendPhoto(chatId, Input.fromLocalFile(row.local_path), { caption });
+      }
     }
 
-    const { localPath, mime } = payload;
-    if (!localPath) return;
-
-    const lower = localPath.toLowerCase();
-    const asPdf = lower.endsWith(".pdf") || (mime && String(mime).includes("pdf"));
-    const caption = cap(shortDocCaption(profile, docKey));
-
-    if (asPdf) {
-      await telegram.sendDocument(chatId, Input.fromLocalFile(localPath), { caption });
-    } else {
-      await telegram.sendPhoto(chatId, Input.fromLocalFile(localPath), { caption });
+    if (completedDocs.includes("bank") && bankText) {
+      await telegram.sendMessage(chatId, cap([`Банк (текст)`, bankText].join("\n\n")));
     }
-  } catch (e) {
-    console.error("[groupInbox] notifyGroupDocReceived:", e?.message || e);
-  }
-}
 
-/**
- * Barcha hujjatlar yig‘ilganda.
- */
-export async function notifyGroupSessionComplete(telegram, profile) {
-  const chatId = getDocsGroupChatId();
-  if (!chatId || !profile) return;
-  try {
-    const body = [`✅ ЗАГРУЗКА ЗАВЕРШЕНА (все документы)`, formatProfileBlock(profile)].join("\n\n");
-    await telegram.sendMessage(chatId, cap(body));
+    await telegram.sendMessage(chatId, `✅ Загрузка завершена`);
   } catch (e) {
-    console.error("[groupInbox] notifyGroupSessionComplete:", e?.message || e);
+    console.error("[groupInbox] notifyGroupFullSubmission:", e?.message || e);
   }
 }
