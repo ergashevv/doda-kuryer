@@ -388,13 +388,25 @@ export function registerBkHandlers(bot) {
         phone: null,
       });
     });
-    // Eski pastki klaviaturani olib tashlash, keyin til tanlash (inline)
-    await ctx.reply(tBK("ru", "pick_language"), {
+    const pick = tBK("ru", "pick_language");
+    const kb = languagePickKb();
+    // Pastki klaviaturani yopish; matn faqat «Выберите язык:» — tillar nomi faqat tugmalarda
+    const sent = await ctx.reply(pick, {
       reply_markup: { remove_keyboard: true },
     });
-    await ctx.reply(tBK("ru", "lang_names"), languagePickKb());
+    try {
+      await ctx.telegram.editMessageReplyMarkup(
+        sent.chat.id,
+        sent.message_id,
+        undefined,
+        kb.reply_markup
+      );
+    } catch (e) {
+      console.warn("[bk] editMessageReplyMarkup (lang):", e?.message || e);
+      await ctx.reply(pick, kb);
+    }
     await withTransaction(async (client) => {
-      await logChat(client, uid, "assistant", tBK("ru", "pick_language"));
+      await logChat(client, uid, "assistant", pick);
     });
   });
 
