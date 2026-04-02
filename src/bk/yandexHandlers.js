@@ -1,6 +1,5 @@
 import { Markup } from "telegraf";
 import { logChat } from "../services/chatLog.js";
-import { notifyGroupYandexSubmission } from "../services/groupInbox.js";
 import { downloadTelegramFile } from "../services/storage.js";
 import { ensureProfile, updateProfile } from "../services/users.js";
 import { isAllowedDocumentMime } from "./media.js";
@@ -20,6 +19,24 @@ import {
 
 function lgOf(profile) {
   return normalizeBKLang(profile?.language);
+}
+
+/**
+ * Pastki reply-klaviaturani yashiradi (asosiy menyu Yandex qadamlarida inline bilan chalkashmasin).
+ * Logda ko‘rinadigan 409 Conflict ko‘pincha ikki+ polling instance; UI ham yordam beradi.
+ */
+export function yxReplyOptions(markupFromTelegraf) {
+  const ik = markupFromTelegraf?.reply_markup?.inline_keyboard;
+  return {
+    reply_markup: {
+      remove_keyboard: true,
+      ...(ik ? { inline_keyboard: ik } : {}),
+    },
+  };
+}
+
+export function yxReplyOptionsTextOnly() {
+  return { reply_markup: { remove_keyboard: true } };
 }
 
 export function servicePickInline(lang) {
@@ -106,19 +123,19 @@ export async function promptYandexStep(ctx, client, uid, profile) {
   const st = getYandexUiState(yx, done);
 
   if (st.ui === "city") {
-    await ctx.reply(tBK(lg, "yx_ask_city"), yxCityInline(lg));
+    await ctx.reply(tBK(lg, "yx_ask_city"), yxReplyOptions(yxCityInline(lg)));
     return;
   }
   if (st.ui === "citizen") {
-    await ctx.reply(tBK(lg, "yx_ask_citizen"), yxCitizenInline(lg));
+    await ctx.reply(tBK(lg, "yx_ask_citizen"), yxReplyOptions(yxCitizenInline(lg)));
     return;
   }
   if (st.ui === "uz_doc") {
-    await ctx.reply(tBK(lg, "yx_ask_uz_doc"), yxUzDocInline(lg));
+    await ctx.reply(tBK(lg, "yx_ask_uz_doc"), yxReplyOptions(yxUzDocInline(lg)));
     return;
   }
   if (st.ui === "kz_doc") {
-    await ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxKzDocInline(lg));
+    await ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxReplyOptions(yxKzDocInline(lg)));
     return;
   }
   if (st.ui === "done") {
@@ -126,9 +143,11 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     await updateProfile(client, uid, { session_state: "bk_yx_review" });
     await ctx.reply(
       `${summary}\n\n${tBK(lg, "yx_review_hint")}`,
-      Markup.inlineKeyboard([
-        [Markup.button.callback(tBK(lg, "submit_btn"), "bk_YR:send")],
-      ])
+      yxReplyOptions(
+        Markup.inlineKeyboard([
+          [Markup.button.callback(tBK(lg, "submit_btn"), "bk_YR:send")],
+        ])
+      )
     );
     return;
   }
@@ -137,17 +156,17 @@ export async function promptYandexStep(ctx, client, uid, profile) {
       st.step.choiceId === "visa_kind"
         ? yxTmVisaKindInline(lg)
         : yxRamInline(lg);
-    await ctx.reply(tBK(lg, st.step.promptKey), kb);
+    await ctx.reply(tBK(lg, st.step.promptKey), yxReplyOptions(kb));
     return;
   }
   if (st.ui === "step") {
     const step = st.step;
     const cap = tBK(lg, step.promptKey);
     if (step.t === "text") {
-      await ctx.reply(cap, editOnly(lg, "bk_E:yx"));
+      await ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")));
       return;
     }
-    await ctx.reply(cap, editOnly(lg, "bk_E:yx"));
+    await ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")));
   }
 }
 
@@ -208,28 +227,39 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   const st = getYandexUiState(yx, completed.length);
 
   if (st.ui !== "step" || st.step.t === "choice") {
-    await ctx.reply(tBK(lg, "yx_use_buttons"));
+    await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyOptionsTextOnly());
     return true;
   }
 
   const step = st.step;
 
+  if (
+    step.t !== "text" &&
+    (msg.text != null && String(msg.text).trim() !== "") &&
+    !msg.photo &&
+    !msg.document &&
+    !msg.video
+  ) {
+    await ctx.reply(tBK(lg, "err_doc_need_photo"), yxReplyOptionsTextOnly());
+    return true;
+  }
+
   if (step.t === "text") {
     const text = (msg.text || "").trim();
     if (msg.photo || msg.document) {
-      await ctx.reply(tBK(lg, "yx_need_text"));
+      await ctx.reply(tBK(lg, "yx_need_text"), yxReplyOptionsTextOnly());
       return true;
     }
     const v = validateYxText(step, text);
     if (!v) {
-      await ctx.reply(tBK(lg, "yx_bad_text"));
+      await ctx.reply(tBK(lg, "yx_bad_text"), yxReplyOptionsTextOnly());
       return true;
     }
     let phoneNorm = v;
     if (step.mode === "phone") {
       const p = normalizeRussianPhone(msg);
       if (!p) {
-        await ctx.reply(tBK(lg, "err_phone_invalid"));
+        await ctx.reply(tBK(lg, "err_phone_invalid"), yxReplyOptionsTextOnly());
         return true;
       }
       phoneNorm = p;
@@ -249,19 +279,20 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   }
 
   if (yxForbiddenMedia(msg, step)) {
-    await ctx.reply(tBK(lg, "err_wrong_media_type"));
+    await ctx.reply(tBK(lg, "err_wrong_media_type"), yxReplyOptionsTextOnly());
     return true;
   }
 
   const ex = yxExtractFile(msg, step);
   if (!ex) {
     await ctx.reply(
-      step.t === "video" ? tBK(lg, "yx_need_video") : tBK(lg, "err_doc_need_photo")
+      step.t === "video" ? tBK(lg, "yx_need_video") : tBK(lg, "err_doc_need_photo"),
+      yxReplyOptionsTextOnly()
     );
     return true;
   }
   if (msg.document && !isAllowedDocumentMime(msg.document.mime_type)) {
-    await ctx.reply(tBK(lg, "err_doc_mime"));
+    await ctx.reply(tBK(lg, "err_doc_mime"), yxReplyOptionsTextOnly());
     return true;
   }
 
@@ -289,7 +320,7 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   });
   await logChat(client, uid, "user", `yx:file:${step.docType}`);
   const p2 = await ensureProfile(client, uid);
-  await ctx.reply(tBK(lg, "yx_file_ok"));
+  await ctx.reply(tBK(lg, "yx_file_ok"), yxReplyOptionsTextOnly());
   await promptYandexStep(ctx, client, uid, p2);
   return true;
 }
@@ -315,7 +346,7 @@ export async function handleYandexCallback(ctx, client, uid, data) {
         service: null,
         tariff: null,
       });
-      await ctx.reply(tBK(lg, "ask_category"), categoryInline(lg));
+      await ctx.reply(tBK(lg, "ask_category"), yxReplyOptions(categoryInline(lg)));
       return true;
     }
     if (svc === "lavka" || svc === "eats") {
@@ -341,18 +372,7 @@ export async function handleYandexCallback(ctx, client, uid, data) {
 
   if (!data.startsWith("bk_YX:") && !data.startsWith("bk_YR:")) return false;
 
-  if (data === "bk_YR:send") {
-    let profile = await ensureProfile(client, uid);
-    if (profile.session_state !== "bk_yx_review") return true;
-    const lg = lgOf(profile);
-    await updateProfile(client, uid, { session_state: "done" });
-    profile = await ensureProfile(client, uid);
-    await notifyGroupYandexSubmission(ctx.telegram, profile);
-    const tail = tBK(lg, "yx_final_thanks");
-    await ctx.reply(tail, mainMenuReply(lg));
-    await logChat(client, uid, "assistant", tail);
-    return true;
-  }
+  // bk_YR:send — DB commit va Telegram alohida (handlers.js); bu yerda emas.
 
   if (!data.startsWith("bk_YX:")) return false;
 
@@ -421,8 +441,8 @@ export async function handleYandexCallback(ctx, client, uid, data) {
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
-  if (payload.startsWith("ram:")) {
-    yx.regAmina = payload.endsWith("reg") ? "reg" : "amina";
+  if (payload === "ram:reg" || payload === "ram:amina") {
+    yx.regAmina = payload === "ram:reg" ? "reg" : "amina";
     await updateProfile(client, uid, { session_data: { ...td, yx, completed_yx } });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);

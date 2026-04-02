@@ -46,6 +46,9 @@ async function main() {
   process.once("SIGTERM", () => shutdown("SIGTERM"));
 
   log("Starting polling…");
+  log(
+    "Bitta bot jarayoni ishlatilsin: ikki+ getUpdates (409 Conflict) callbacklarni yo‘qotadi / bot «qotib» qolgan ko‘rinadi."
+  );
   await bot.launch();
 }
 
