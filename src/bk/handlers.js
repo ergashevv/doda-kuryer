@@ -87,6 +87,21 @@ function arendaManagerUsername() {
   return raw.replace(/^@/, "") || "Yandex_77";
 }
 
+/** Doda hujjatlar oqimi: tariff + service (barcha fayllarni o‘chirmasdan). */
+async function ensureDodaTariffService(client, uid, profile) {
+  const td = { ...(profile.session_data || {}) };
+  const bk = { ...(td.bk || {}) };
+  bk.categoryKey = bk.categoryKey || "foot";
+  const tariff = mapCategoryToTariff(bk.categoryKey);
+  td.bk = bk;
+  await updateProfile(client, uid, {
+    session_data: td,
+    tariff,
+    service: "doda_taxi",
+  });
+  return ensureProfile(client, uid);
+}
+
 async function sendPlaceholder(ctx, key, caption, extra = {}) {
   const p = resolvePlaceholderPath(key);
   if (p && fs.existsSync(p)) {
@@ -333,29 +348,6 @@ async function promptDodaDocStep(ctx, client, uid, profile, docKey) {
       await ctx.reply(legal);
     }
   }
-}
-
-async function enterDodaDocumentFlow(ctx, client, uid, profile) {
-  const td = { ...(profile.session_data || {}) };
-  const bk = { ...(td.bk || {}) };
-  bk.categoryKey = bk.categoryKey || "foot";
-  clearTruckBkFields(bk);
-  if (bk.categoryKey !== "bike") {
-    clearBikeFields(bk);
-  }
-  const tariff = mapCategoryToTariff(bk.categoryKey);
-  td.bk = bk;
-  td.completed_docs = [];
-  await client.query(`DELETE FROM uploaded_files WHERE telegram_user_id = $1`, [uid]);
-  await updateProfile(client, uid, {
-    session_data: td,
-    tariff,
-    service: "doda_taxi",
-  });
-  const p2 = await ensureProfile(client, uid);
-  const seq = dodaDocSequence(bk.categoryKey, bk);
-  const first = seq[0];
-  await promptDodaDocStep(ctx, client, uid, p2, first);
 }
 
 async function replyDocUploadedEcho(ctx, lg, msg, caption, markup) {
@@ -655,11 +647,8 @@ export function registerBkHandlers(bot) {
         } catch {
           await ctx.reply(cmsg, editOnly(lg, "bk_E:cit"));
         }
-        if (bk.categoryKey === "bike") {
-          await promptFirstMissingDodaDoc(ctx, client, uid, profile);
-        } else {
-          await enterDodaDocumentFlow(ctx, client, uid, profile);
-        }
+        profile = await ensureDodaTariffService(client, uid, profile);
+        await promptFirstMissingDodaDoc(ctx, client, uid, profile);
       });
       return;
     }
@@ -1046,6 +1035,10 @@ export function registerBkHandlers(bot) {
         await syncTelegramInfo(client, uid, ctx.from);
         let profile = await ensureProfile(client, uid);
         const lg = langOf(profile);
+        if (profile.session_state !== "bk_review") {
+          await ctx.reply(tBK(lg, "review_callback_stale"));
+          return;
+        }
         if (rest === "send") {
           await updateProfile(client, uid, { session_state: "done" });
           profile = await ensureProfile(client, uid);
