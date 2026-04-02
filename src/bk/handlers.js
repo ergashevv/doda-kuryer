@@ -1,7 +1,9 @@
 import {
   dodaDocSequence,
+  getFirstMissingDodaStepSync,
   isDodaUploadDocKey,
   isPhotoDoc,
+  parseBkTrCallbackData,
 } from "../flow.js";
 import {
   buildAskPhoneHtml,
@@ -200,43 +202,8 @@ async function getUploadedDocTypes(client, uid) {
 
 async function getFirstMissingDodaStep(client, uid, profile) {
   const bk = profile.session_data?.bk || {};
-  const seq = dodaDocSequence(bk.categoryKey || "foot", bk);
   const uploaded = await getUploadedDocTypes(client, uid);
-  for (const key of seq) {
-    if (key === "self_employed") {
-      if (typeof bk.selfEmployed !== "boolean") return key;
-      continue;
-    }
-    if (key === "inn") {
-      if (!bk.inn || String(bk.inn).trim() === "") return key;
-      continue;
-    }
-    if (key === "thermal") {
-      if (typeof bk.hasThermal !== "boolean") return key;
-      continue;
-    }
-    if (isDodaUploadDocKey(key)) {
-      if (!uploaded.has(key)) return key;
-      continue;
-    }
-    if (key === "truck_dimensions") {
-      if (!bk.truckDimensionLabel) return key;
-      continue;
-    }
-    if (key === "truck_payload") {
-      if (bk.truckPayloadKg == null || bk.truckPayloadKg === "") return key;
-      continue;
-    }
-    if (key === "truck_loaders") {
-      if (bk.truckLoaders == null) return key;
-      continue;
-    }
-    if (key === "truck_branding") {
-      if (typeof bk.truckBranding !== "boolean") return key;
-      continue;
-    }
-  }
-  return null;
+  return getFirstMissingDodaStepSync(bk, uploaded);
 }
 
 async function promptNextAfterTruckStep(ctx, client, uid, profile) {
@@ -742,12 +709,9 @@ export function registerBkHandlers(bot) {
     }
 
     if (data.startsWith("bk_TR:")) {
-      // "bk_TR:" — 6 belgi; slice(7) :S qoldirib kind ni buzardi (callback «jim»).
-      const sub = data.slice(6);
-      const colon = sub.indexOf(":");
-      if (colon < 0) return;
-      const kind = sub.slice(0, colon);
-      const val = sub.slice(colon + 1);
+      const parsed = parseBkTrCallbackData(data);
+      if (!parsed) return;
+      const { kind, val } = parsed;
       await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
         let profile = await ensureProfile(client, uid);
