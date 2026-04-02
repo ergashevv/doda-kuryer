@@ -390,11 +390,16 @@ export function registerBkHandlers(bot) {
     });
     const pick = tBK("ru", "pick_language");
     const kb = languagePickKb();
-    // remove_keyboard va inline bitta xabarda bo‘lmaydi; avval yopamiz, keyin bitta xabar — matn + tugmalar (takrorlanmasin)
-    await ctx.reply("\u2060", {
+    // remove_keyboard va inline bitta xabarda bo‘lmaydi; avval yopamiz, keyin bo‘sh xabarni o‘chirib yuboramiz
+    const dismiss = await ctx.reply("\u2060", {
       reply_markup: { remove_keyboard: true },
     });
     await ctx.reply(pick, kb);
+    try {
+      await ctx.telegram.deleteMessage(dismiss.chat.id, dismiss.message_id);
+    } catch (e) {
+      console.warn("[bk] deleteMessage (dismiss keyboard):", e?.message || e);
+    }
     await withTransaction(async (client) => {
       await logChat(client, uid, "assistant", pick);
     });
