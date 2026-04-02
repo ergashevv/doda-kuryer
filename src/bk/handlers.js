@@ -390,21 +390,11 @@ export function registerBkHandlers(bot) {
     });
     const pick = tBK("ru", "pick_language");
     const kb = languagePickKb();
-    // Pastki klaviaturani yopish; matn faqat «Выберите язык:» — tillar nomi faqat tugmalarda
-    const sent = await ctx.reply(pick, {
+    // remove_keyboard va inline bitta xabarda bo‘lmaydi; avval yopamiz, keyin bitta xabar — matn + tugmalar (takrorlanmasin)
+    await ctx.reply("\u2060", {
       reply_markup: { remove_keyboard: true },
     });
-    try {
-      await ctx.telegram.editMessageReplyMarkup(
-        sent.chat.id,
-        sent.message_id,
-        undefined,
-        kb.reply_markup
-      );
-    } catch (e) {
-      console.warn("[bk] editMessageReplyMarkup (lang):", e?.message || e);
-      await ctx.reply(pick, kb);
-    }
+    await ctx.reply(pick, kb);
     await withTransaction(async (client) => {
       await logChat(client, uid, "assistant", pick);
     });
