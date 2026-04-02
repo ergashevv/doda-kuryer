@@ -14,6 +14,8 @@ function extFromMime(mime) {
   if (mime.includes("jpeg") || mime.includes("jpg")) return "jpg";
   if (mime.includes("png")) return "png";
   if (mime.includes("pdf")) return "pdf";
+  if (mime.includes("mp4")) return "mp4";
+  if (mime.startsWith("video/")) return "mp4";
   return "bin";
 }
 

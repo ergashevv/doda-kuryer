@@ -50,6 +50,11 @@ import {
   truckLoadersInline,
   vehicleRfInline,
 } from "./keyboards.js";
+import {
+  handleYandexCallback,
+  handleYandexMessage,
+  servicePickInline,
+} from "./yandexHandlers.js";
 import fs from "node:fs";
 
 function mapCategoryToTariff(cat) {
@@ -376,6 +381,10 @@ export function registerBkHandlers(bot) {
     if (!uid || !ctx.message) return;
     await withTransaction(async (client) => {
       await resetRegistration(client, uid);
+      await client.query(
+        `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type LIKE 'yx_%'`,
+        [uid]
+      );
       await syncTelegramInfo(client, uid, ctx.from);
       await logChat(client, uid, "user", "/start");
       await updateProfile(client, uid, {
@@ -421,6 +430,12 @@ export function registerBkHandlers(bot) {
     if (!data || !uid) return;
     await ctx.answerCbQuery();
 
+    let yandexHandled = false;
+    await withTransaction(async (client) => {
+      yandexHandled = await handleYandexCallback(ctx, client, uid, data);
+    });
+    if (yandexHandled) return;
+
     if (data.startsWith("bk_L:")) {
       const code = data.slice(5);
       if (!["uz", "ru", "tg", "ky"].includes(code)) return;
@@ -428,11 +443,11 @@ export function registerBkHandlers(bot) {
         await syncTelegramInfo(client, uid, ctx.from);
         await updateProfile(client, uid, {
           language: code,
-          session_state: "bk_main",
+          session_state: "bk_phone",
         });
         await logChat(client, uid, "user", `lang:${code}`);
       });
-      await sendWelcomeAfterLanguage(ctx, uid, code);
+      await sendAskPhonePrompt(ctx, code);
       return;
     }
 
@@ -1023,7 +1038,15 @@ export function registerBkHandlers(bot) {
         if (rest.startsWith("e:")) {
           const f = rest.slice(2);
           if (f === "phone") {
-            await updateProfile(client, uid, { session_state: "bk_phone", phone: null });
+            const tdPh = { ...(profile.session_data || {}) };
+            const bkPh = { ...(tdPh.bk || {}) };
+            bkPh.returnToReview = true;
+            tdPh.bk = bkPh;
+            await updateProfile(client, uid, {
+              session_state: "bk_phone",
+              phone: null,
+              session_data: tdPh,
+            });
             await replyAskPhone(ctx, lg);
           } else if (f === "cat") {
             await client.query(`DELETE FROM uploaded_files WHERE telegram_user_id = $1`, [uid]);
@@ -1213,7 +1236,7 @@ export function registerBkHandlers(bot) {
     const uid = ctx.from?.id;
     const msg = ctx.message;
     if (!uid || !msg) return;
-    if (!msg.text && !msg.photo && !msg.document && !msg.contact) return;
+    if (!msg.text && !msg.photo && !msg.document && !msg.contact && !msg.video) return;
     const text = (msg.text || "").trim();
 
     await withTransaction(async (client) => {
@@ -1239,6 +1262,23 @@ export function registerBkHandlers(bot) {
         return;
       }
 
+      if (state === "bk_yx_review") {
+        await logChat(client, uid, "user", text || "[non-text at yx review]");
+        await ctx.reply(tBK(lg, "yx_review_use_buttons"));
+        return;
+      }
+
+      if (state === "bk_yx") {
+        const yxDone = await handleYandexMessage(ctx, client, uid, profile, msg);
+        if (yxDone) return;
+      }
+
+      if (state === "bk_service") {
+        await logChat(client, uid, "user", text || "[non-text at service]");
+        await ctx.reply(tBK(lg, "ask_service"), servicePickInline(lg));
+        return;
+      }
+
       if (state === "bk_main" && text === menuIn) {
         await updateProfile(client, uid, { session_state: "bk_faq" });
         await logChat(client, uid, "user", text);
@@ -1248,10 +1288,23 @@ export function registerBkHandlers(bot) {
       }
 
       if (state === "bk_main" && text === menuOut) {
-        await updateProfile(client, uid, { session_state: "bk_phone" });
         await logChat(client, uid, "user", text);
-        await logChat(client, uid, "assistant", "[ask_phone]");
-        await sendAskPhonePrompt(ctx, lg);
+        if (!profile.phone) {
+          const td0 = { ...(profile.session_data || {}) };
+          const bk0 = { ...(td0.bk || {}) };
+          bk0.afterPhone = "service";
+          td0.bk = bk0;
+          await updateProfile(client, uid, {
+            session_state: "bk_phone",
+            session_data: td0,
+          });
+          await logChat(client, uid, "assistant", "[ask_phone service]");
+          await sendAskPhonePrompt(ctx, lg);
+        } else {
+          await updateProfile(client, uid, { session_state: "bk_service" });
+          await logChat(client, uid, "assistant", "[ask_service]");
+          await ctx.reply(tBK(lg, "ask_service"), servicePickInline(lg));
+        }
         return;
       }
 
@@ -1420,9 +1473,31 @@ export function registerBkHandlers(bot) {
         }
         const td = { ...(profile.session_data || {}) };
         const bk = { ...(td.bk || {}) };
+        const afterPhone = bk.afterPhone;
+        const returnToReview = bk.returnToReview;
+        delete bk.afterPhone;
+        delete bk.returnToReview;
+
+        if (returnToReview) {
+          await updateProfile(client, uid, {
+            phone,
+            session_state: "bk_review",
+            session_data: { ...td, bk },
+          });
+          profile = await ensureProfile(client, uid);
+          const cmsg = tBKfn(lg, "confirm_phone", phone);
+          await logChat(client, uid, "user", phone);
+          await logChat(client, uid, "assistant", cmsg);
+          await ctx.reply(cmsg, editOnly(lg, "bk_E:phone"));
+          const bkRv = profile.session_data?.bk || {};
+          await ctx.reply(tBK(lg, "review_hint"), reviewKb(lg, bkRv));
+          return;
+        }
+
+        const nextState = afterPhone === "service" ? "bk_service" : "bk_main";
         await updateProfile(client, uid, {
           phone,
-          session_state: "bk_category",
+          session_state: nextState,
           session_data: { ...td, bk },
         });
         profile = await ensureProfile(client, uid);
@@ -1430,7 +1505,11 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "user", phone);
         await logChat(client, uid, "assistant", cmsg);
         await ctx.reply(cmsg, editOnly(lg, "bk_E:phone"));
-        await sendPlaceholder(ctx, "category", tBK(lg, "ask_category"), categoryInline(lg));
+        if (afterPhone === "service") {
+          await ctx.reply(tBK(lg, "ask_service"), servicePickInline(lg));
+        } else {
+          await sendWelcomeAfterLanguage(ctx, uid, lg);
+        }
         return;
       }
 

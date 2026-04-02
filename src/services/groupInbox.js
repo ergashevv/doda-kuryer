@@ -228,3 +228,163 @@ export async function notifyGroupFullSubmission(telegram, profile) {
     console.error("[groupInbox] notifyGroupFullSubmission:", e?.message || e);
   }
 }
+
+function formatYandexAnketaBlock(profile) {
+  const lg = normalizeBKLang(profile?.language);
+  const dash = tBK(lg, "group_value_dash");
+  const yx = profile?.session_data?.yx || {};
+  const name =
+    [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() ||
+    dash;
+  const un = profile.username ? `@${profile.username}` : dash;
+  const phone = profile.phone || dash;
+  const svc =
+    yx.service === "yandex_lavka"
+      ? tBK(lg, "yx_btn_lavka")
+      : yx.service === "yandex_eda"
+        ? tBK(lg, "yx_btn_eats")
+        : dash;
+  const city =
+    yx.cityKey === "msk"
+      ? tBK(lg, "yx_city_msk")
+      : yx.cityKey === "spb"
+        ? tBK(lg, "yx_city_spb")
+        : dash;
+  const citMap = {
+    uz_tj: "yx_cit_uz_tj",
+    kz_kg: "yx_cit_kz_kg",
+    rf: "yx_cit_rf",
+    tm: "yx_cit_tm",
+  };
+  const citizen =
+    yx.citizen && citMap[yx.citizen] ? tBK(lg, citMap[yx.citizen]) : yx.citizen || dash;
+
+  const lines = [
+    tBK(lg, "group_separator"),
+    tBK(lg, "group_anketa_heading"),
+    tBK(lg, "group_separator"),
+    `${tBK(lg, "group_label_name")} ${name}`,
+    `${tBK(lg, "group_label_telegram")} ${un}`,
+    `${tBK(lg, "group_label_phone")} ${phone}`,
+    "",
+    `${tBK(lg, "group_label_yandex_service")} ${svc}`,
+    `${tBK(lg, "group_label_yandex_city")} ${city}`,
+    `${tBK(lg, "group_label_yandex_citizen")} ${citizen}`,
+  ];
+  if (yx.uzDocKind) {
+    lines.push(
+      `${tBK(lg, "group_label_yandex_uzdoc")} ${tBK(lg, `yx_doc_${yx.uzDocKind}`)}`
+    );
+  }
+  if (yx.kzDocKind) {
+    lines.push(
+      `${tBK(lg, "group_label_yandex_kzdoc")} ${tBK(lg, yx.kzDocKind === "pass" ? "yx_kz_pass" : "yx_kz_id")}`
+    );
+  }
+  if (yx.tmVisaKind) {
+    lines.push(
+      `${tBK(lg, "group_label_yandex_tmvisa")} ${tBK(lg, yx.tmVisaKind === "work" ? "yx_tm_work" : "yx_tm_study")}`
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatYandexDocCaption(index, total, docKey, profile) {
+  const lg = normalizeBKLang(profile?.language);
+  const k = `group_caption_${docKey}`;
+  let t = tBK(lg, k);
+  if (t === k) {
+    t = tBK(lg, "group_caption_yx_generic");
+  }
+  return cap(`[${index}/${total}] ${t}`);
+}
+
+function formatYandexTextFieldsBlock(profile, lang) {
+  const lg = normalizeBKLang(lang);
+  const coll = profile?.session_data?.collected || {};
+  const parts = [];
+  for (const [k, v] of Object.entries(coll)) {
+    if (k.startsWith("yx_col_") && v) {
+      const lk = `yx_lbl_${k}`;
+      const lbl = tBK(lg, lk);
+      const label = lbl === lk ? k : lbl;
+      parts.push(`${label}: ${v}`);
+    }
+  }
+  if (!parts.length) return "";
+  return [
+    tBK(lg, "group_separator"),
+    tBK(lg, "group_yandex_text_heading"),
+    tBK(lg, "group_separator"),
+    parts.join("\n"),
+  ].join("\n");
+}
+
+/** Яндекс Лавка / Еда: анкета + вложения yx_* по порядку completed_yx */
+export async function notifyGroupYandexSubmission(telegram, profile) {
+  const chatId = getDocsGroupChatId();
+  if (!chatId || !profile) return;
+
+  const lg = normalizeBKLang(profile.language);
+  const uid = profile.telegram_id;
+  const td = profile.session_data || {};
+  const order = (td.completed_yx || []).filter(
+    (x) => typeof x === "string" && x.startsWith("yx_")
+  );
+
+  try {
+    const pool = getPool();
+    let rows = [];
+    if (order.length > 0) {
+      const r = await pool.query(
+        `SELECT doc_type, local_path FROM uploaded_files
+         WHERE telegram_user_id = $1 AND doc_type = ANY($2::text[])
+         ORDER BY array_position($2::text[], doc_type::text)`,
+        [uid, order]
+      );
+      rows = r.rows;
+    }
+
+    const header = [
+      tBK(lg, "group_header_yandex"),
+      "",
+      formatYandexAnketaBlock(profile),
+      formatDocsIntroBlock(
+        rows.filter((r) => r.local_path && fs.existsSync(r.local_path)).length,
+        lg
+      ),
+    ].join("\n");
+    await telegram.sendMessage(chatId, cap(header));
+
+    const validRows = rows.filter((r) => r.local_path && fs.existsSync(r.local_path));
+    const total = validRows.length;
+    for (let i = 0; i < validRows.length; i++) {
+      const row = validRows[i];
+      const caption = formatYandexDocCaption(i + 1, total, row.doc_type, profile);
+      const lower = row.local_path.toLowerCase();
+      if (lower.endsWith(".mp4")) {
+        await telegram.sendVideo(chatId, Input.fromLocalFile(row.local_path), {
+          caption,
+        });
+      } else if (lower.endsWith(".pdf")) {
+        await telegram.sendDocument(chatId, Input.fromLocalFile(row.local_path), {
+          caption,
+        });
+      } else {
+        await telegram.sendPhoto(chatId, Input.fromLocalFile(row.local_path), {
+          caption,
+        });
+      }
+    }
+
+    const textBlock = formatYandexTextFieldsBlock(profile, lg);
+    if (textBlock) {
+      await telegram.sendMessage(chatId, cap(textBlock));
+    }
+
+    await telegram.sendMessage(chatId, formatFooter(lg));
+  } catch (e) {
+    console.error("[groupInbox] notifyGroupYandexSubmission:", e?.message || e);
+  }
+}
+
