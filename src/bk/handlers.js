@@ -81,6 +81,12 @@ function clearBikeFields(bk) {
   delete bk.hasThermal;
 }
 
+/** /ARENDA — менеджер логини (env, @сиз). Default: Yandex_77 */
+function arendaManagerUsername() {
+  const raw = (process.env.ARENDA_MANAGER_USERNAME || "Yandex_77").trim();
+  return raw.replace(/^@/, "") || "Yandex_77";
+}
+
 async function sendPlaceholder(ctx, key, caption, extra = {}) {
   const p = resolvePlaceholderPath(key);
   if (p && fs.existsSync(p)) {
@@ -434,10 +440,13 @@ export function registerBkHandlers(bot) {
       const p = await ensureProfile(client, uid);
       lg = langOf(p);
     });
-    await sendPlaceholder(ctx, "arenda", tBK(lg, "arenda"), mainMenuReply(lg));
+    const arendaText = tBK(lg, "arenda", {
+      manager: arendaManagerUsername(),
+    });
+    await sendPlaceholder(ctx, "arenda", arendaText, mainMenuReply(lg));
     await withTransaction(async (client) => {
       await logChat(client, uid, "user", "/ARENDA");
-      await logChat(client, uid, "assistant", tBK(lg, "arenda"));
+      await logChat(client, uid, "assistant", arendaText);
     });
   });
 
@@ -737,7 +746,8 @@ export function registerBkHandlers(bot) {
     }
 
     if (data.startsWith("bk_TR:")) {
-      const sub = data.slice(7);
+      // "bk_TR:" — 6 belgi; slice(7) :S qoldirib kind ni buzardi (callback «jim»).
+      const sub = data.slice(6);
       const colon = sub.indexOf(":");
       if (colon < 0) return;
       const kind = sub.slice(0, colon);
@@ -1422,7 +1432,7 @@ export function registerBkHandlers(bot) {
       if (state === "bk_category" && text) {
         await logChat(client, uid, "user", text);
         await logChat(client, uid, "assistant", tBK(lg, "err_use_buttons_category"));
-        await ctx.reply(tBK(lg, "err_use_buttons_category"), mainMenuReply(lg));
+        await ctx.reply(tBK(lg, "err_use_buttons_category"), categoryInline(lg));
         return;
       }
 
