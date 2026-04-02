@@ -413,7 +413,7 @@ export function registerBkHandlers(bot) {
       await logChat(client, uid, "user", "/start");
       await updateProfile(client, uid, {
         language: "ru",
-        session_state: "bk_main",
+        session_state: "bk_lang",
         session_data: { bk: {} },
         service: null,
         tariff: null,
@@ -421,7 +421,14 @@ export function registerBkHandlers(bot) {
         phone: null,
       });
     });
-    await sendWelcomeAfterLanguage(ctx, uid, "ru");
+    // Eski pastki klaviaturani olib tashlash, keyin til tanlash (inline)
+    await ctx.reply(tBK("ru", "pick_language"), {
+      reply_markup: { remove_keyboard: true },
+    });
+    await ctx.reply(tBK("ru", "lang_names"), languagePickKb());
+    await withTransaction(async (client) => {
+      await logChat(client, uid, "assistant", tBK("ru", "pick_language"));
+    });
   });
 
   bot.command("ARENDA", async (ctx) => {
