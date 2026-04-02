@@ -123,16 +123,69 @@ const BK_STRINGS = {
       "Фақат расм (JPEG/PNG) ёки PDF файл.",
 
     summary_titles: {
-      phone: "Телефон",
-      category: "Категория",
+      phone: "Телефон (авторизация)",
+      category: "Етказиб бериш тури",
       city: "Шаҳар",
       citizenship: "РФ фуқаролиги",
       thermal: "Термокороб",
+      passport_foreign: "Чет эл паспорти",
+      passport_rf: "Паспорт",
+      passport: "Паспорт",
+      vehicle: "ТС ҳисоби",
+      truck_dims: "Юк устуни ўлчамлари",
+      truck_payload: "Юк кўтариш",
+      truck_loaders: "Юккашлар",
+      truck_wrap: "Брендинг / ёпиш",
+      self_employed: "Ўз-ўзини банд қилиш",
+      inn: "ИНН",
+      bike_thermal: "Вело термокороб",
+      bike_passport: "Паспорт",
     },
+
+    summary_passport_media: "Медиа (1 дона)",
 
     summary_yes: "Ҳа",
     summary_no: "Йўқ",
     summary_thermal_no: "Йўқ, сотиб олиш керак",
+
+    group_header_new: "🔔 Янги ариза · Doda taxi",
+    group_separator: "━━━━━━━━━━━━━━━━━━━━",
+    group_anketa_heading: "📋 АНКЕТА",
+    group_label_name: "👤 Исм:",
+    group_label_telegram: "📱 Telegram:",
+    group_label_phone: "📞 Телефон:",
+    group_label_category: "🚗 Етказиб бериш тури:",
+    group_label_vehicle: "🚙 ТС ҳисоби:",
+    group_label_city: "🏙 Шаҳар:",
+    group_label_citizenship: "🪪 РФ фуқаролиги:",
+    group_label_truck_dims: "📐 Ўлчамлар:",
+    group_label_truck_payload: "⚖️ Юк кўтариш:",
+    group_label_truck_loaders: "👷 Юккашлар:",
+    group_label_truck_branding: "🏷 Брендинг:",
+    group_label_bike_self: "🧾 Ўз-ўзини банд:",
+    group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_thermal: "📦 Вело термокороб:",
+    group_docs_heading: "📎 ҲУЖЖАТЛАР",
+    group_docs_empty:
+      "Аризага файллар уланмаган (юкланишларни текширинг).",
+    group_docs_intro:
+      "Илова: {count} (пастда — анкета бўйича тартибда).",
+    group_bank_heading: "🏦 БАНК (аризадан матн)",
+    group_footer_done:
+      "━━━━━━━━━━━━━━━━━━━━\n✅ Ариза қабул қилинди, барча файллар олинди\n━━━━━━━━━━━━━━━━━━━━",
+    group_caption_license: "Ҳайдовчилик гувоҳномаси (ВУ)",
+    group_caption_sts: "СТС — ТС рўйхатдан ўтганлиги",
+    group_caption_tech_passport_front:
+      "Чет эл ТС техпаспорти — олд томони",
+    group_caption_tech_passport_back:
+      "Чет эл ТС техпаспорти — орқа томони",
+    group_caption_passport: "Паспорт (разворот)",
+    group_caption_bank: "Банк маълумотлари",
+    group_truck_kg: "{value} кг",
+    group_truck_loader_word_0: "йўқ",
+    group_truck_loader_word_1: "битта",
+    group_truck_loader_word_2: "иккита",
+    group_value_dash: "—",
 
     faq: [
       {
@@ -403,6 +456,47 @@ const BK_STRINGS = {
     summary_no: "Нет",
     summary_thermal_no: "Нет, необходимо приобрести",
 
+    summary_passport_media: "Медиа (1 шт.)",
+
+    group_header_new: "🔔 Новая заявка · Doda taxi",
+    group_separator: "━━━━━━━━━━━━━━━━━━━━",
+    group_anketa_heading: "📋 АНКЕТА",
+    group_label_name: "👤 Имя:",
+    group_label_telegram: "📱 Telegram:",
+    group_label_phone: "📞 Телефон:",
+    group_label_category: "🚗 Класс доставки:",
+    group_label_vehicle: "🚙 Учёт ТС:",
+    group_label_city: "🏙 Город:",
+    group_label_citizenship: "🪪 Гражданство РФ:",
+    group_label_truck_dims: "📐 Габариты:",
+    group_label_truck_payload: "⚖️ Грузоподъемность:",
+    group_label_truck_loaders: "👷 Грузчики:",
+    group_label_truck_branding: "🏷 Оклейка / брендинг:",
+    group_label_bike_self: "🧾 Самозанятость:",
+    group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_thermal: "📦 Вело термокороб:",
+    group_docs_heading: "📎 ДОКУМЕНТЫ",
+    group_docs_empty:
+      "Файлы по заявке не прикреплены (проверьте загрузки).",
+    group_docs_intro:
+      "Вложений: {count} (ниже — по порядку, как в анкете).",
+    group_bank_heading: "🏦 БАНК (текст из заявки)",
+    group_footer_done:
+      "━━━━━━━━━━━━━━━━━━━━\n✅ Заявка принята, все файлы получены\n━━━━━━━━━━━━━━━━━━━━",
+    group_caption_license: "Водительское удостоверение (ВУ)",
+    group_caption_sts: "СТС — свидетельство о регистрации ТС",
+    group_caption_tech_passport_front:
+      "Техпаспорт иностранного ТС — лицевая сторона",
+    group_caption_tech_passport_back:
+      "Техпаспорт иностранного ТС — оборот",
+    group_caption_passport: "Паспорт (разворот)",
+    group_caption_bank: "Банковские реквизиты",
+    group_truck_kg: "{value} кг",
+    group_truck_loader_word_0: "ни одного",
+    group_truck_loader_word_1: "один",
+    group_truck_loader_word_2: "два",
+    group_value_dash: "—",
+
     faq: [
       {
         id: "pay",
@@ -526,16 +620,67 @@ const BK_STRINGS = {
     err_doc_mime: "Танҳо акс (JPEG/PNG) ё PDF.",
 
     summary_titles: {
-      phone: "Телефон",
-      category: "Категория",
+      phone: "Телефон (авторизатсия)",
+      category: "Намуди расонидан",
       city: "Шаҳр",
       citizenship: "Шаҳрвандии РФ",
       thermal: "Термокороб",
+      passport_foreign: "Паспорти хориҷӣ",
+      passport_rf: "Паспорт",
+      passport: "Паспорт",
+      vehicle: "Ҳисоби ТС",
+      truck_dims: "Андозаҳои боркаш",
+      truck_payload: "Борбардорӣ",
+      truck_loaders: "Боркашон",
+      truck_wrap: "Брендинг",
+      self_employed: "Худкорӣ",
+      inn: "ИНН",
+      bike_thermal: "Термокороби вело",
+      bike_passport: "Паспорт",
     },
+
+    summary_passport_media: "Медиа (1 адад)",
 
     summary_yes: "Ҳа",
     summary_no: "Не",
     summary_thermal_no: "Не, харидан лозим",
+
+    group_header_new: "🔔 Аризаи нав · Doda taxi",
+    group_separator: "━━━━━━━━━━━━━━━━━━━━",
+    group_anketa_heading: "📋 АНКЕТА",
+    group_label_name: "👤 Ном:",
+    group_label_telegram: "📱 Telegram:",
+    group_label_phone: "📞 Телефон:",
+    group_label_category: "🚗 Намуди расонидан:",
+    group_label_vehicle: "🚙 Ҳисоби ТС:",
+    group_label_city: "🏙 Шаҳр:",
+    group_label_citizenship: "🪪 Шаҳрвандии РФ:",
+    group_label_truck_dims: "📐 Андоза:",
+    group_label_truck_payload: "⚖️ Борбардорӣ:",
+    group_label_truck_loaders: "👷 Боркашон:",
+    group_label_truck_branding: "🏷 Брендинг:",
+    group_label_bike_self: "🧾 Худкорӣ:",
+    group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_thermal: "📦 Термокороби вело:",
+    group_docs_heading: "📎 ҲУҶҶАТҲО",
+    group_docs_empty: "Ба ариза файлҳо замима нашудаанд.",
+    group_docs_intro: "Замимаҳо: {count} (дар поён — мувофиқи анкета).",
+    group_bank_heading: "🏦 БАНК (матн аз ариза)",
+    group_footer_done:
+      "━━━━━━━━━━━━━━━━━━━━\n✅ Ариза қабул шуд, ҳама файлҳо гирифта шуданд\n━━━━━━━━━━━━━━━━━━━━",
+    group_caption_license: "Гувоҳиномаи ронандагӣ (ВУ)",
+    group_caption_sts: "СТС — гувоҳномаи сабти ТС",
+    group_caption_tech_passport_front:
+      "Техпаспорти ТС хориҷӣ — рӯёна",
+    group_caption_tech_passport_back:
+      "Техпаспорти ТС хориҷӣ — пушта",
+    group_caption_passport: "Паспорт (ворид)",
+    group_caption_bank: "Маълумоти бонкӣ",
+    group_truck_kg: "{value} кг",
+    group_truck_loader_word_0: "ҳеҷ кадом",
+    group_truck_loader_word_1: "як",
+    group_truck_loader_word_2: "ду",
+    group_value_dash: "—",
 
     faq: [
       {
@@ -661,16 +806,67 @@ const BK_STRINGS = {
     err_doc_mime: "Гана JPEG/PNG же PDF.",
 
     summary_titles: {
-      phone: "Телефон",
-      category: "Категория",
+      phone: "Телефон (авторизация)",
+      category: "Жеткирүү классы",
       city: "Шаар",
       citizenship: "РФ жарандыгы",
       thermal: "Термокороб",
+      passport_foreign: "Чет өлкө паспорту",
+      passport_rf: "Паспорт",
+      passport: "Паспорт",
+      vehicle: "ТС эсеби",
+      truck_dims: "Жүк бөлмөсү",
+      truck_payload: "Жүк көтөрүү",
+      truck_loaders: "Жүк ташуучулар",
+      truck_wrap: "Брендинг",
+      self_employed: "Өзүн өзү эмгекке жаратуу",
+      inn: "ИНН",
+      bike_thermal: "Вело термокороб",
+      bike_passport: "Паспорт",
     },
+
+    summary_passport_media: "Медиа (1 даана)",
 
     summary_yes: "Ооба",
     summary_no: "Жок",
     summary_thermal_no: "Жок, сатып алуу керек",
+
+    group_header_new: "🔔 Жаңы арыз · Doda taxi",
+    group_separator: "━━━━━━━━━━━━━━━━━━━━",
+    group_anketa_heading: "📋 АНКЕТА",
+    group_label_name: "👤 Аты:",
+    group_label_telegram: "📱 Telegram:",
+    group_label_phone: "📞 Телефон:",
+    group_label_category: "🚗 Жеткирүү классы:",
+    group_label_vehicle: "🚙 ТС эсеби:",
+    group_label_city: "🏙 Шаар:",
+    group_label_citizenship: "🪪 РФ жарандыгы:",
+    group_label_truck_dims: "📐 Өлчөмдөр:",
+    group_label_truck_payload: "⚖️ Жүк көтөрүү:",
+    group_label_truck_loaders: "👷 Жүк ташуучулар:",
+    group_label_truck_branding: "🏷 Брендинг:",
+    group_label_bike_self: "🧾 Өзүн эмгекке жаратуу:",
+    group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_thermal: "📦 Вело термокороб:",
+    group_docs_heading: "📎 ДОКУМЕНТТЕР",
+    group_docs_empty: "Арызга файлдар тиркелген эмес.",
+    group_docs_intro: "Тиркемелер: {count} (төмөндө — анкета боюнча).",
+    group_bank_heading: "🏦 БАНК (арыздан текст)",
+    group_footer_done:
+      "━━━━━━━━━━━━━━━━━━━━\n✅ Арыз кабыл алынды, бардык файлдар алынды\n━━━━━━━━━━━━━━━━━━━━",
+    group_caption_license: "Айдоочулук күбөлүгү (ВУ)",
+    group_caption_sts: "СТС — ТС каттоо күбөлүгү",
+    group_caption_tech_passport_front:
+      "Чет өлкө ТС техпаспорту — алды жагы",
+    group_caption_tech_passport_back:
+      "Чет өлкө ТС техпаспорту — арткы жагы",
+    group_caption_passport: "Паспорт (жайылма)",
+    group_caption_bank: "Банк маалыматтары",
+    group_truck_kg: "{value} кг",
+    group_truck_loader_word_0: "эч ким",
+    group_truck_loader_word_1: "бир",
+    group_truck_loader_word_2: "эки",
+    group_value_dash: "—",
 
     faq: [
       {
@@ -828,7 +1024,9 @@ export function buildBkSummaryI18n(lang, profile) {
         : bk.rfCitizen === false
           ? summaryTitle(lg, "passport_foreign")
           : summaryTitle(lg, "passport_rf");
-    lines.push(`${n++}. ${passportTitle}: Медиа (1 шт.)`);
+    lines.push(
+      `${n++}. ${passportTitle}: ${tBK(lg, "summary_passport_media")}`
+    );
   }
   return lines.join("\n");
 }

@@ -1,21 +1,16 @@
 import fs from "node:fs";
 import { Input } from "telegraf";
-import { docLabel } from "../i18n.js";
 import { getPool } from "../db.js";
-
-/** To‘liq nomlar — har bir rasm ostida tushunarli */
-const DOC_TITLE_RU = {
-  license: "Водительское удостоверение (ВУ)",
-  sts: "СТС — свидетельство о регистрации ТС",
-  tech_passport_front: "Техпаспорт иностранного ТС — лицевая сторона",
-  tech_passport_back: "Техпаспорт иностранного ТС — оборот",
-  passport: "Паспорт (разворот)",
-  bank: "Банковские реквизиты",
-};
+import { normalizeBKLang, tBK } from "../bk/i18n.js";
 
 function cap(s, max = 1024) {
   if (!s || s.length <= max) return s || "";
   return `${s.slice(0, max - 3)}...`;
+}
+
+function localeForLang(lg) {
+  const m = { uz: "uz-UZ", ru: "ru-RU", tg: "tg-TJ", ky: "ky-KG" };
+  return m[lg] || "ru-RU";
 }
 
 export function getDocsGroupChatId() {
@@ -25,137 +20,149 @@ export function getDocsGroupChatId() {
   return Number.isFinite(n) ? n : null;
 }
 
-function docTitleRu(docKey) {
-  return DOC_TITLE_RU[docKey] || docLabel("ru", docKey);
+function docCaptionTitle(lang, docKey) {
+  const k = `group_caption_${docKey}`;
+  const t = tBK(lang, k);
+  return t === k ? tBK(lang, "group_caption_passport") : t;
 }
 
-function contactLine(profile) {
-  const name =
-    [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "";
-  const un = profile.username ? `@${profile.username}` : "";
-  if (name && un) return `${name} · ${un}`;
-  if (name) return name;
-  if (un) return un;
-  return "—";
+/** Rasm ostida faqat [i/n] + номи; исм/username анкета блогида */
+function formatDocCaption(index, total, docKey, profile) {
+  const lg = normalizeBKLang(profile?.language);
+  const title = docCaptionTitle(lg, docKey);
+  return cap(`[${index}/${total}] ${title}`);
 }
 
-/** Guruh uchun: faqat operatorga kerakli, ID va ichki kodlarsiz */
 function formatAnketaBlock(profile) {
+  const lg = normalizeBKLang(profile?.language);
+  const dash = tBK(lg, "group_value_dash");
   const bk = profile?.session_data?.bk || {};
   const name =
-    [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "—";
-  const un = profile.username ? `@${profile.username}` : "—";
-  const phone = profile.phone || "—";
-  const city = profile.city || "—";
-  const category = bk.categoryLabel || "—";
+    [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() ||
+    dash;
+  const un = profile.username ? `@${profile.username}` : dash;
+  const phone = profile.phone || dash;
+  const city = profile.city || dash;
+  const category = bk.categoryLabel || dash;
+  const y = tBK(lg, "summary_yes");
+  const no = tBK(lg, "summary_no");
   const rf =
-    typeof bk.rfCitizen === "boolean" ? (bk.rfCitizen ? "Да" : "Нет") : "—";
+    typeof bk.rfCitizen === "boolean" ? (bk.rfCitizen ? y : no) : dash;
 
   const lines = [
-    "━━━━━━━━━━━━━━━━━━━━",
-    "📋 АНКЕТА",
-    "━━━━━━━━━━━━━━━━━━━━",
-    `👤 Имя: ${name}`,
-    `📱 Telegram: ${un}`,
-    `📞 Телефон: ${phone}`,
+    tBK(lg, "group_separator"),
+    tBK(lg, "group_anketa_heading"),
+    tBK(lg, "group_separator"),
+    `${tBK(lg, "group_label_name")} ${name}`,
+    `${tBK(lg, "group_label_telegram")} ${un}`,
+    `${tBK(lg, "group_label_phone")} ${phone}`,
     "",
-    `🚗 Класс доставки: ${category}`,
+    `${tBK(lg, "group_label_category")} ${category}`,
     ...(bk.categoryKey === "car" && typeof bk.vehicleRf === "boolean"
       ? [
-          `🚙 Учёт ТС: ${bk.vehicleRf ? "РФ — СТС" : "Иностранное — техпаспорт"}`,
+          `${tBK(lg, "group_label_vehicle")} ${
+            bk.vehicleRf
+              ? tBK(lg, "summary_vehicle_rf")
+              : tBK(lg, "summary_vehicle_foreign")
+          }`,
         ]
       : []),
-    `🏙 Город: ${city}`,
-    `🪪 Гражданство РФ: ${rf}`,
+    `${tBK(lg, "group_label_city")} ${city}`,
+    `${tBK(lg, "group_label_citizenship")} ${rf}`,
     ...(bk.categoryKey === "truck"
       ? [
           "",
           typeof bk.truckDimensionLabel === "string" && bk.truckDimensionLabel
-            ? `📐 Габариты: ${bk.truckDimensionLabel}`
-            : `📐 Габариты: —`,
+            ? `${tBK(lg, "group_label_truck_dims")} ${bk.truckDimensionLabel}`
+            : `${tBK(lg, "group_label_truck_dims")} ${dash}`,
           bk.truckPayloadKg != null && bk.truckPayloadKg !== ""
-            ? `⚖️ Грузоподъемность: ${new Intl.NumberFormat("ru-RU").format(
-                Number(bk.truckPayloadKg)
-              )} кг`
-            : `⚖️ Грузоподъемность: —`,
+            ? `${tBK(lg, "group_label_truck_payload")} ${tBK(lg, "group_truck_kg", {
+                value: new Intl.NumberFormat(localeForLang(lg)).format(
+                  Number(bk.truckPayloadKg)
+                ),
+              })}`
+            : `${tBK(lg, "group_label_truck_payload")} ${dash}`,
           bk.truckLoaders != null
-            ? `👷 Грузчики: ${[0, 1, 2].includes(bk.truckLoaders) ? ["ни одного", "один", "два"][bk.truckLoaders] : bk.truckLoaders}`
-            : `👷 Грузчики: —`,
+            ? `${tBK(lg, "group_label_truck_loaders")} ${
+                [0, 1, 2].includes(bk.truckLoaders)
+                  ? tBK(lg, `group_truck_loader_word_${bk.truckLoaders}`)
+                  : bk.truckLoaders
+              }`
+            : `${tBK(lg, "group_label_truck_loaders")} ${dash}`,
           typeof bk.truckBranding === "boolean"
-            ? `🏷 Оклейка / брендинг: ${bk.truckBranding ? "да" : "нет"}`
-            : `🏷 Оклейка / брендинг: —`,
+            ? `${tBK(lg, "group_label_truck_branding")} ${
+                bk.truckBranding ? y : no
+              }`
+            : `${tBK(lg, "group_label_truck_branding")} ${dash}`,
         ]
       : []),
     ...(bk.categoryKey === "bike"
       ? [
           "",
           typeof bk.selfEmployed === "boolean"
-            ? `🧾 Самозанятость: ${bk.selfEmployed ? "да" : "нет"}`
-            : `🧾 Самозанятость: —`,
+            ? `${tBK(lg, "group_label_bike_self")} ${
+                bk.selfEmployed ? y : no
+              }`
+            : `${tBK(lg, "group_label_bike_self")} ${dash}`,
           ...(bk.selfEmployed === true
-            ? [`#️⃣ ИНН: ${bk.inn || "—"}`]
+            ? [`${tBK(lg, "group_label_bike_inn")} ${bk.inn || dash}`]
             : []),
           typeof bk.hasThermal === "boolean"
-            ? `📦 Вело термокороб: ${
-                bk.hasThermal ? "да" : "нет, необходимо приобрести"
+            ? `${tBK(lg, "group_label_bike_thermal")} ${
+                bk.hasThermal ? y : tBK(lg, "summary_thermal_no")
               }`
-            : `📦 Вело термокороб: —`,
+            : `${tBK(lg, "group_label_bike_thermal")} ${dash}`,
         ]
       : []),
   ];
   return lines.join("\n");
 }
 
-function formatDocsIntroBlock(expectedCount) {
+function formatDocsIntroBlock(expectedCount, lang) {
+  const lg = normalizeBKLang(lang);
   if (expectedCount <= 0) {
     return [
       "",
-      "━━━━━━━━━━━━━━━━━━━━",
-      "📎 ДОКУМЕНТЫ",
-      "━━━━━━━━━━━━━━━━━━━━",
-      "Файлы по заявке не прикреплены (проверьте загрузки).",
+      tBK(lg, "group_separator"),
+      tBK(lg, "group_docs_heading"),
+      tBK(lg, "group_separator"),
+      tBK(lg, "group_docs_empty"),
     ].join("\n");
   }
-  const lines = [
+  return [
     "",
-    "━━━━━━━━━━━━━━━━━━━━",
-    "📎 ДОКУМЕНТЫ",
-    "━━━━━━━━━━━━━━━━━━━━",
-    `Вложений: ${expectedCount} (ниже — по порядку, как в анкете).`,
-  ];
-  return lines.join("\n");
+    tBK(lg, "group_separator"),
+    tBK(lg, "group_docs_heading"),
+    tBK(lg, "group_separator"),
+    tBK(lg, "group_docs_intro", { count: String(expectedCount) }),
+  ].join("\n");
 }
 
-/** Faqat tartib raqami va hujjat nomi + qisqa kontakt (ID yo‘q) */
-function formatDocCaption(index, total, docKey, profile) {
-  const title = docTitleRu(docKey);
-  const who = contactLine(profile);
-  return cap([`[${index}/${total}] ${title}`, "", who].join("\n"));
-}
-
-function formatBankBlock(bankText) {
+function formatBankBlock(bankText, lang) {
+  const lg = normalizeBKLang(lang);
   return cap(
     [
-      "━━━━━━━━━━━━━━━━━━━━",
-      "🏦 БАНК (текст из заявки)",
-      "━━━━━━━━━━━━━━━━━━━━",
+      tBK(lg, "group_separator"),
+      tBK(lg, "group_bank_heading"),
+      tBK(lg, "group_separator"),
       bankText,
     ].join("\n\n")
   );
 }
 
-function formatFooter() {
-  return "━━━━━━━━━━━━━━━━━━━━\n✅ Заявка принята, все файлы получены\n━━━━━━━━━━━━━━━━━━━━";
+function formatFooter(lang) {
+  const lg = normalizeBKLang(lang);
+  return tBK(lg, "group_footer_done");
 }
 
 /**
  * Rasmlar/hujjatlar: completed_docs tartibi bo‘yicha DB dan yuklanadi.
- * Diskda yo‘q fayl o‘tkazib yuboriladi (log).
  */
 export async function notifyGroupFullSubmission(telegram, profile) {
   const chatId = getDocsGroupChatId();
   if (!chatId || !profile) return;
 
+  const lg = normalizeBKLang(profile.language);
   const uid = profile.telegram_id;
   const td = profile.session_data || {};
   const completedDocs = td.completed_docs || [];
@@ -184,10 +191,13 @@ export async function notifyGroupFullSubmission(telegram, profile) {
     }
 
     const header = [
-      "🔔 Новая заявка · Doda taxi",
+      tBK(lg, "group_header_new"),
       "",
       formatAnketaBlock(profile),
-      formatDocsIntroBlock(rows.filter((r) => r.local_path && fs.existsSync(r.local_path)).length),
+      formatDocsIntroBlock(
+        rows.filter((r) => r.local_path && fs.existsSync(r.local_path)).length,
+        lg
+      ),
     ].join("\n");
     await telegram.sendMessage(chatId, cap(header));
 
@@ -210,10 +220,10 @@ export async function notifyGroupFullSubmission(telegram, profile) {
     }
 
     if (completedDocs.includes("bank") && bankText) {
-      await telegram.sendMessage(chatId, formatBankBlock(bankText));
+      await telegram.sendMessage(chatId, formatBankBlock(bankText, lg));
     }
 
-    await telegram.sendMessage(chatId, formatFooter());
+    await telegram.sendMessage(chatId, formatFooter(lg));
   } catch (e) {
     console.error("[groupInbox] notifyGroupFullSubmission:", e?.message || e);
   }
