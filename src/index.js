@@ -3,6 +3,7 @@ import { Telegraf } from "telegraf";
 import { initDb, getPool } from "./db.js";
 import { ensureStorage } from "./services/storage.js";
 import { registerHandlers } from "./handlers/registration.js";
+import { syncBotProfile } from "./botProfile.js";
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
@@ -30,6 +31,8 @@ async function main() {
   const token = process.env.BOT_TOKEN.trim();
   const bot = new Telegraf(token);
   const pool = getPool();
+
+  await syncBotProfile(bot.telegram, log);
 
   registerHandlers(bot);
 
