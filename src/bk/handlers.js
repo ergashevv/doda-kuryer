@@ -92,9 +92,22 @@ async function sendPlaceholder(ctx, key, caption, extra = {}) {
 
 async function sendAskPhonePrompt(ctx, lg) {
   const { text, parse_mode } = buildAskPhoneHtml(lg);
-  const extra = { ...phoneStepReply(lg) };
-  if (parse_mode) extra.parse_mode = parse_mode;
-  await sendPlaceholder(ctx, "phone", text, extra);
+  const kb = phoneStepReply(lg);
+  const p = resolvePlaceholderPath("phone");
+  const hasPhoto = p && fs.existsSync(p);
+  if (hasPhoto) {
+    // Pastki klaviatura ba’zi Telegram mijozlarida sendPhoto + reply_markup bilan yangilanmay qoladi;
+    // kontakt / «қўлда» tugmalari keyingi qisqa xabarda — oxirgi reply_markup qo‘llaniladi.
+    await ctx.replyWithPhoto(
+      { source: p },
+      { caption: text, parse_mode: parse_mode || undefined }
+    );
+    await ctx.reply(tBK(lg, "ask_phone_keyboard_nudge"), kb);
+  } else {
+    const extra = { ...kb };
+    if (parse_mode) extra.parse_mode = parse_mode;
+    await ctx.reply(text, extra);
+  }
 }
 
 async function replyAskPhone(ctx, lg) {
