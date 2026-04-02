@@ -242,7 +242,8 @@ export function registerBkHandlers(bot) {
     });
   });
 
-  bot.callbackQuery(/^bk_/, async (ctx) => {
+  // Telegraf 4: callback query uchun `action`, `callbackQuery` metodi yo‘q
+  bot.action(/^bk_/, async (ctx) => {
     const data = ctx.callbackQuery?.data;
     const uid = ctx.from?.id;
     if (!data || !uid) return;
