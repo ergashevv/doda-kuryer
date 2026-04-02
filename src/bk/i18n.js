@@ -855,7 +855,8 @@ export function buildAskPhoneHtml(lang) {
     return { text: `${body}\n\n${legal}`, parse_mode: "HTML" };
   }
   const legal = BK_STRINGS.ru.ask_phone_legal_plain;
-  return { text: `${body}\n\n${legal}`, parse_mode: undefined };
+  // body — HTML (<b>…</b>); havolasiz variantda ham parse_mode berilmasa teglar matn bo‘lib chiqadi.
+  return { text: `${body}\n\n${legal}`, parse_mode: "HTML" };
 }
 
 /** Финальное сообщение после отправки заявки (ссылка на community из env). */
