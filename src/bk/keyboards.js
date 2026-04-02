@@ -31,6 +31,17 @@ export function mainMenuReply(lang) {
     .persistent();
 }
 
+/** BK uslubi: kontakt yoki qo‘lda nomer */
+export function phoneStepReply(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.keyboard([
+    [Markup.button.contactRequest(tBK(lg, "btn_phone_from_telegram"))],
+    [tBK(lg, "btn_phone_manual")],
+  ])
+    .resize()
+    .persistent();
+}
+
 export function onboardingReplyThermal(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.keyboard([
@@ -103,6 +114,69 @@ export function citizenshipInline(lang) {
   ]);
 }
 
+/** Легковое: учёт РФ (СТС) yoki chet el (техпаспорт) */
+export function vehicleRfInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [Markup.button.callback(tBK(lg, "btn_vehicle_rf_sts"), "bk_V:1")],
+    [Markup.button.callback(tBK(lg, "btn_vehicle_foreign_tech"), "bk_V:0")],
+  ]);
+}
+
+/** Velosiped: самозанятость */
+export function selfEmployedInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(tBK(lg, "cit_yes"), "bk_SE:1"),
+      Markup.button.callback(tBK(lg, "cit_no"), "bk_SE:0"),
+    ],
+  ]);
+}
+
+/** Velosiped: термокороб */
+export function thermalBikeInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(tBK(lg, "btn_therm_yes"), "bk_TH:1"),
+      Markup.button.callback(tBK(lg, "btn_therm_no"), "bk_TH:0"),
+    ],
+  ]);
+}
+
+const TRUCK_DIM_CODES = ["S", "M", "L", "XL", "XXL"];
+
+export function truckDimensionsInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard(
+    TRUCK_DIM_CODES.map((c) => [
+      Markup.button.callback(tBK(lg, `truck_dim_btn_${c}`), `bk_TR:d:${c}`),
+    ])
+  );
+}
+
+export function truckLoadersInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(tBK(lg, "truck_loader_btn_0"), "bk_TR:l:0"),
+      Markup.button.callback(tBK(lg, "truck_loader_btn_1"), "bk_TR:l:1"),
+      Markup.button.callback(tBK(lg, "truck_loader_btn_2"), "bk_TR:l:2"),
+    ],
+  ]);
+}
+
+export function truckBrandingInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(tBK(lg, "cit_yes"), "bk_TR:b:1"),
+      Markup.button.callback(tBK(lg, "cit_no"), "bk_TR:b:0"),
+    ],
+  ]);
+}
+
 export function editOnly(lang, cb) {
   return Markup.inlineKeyboard([
     [Markup.button.callback(tBK(normalizeBKLang(lang), "edit_btn"), cb)],
@@ -134,18 +208,45 @@ export function faqMenu(lang) {
   return Markup.inlineKeyboard(rows);
 }
 
-export function reviewKb(lang) {
+export function reviewKb(lang, bk = {}) {
   const lg = normalizeBKLang(lang);
-  return Markup.inlineKeyboard([
+  const rows = [
     [Markup.button.callback(tBK(lg, "submit_btn"), "bk_R:send")],
     [
       Markup.button.callback(`📱 ${summaryTitle(lg, "phone")}`, "bk_R:e:phone"),
       Markup.button.callback(`🚗 ${summaryTitle(lg, "category")}`, "bk_R:e:cat"),
     ],
+  ];
+  if (bk.categoryKey === "car") {
+    rows.push([
+      Markup.button.callback(`🚙 ${summaryTitle(lg, "vehicle")}`, "bk_R:e:veh"),
+    ]);
+  }
+  if (bk.categoryKey === "truck") {
+    rows.push([
+      Markup.button.callback(`📐 ${summaryTitle(lg, "truck_dims")}`, "bk_R:e:tdim"),
+      Markup.button.callback(`⚖️ ${summaryTitle(lg, "truck_payload")}`, "bk_R:e:tpay"),
+    ]);
+    rows.push([
+      Markup.button.callback(`👷 ${summaryTitle(lg, "truck_loaders")}`, "bk_R:e:tload"),
+      Markup.button.callback(`🏷 ${summaryTitle(lg, "truck_wrap")}`, "bk_R:e:twrap"),
+    ]);
+  }
+  if (bk.categoryKey === "bike") {
+    rows.push([
+      Markup.button.callback(`🧾 ${summaryTitle(lg, "self_employed")}`, "bk_R:e:bself"),
+      Markup.button.callback(`#️⃣ ${summaryTitle(lg, "inn")}`, "bk_R:e:binn"),
+    ]);
+    rows.push([
+      Markup.button.callback(`📦 ${summaryTitle(lg, "bike_thermal")}`, "bk_R:e:bth"),
+    ]);
+  }
+  rows.push(
     [
       Markup.button.callback(`🏙 ${summaryTitle(lg, "city")}`, "bk_R:e:city"),
       Markup.button.callback(`🪪 ${summaryTitle(lg, "citizenship")}`, "bk_R:e:cit"),
     ],
-    [Markup.button.callback(`🛂 ${summaryTitle(lg, "passport")}`, "bk_R:e:passport")],
-  ]);
+    [Markup.button.callback(`🛂 ${summaryTitle(lg, "passport")}`, "bk_R:e:passport")]
+  );
+  return Markup.inlineKeyboard(rows);
 }

@@ -137,6 +137,8 @@ export const STRINGS = {
       passport: "паспорт",
       license: "права",
       sts: "СТС",
+      tech_passport_front: "техпаспорт (лицевая)",
+      tech_passport_back: "техпаспорт (оборот)",
       phone: "телефон",
       patent_front: "патент (лицо)",
       patent_back: "патент (оборот)",

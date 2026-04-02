@@ -163,6 +163,11 @@ const BK_STRINGS = {
     btn_in_park: "😎 Я уже в парке Doda taxi",
     btn_not_in_park: "🙏 Я не в парке Doda taxi, нужно подключить",
     btn_support: "❓ Нужна помощь техподдержки",
+    btn_phone_from_telegram:
+      "Использовать номер телефона, привязанный к Telegram",
+    btn_phone_manual: "Ввести самостоятельно",
+    ask_phone_manual_hint:
+      "Напиши номер одним сообщением: +7… (10 цифр после 7), или 8…, или 10 цифр без кода. Только номер РФ.",
     btn_therm_yes: "Да",
     btn_therm_no: "Нет, необходимо приобрести",
     cit_yes: "Да",
@@ -187,6 +192,18 @@ const BK_STRINGS = {
     ask_phone:
       "📱 Укажи российский номер для заявки: +7… (10 цифр после 7), или 8…, или 10 цифр без кода. Можно отправить контакт 📎 (только РФ).",
 
+    /** HTML: buildAskPhoneHtml — asosiy qator BK uslubida */
+    ask_phone_body_ru:
+      "Для подключения отправьте 📱📞 номер телефона <b>текстовым сообщением</b> ИЛИ <b>поделитесь им через кнопку в нижнем меню</b> 👇",
+
+    /** Havolalar yo‘q bo‘lsa */
+    ask_phone_legal_plain:
+      "Отправляя свой номер телефона, Вы даёте согласие на обработку персональных данных для оформления заявки в парке Doda taxi.",
+
+    /** HTML; {privacy_url} {referral_url} {tournament_url} {zaruba_url} */
+    ask_phone_legal_ru_html:
+      "Отправляя свой номер телефона, Вы даёте согласие на обработку персональных данных на условиях <a href=\"{privacy_url}\">Политики конфиденциальности</a>, а также соглашаетесь с <a href=\"{referral_url}\">Правилами реферальной программы</a>, <a href=\"{tournament_url}\">Правилами проведения акции «Турнир»</a>, <a href=\"{zaruba_url}\">Правилами проведения акции «Заруба»</a>.",
+
     err_phone_invalid:
       "Нужен номер России: +7XXXXXXXXXX, 8XXXXXXXXXX или 10 цифр без кода. Номера других стран не принимаются.",
 
@@ -206,6 +223,17 @@ const BK_STRINGS = {
 
     confirm_category: (label) => `Ты выбрал выполнять заказы в категории ${label}`,
 
+    ask_vehicle_rf:
+      "🚗 Легковое авто: где учёт транспорта?\n\n• Россия — загрузим СТС (как обычно).\n• Иностранное ТС — нужен техпаспорт: лицевая сторона и оборот (два фото).",
+
+    btn_vehicle_rf_sts: "🇷🇺 Учёт в РФ — есть СТС",
+    btn_vehicle_foreign_tech: "🌍 Иностранное ТС — техпаспорт (2 фото)",
+
+    confirm_vehicle_rf: (rf) =>
+      rf
+        ? "Учёт ТС: Россия — далее загрузим СТС"
+        : "Учёт ТС: иностранное — далее техпаспорт (лицевая и оборот)",
+
     ask_city:
       "В каком городе будешь выполнять заказы? Можешь нажать кнопку или написать город текстом. Если городов несколько — укажи основной.",
 
@@ -218,6 +246,17 @@ const BK_STRINGS = {
     confirm_citizenship: (yes) =>
       `Ты указал наличие гражданства РФ: ${yes ? "Да" : "Нет"}`,
 
+    ask_self_employed: "Являешься ли ты самозанятым?",
+
+    confirm_self_employed: (yes) =>
+      `Наличие самозанятости: ${yes ? "Да" : "Нет"}`,
+
+    ask_inn: "Напиши ИНН (10–13 цифр).",
+
+    err_inn_invalid: "ИНН должен быть числом из 10–13 цифр.",
+
+    confirm_inn: (inn) => `Ты указал ИНН: ${inn}`,
+
     ask_thermal: "У тебя есть термокороб?",
 
     confirm_thermal: (yes) =>
@@ -226,9 +265,12 @@ const BK_STRINGS = {
     edit_btn: "↩️ Изменить выбор",
 
     review_hint:
-      "👆🏻 Данные из твоей заявки готовы к отправке.\n\nУбедись, что все правильно и нажми «✅ Отправить».\n\nЕсли нужно изменить какое-то поле – нажми на кнопку с его названием.",
+      "👇 Данные из твоей заявки готовы к отправке.\n\nУбедись, что все правильно и нажми «✅ Отправить».\n\nЕсли нужно изменить какое-то поле — нажми на кнопку с его названием.",
 
     submit_btn: "✅ Отправить",
+
+    summary_vehicle_rf: "РФ — СТС",
+    summary_vehicle_foreign: "Иностранное ТС — техпаспорт",
 
     btn_continue: "Продолжить 👉",
 
@@ -241,14 +283,64 @@ const BK_STRINGS = {
     ask_sts_front:
       "Отправь ОДНО фото СТС автомобиля с передней стороны",
 
+    ask_tech_passport_front:
+      "Отправь ОДНО фото лицевой стороны техпаспорта иностранного ТС",
+
+    ask_tech_passport_back:
+      "Отправь ОДНО фото оборота техпаспорта иностранного ТС",
+
+    confirm_tech_passport_front:
+      "✅ Лицевая сторона техпаспорта загружена\n\nПроверь читаемость и нажми «Продолжить 👉» или пришли другое фото.",
+
+    confirm_tech_passport_back:
+      "✅ Оборот техпаспорта загружен\n\nПроверь читаемость и нажми «Продолжить 👉» или пришли другое фото.",
+
     confirm_sts_uploaded:
       "✅ Фото СТС автомобиля загружено\n\nУбедись, что на фото хорошо видны и читабельны все поля и нажми кнопку «Продолжить 👉»\n\nлибо отправь другое фото СТС автомобиля с передней стороны для замены",
+
+    ask_truck_dimensions:
+      "Выбери габариты грузового отсека своего авто длина/ширина/высота",
+
+    truck_dim_btn_S: "S - от 170х100х90 см.",
+    truck_dim_btn_M: "M - от 260х130х150 см.",
+    truck_dim_btn_L: "L - от 380х180х180 см.",
+    truck_dim_btn_XL: "XL - от 400х190х200 см.",
+    truck_dim_btn_XXL: "XXL - от 500х200х200 см.",
+
+    confirm_truck_dimensions: (label) => `Вы указали габариты авто: ${label}`,
+
+    ask_truck_payload:
+      "Укажи грузоподъемность грузового отсека в кг\n\nНапример:\n2300",
+
+    err_truck_payload_number: "Напиши грузоподъемность числом в кг (например 2300).",
+
+    confirm_truck_payload: (kg) =>
+      `Вы указали грузоподъемность: ${new Intl.NumberFormat("ru-RU").format(kg)}`,
+
+    ask_truck_loaders: "Укажи количество грузчиков.",
+
+    truck_loader_btn_0: "🙅‍♂️ Ни одного",
+    truck_loader_btn_1: "🙋‍♂️ Один",
+    truck_loader_btn_2: "🙋‍♂️🙋‍♂️ Два",
+
+    confirm_truck_loaders: (n) => {
+      const labels = ["🙅‍♂️ Ни одного", "🙋‍♂️ Один", "🙋‍♂️🙋‍♂️ Два"];
+      return `Вы указали количество грузчиков: ${labels[n] ?? n}`;
+    },
+
+    ask_truck_branding: "Есть ли у авто оклейка (брендинг) кузова?",
+
+    confirm_truck_branding: (yes) =>
+      `Вы указали наличие оклейки: ${yes ? "Да" : "Нет"}`,
 
     passport_legal_block:
       "В соответствии с новым требованием законодательства от 05.02.2025, чтобы подключить тебя в парк — мы должны убедиться, что ты отсутствуешь в реестре контролируемых лиц.\n\nОтправь фото разворота паспорта\n\nⓘ Подключение только с 16 лет",
 
+    passport_legal_block_bike:
+      "Отправь фото разворота паспорта\n\nⓘ Подключение только с 16 лет",
+
     confirm_passport_uploaded:
-      "✅ Фото загружено. нажми кнопку «Продолжить👉» либо отправь другое фото, если хочешь заменить",
+      "✅ Фото загружено\n\nнажми кнопку «Продолжить 👉»\n\nлибо отправь другое фото, если хочешь заменить",
 
     doc_line_passport_spread: "✅ Фото разворота паспорта Медиа (1 шт.)",
 
@@ -287,6 +379,15 @@ const BK_STRINGS = {
       passport_foreign: "Иностранцы паспорт",
       passport_rf: "Паспорт",
       passport: "Паспорт",
+      vehicle: "Учёт ТС / авто",
+      truck_dims: "Грузовое габариты",
+      truck_payload: "Грузовое грузоподъемность",
+      truck_loaders: "Количество грузчиков",
+      truck_wrap: "Грузовое оклейка",
+      self_employed: "Самозанятость",
+      inn: "ИНН",
+      bike_thermal: "Вело термокороб",
+      bike_passport: "Вело паспорт",
     },
 
     summary_yes: "Да",
@@ -637,17 +738,75 @@ export function buildBkSummaryI18n(lang, profile) {
   if (bk.categoryLabel) {
     lines.push(`${n++}. ${T.category}: ${bk.categoryLabel}`);
   }
+  if (bk.categoryKey === "car" && typeof bk.vehicleRf === "boolean") {
+    const vLabel = bk.vehicleRf
+      ? tBK(lang, "summary_vehicle_rf")
+      : tBK(lang, "summary_vehicle_foreign");
+    lines.push(`${n++}. ${T.vehicle}: ${vLabel}`);
+  }
   if (profile.city) {
     lines.push(`${n++}. ${T.city}: ${profile.city}`);
   }
   if (typeof bk.rfCitizen === "boolean") {
     lines.push(`${n++}. ${T.citizenship}: ${bk.rfCitizen ? y : no}`);
   }
+  if (bk.categoryKey === "bike") {
+    if (typeof bk.selfEmployed === "boolean") {
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "self_employed")}: ${
+          bk.selfEmployed ? y : no
+        }`
+      );
+    }
+    if (bk.selfEmployed === true && bk.inn) {
+      lines.push(`${n++}. ${summaryTitle(lg, "inn")}: ${bk.inn}`);
+    }
+    if (typeof bk.hasThermal === "boolean") {
+      const thLabel = bk.hasThermal ? y : tBK(lang, "summary_thermal_no");
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "bike_thermal")}: ${thLabel}`
+      );
+    }
+  }
+  if (bk.categoryKey === "truck") {
+    if (bk.truckDimensionLabel) {
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "truck_dims")}: ${bk.truckDimensionLabel}`
+      );
+    }
+    if (bk.truckPayloadKg != null && bk.truckPayloadKg !== "") {
+      const formatted = new Intl.NumberFormat("ru-RU").format(
+        Number(bk.truckPayloadKg)
+      );
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "truck_payload")}: ${formatted}`
+      );
+    }
+    if (bk.truckLoaders != null) {
+      const loaderLabels = [
+        tBK(lang, "truck_loader_btn_0"),
+        tBK(lang, "truck_loader_btn_1"),
+        tBK(lang, "truck_loader_btn_2"),
+      ];
+      const lbl = loaderLabels[bk.truckLoaders] ?? String(bk.truckLoaders);
+      lines.push(`${n++}. ${summaryTitle(lg, "truck_loaders")}: ${lbl}`);
+    }
+    if (typeof bk.truckBranding === "boolean") {
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "truck_wrap")}: ${
+          bk.truckBranding ? y : no
+        }`
+      );
+    }
+  }
+
   if (completed.includes("passport")) {
     const passportTitle =
-      bk.rfCitizen === false
-        ? summaryTitle(lg, "passport_foreign")
-        : summaryTitle(lg, "passport_rf");
+      bk.categoryKey === "bike"
+        ? summaryTitle(lg, "bike_passport")
+        : bk.rfCitizen === false
+          ? summaryTitle(lg, "passport_foreign")
+          : summaryTitle(lg, "passport_rf");
     lines.push(`${n++}. ${passportTitle}: Медиа (1 шт.)`);
   }
   return lines.join("\n");
@@ -660,6 +819,34 @@ function interpolateStr(str, kwargs = {}) {
     s = s.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
   }
   return s;
+}
+
+/**
+ * Telefon qadami matni (BK uslubi): HTML + disclaimer havolalari (env).
+ * PRIVACY_POLICY_URL bo‘lmasa — oddiy matn, havolasiz.
+ */
+export function buildAskPhoneHtml(lang) {
+  const lg = normalizeBKLang(lang);
+  if (lg !== "ru") {
+    return { text: tBK(lg, "ask_phone"), parse_mode: undefined };
+  }
+  const body = BK_STRINGS.ru.ask_phone_body_ru;
+  const privacy = (process.env.PRIVACY_POLICY_URL || "").trim();
+  const referral = (process.env.REFERRAL_RULES_URL || "").trim() || privacy;
+  const tournament = (process.env.TOURNAMENT_RULES_URL || "").trim() || privacy;
+  const zaruba = (process.env.ZARUBA_RULES_URL || "").trim() || privacy;
+
+  if (privacy) {
+    const legal = interpolateStr(BK_STRINGS.ru.ask_phone_legal_ru_html, {
+      privacy_url: privacy,
+      referral_url: referral,
+      tournament_url: tournament,
+      zaruba_url: zaruba,
+    });
+    return { text: `${body}\n\n${legal}`, parse_mode: "HTML" };
+  }
+  const legal = BK_STRINGS.ru.ask_phone_legal_plain;
+  return { text: `${body}\n\n${legal}`, parse_mode: undefined };
 }
 
 /** Финальное сообщение после отправки заявки (ссылка на community из env). */

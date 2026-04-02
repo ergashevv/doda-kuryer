@@ -7,6 +7,8 @@ import { getPool } from "../db.js";
 const DOC_TITLE_RU = {
   license: "Водительское удостоверение (ВУ)",
   sts: "СТС — свидетельство о регистрации ТС",
+  tech_passport_front: "Техпаспорт иностранного ТС — лицевая сторона",
+  tech_passport_back: "Техпаспорт иностранного ТС — оборот",
   passport: "Паспорт (разворот)",
   bank: "Банковские реквизиты",
 };
@@ -58,8 +60,48 @@ function formatAnketaBlock(profile) {
     `📞 Телефон: ${phone}`,
     "",
     `🚗 Класс доставки: ${category}`,
+    ...(bk.categoryKey === "car" && typeof bk.vehicleRf === "boolean"
+      ? [
+          `🚙 Учёт ТС: ${bk.vehicleRf ? "РФ — СТС" : "Иностранное — техпаспорт"}`,
+        ]
+      : []),
     `🏙 Город: ${city}`,
     `🪪 Гражданство РФ: ${rf}`,
+    ...(bk.categoryKey === "truck"
+      ? [
+          "",
+          typeof bk.truckDimensionLabel === "string" && bk.truckDimensionLabel
+            ? `📐 Габариты: ${bk.truckDimensionLabel}`
+            : `📐 Габариты: —`,
+          bk.truckPayloadKg != null && bk.truckPayloadKg !== ""
+            ? `⚖️ Грузоподъемность: ${new Intl.NumberFormat("ru-RU").format(
+                Number(bk.truckPayloadKg)
+              )} кг`
+            : `⚖️ Грузоподъемность: —`,
+          bk.truckLoaders != null
+            ? `👷 Грузчики: ${[0, 1, 2].includes(bk.truckLoaders) ? ["ни одного", "один", "два"][bk.truckLoaders] : bk.truckLoaders}`
+            : `👷 Грузчики: —`,
+          typeof bk.truckBranding === "boolean"
+            ? `🏷 Оклейка / брендинг: ${bk.truckBranding ? "да" : "нет"}`
+            : `🏷 Оклейка / брендинг: —`,
+        ]
+      : []),
+    ...(bk.categoryKey === "bike"
+      ? [
+          "",
+          typeof bk.selfEmployed === "boolean"
+            ? `🧾 Самозанятость: ${bk.selfEmployed ? "да" : "нет"}`
+            : `🧾 Самозанятость: —`,
+          ...(bk.selfEmployed === true
+            ? [`#️⃣ ИНН: ${bk.inn || "—"}`]
+            : []),
+          typeof bk.hasThermal === "boolean"
+            ? `📦 Вело термокороб: ${
+                bk.hasThermal ? "да" : "нет, необходимо приобрести"
+              }`
+            : `📦 Вело термокороб: —`,
+        ]
+      : []),
   ];
   return lines.join("\n");
 }
