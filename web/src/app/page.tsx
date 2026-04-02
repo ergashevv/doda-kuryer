@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/DashboardShell";
 import { LogoutButton } from "@/components/LogoutButton";
 import { listUsers } from "@/lib/queries";
+import { sessionStateLabelUz } from "@/lib/sessionStateLabel";
 import { userDisplayName } from "@/lib/userDisplay";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +17,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardShell
-      title="Kuryerlar"
-      subtitle="Barcha ro‘yxatdan o‘tgan foydalanuvchilar (PostgreSQL)"
-      actions={<LogoutButton />}
-    >
+    <DashboardShell title="Kuryerlar" subtitle="Ro‘yxatdan o‘tgan foydalanuvchilar" actions={<LogoutButton />}>
       {error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>
       ) : (
@@ -63,8 +60,8 @@ export default async function DashboardPage() {
                         <td className="px-4 py-3">{u.phone || "—"}</td>
                         <td className="px-4 py-3">{u.city || "—"}</td>
                         <td className="px-4 py-3">{u.service || "—"}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.session_state}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.telegram_id}</td>
+                        <td className="px-4 py-3 text-slate-600">{sessionStateLabelUz(u.session_state)}</td>
+                        <td className="px-4 py-3 text-slate-700">{u.telegram_id}</td>
                         <td className="px-4 py-3 text-slate-500">
                           {u.updated_at
                             ? new Date(u.updated_at).toLocaleString("uz-UZ", {
@@ -81,11 +78,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
-      <p className="mt-6 text-xs text-slate-500">
-        REST: <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">GET /api/users</code> —{" "}
-        <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">Authorization: Bearer …</code> yoki
-        brauzer sessiyasi.
-      </p>
     </DashboardShell>
   );
 }

@@ -1,17 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { isDashboardAuthorized, unauthorizedJson } from "@/lib/dashboard-auth";
+import { getStorageRoot } from "@/lib/storage-root";
 import { getUploadedFileForUser } from "@/lib/queries";
 
 export const runtime = "nodejs";
 
-const STORAGE_ROOT = path.resolve(
-  process.env.STORAGE_PATH || path.join(process.cwd(), "uploads")
-);
-
 function safeResolvedPath(dbPath: string): string | null {
   const resolved = path.resolve(dbPath);
-  const root = path.resolve(STORAGE_ROOT);
+  const root = path.resolve(getStorageRoot());
   const prefix = root.endsWith(path.sep) ? root : `${root}${path.sep}`;
   if (resolved !== root && !resolved.startsWith(prefix)) return null;
   return resolved;
@@ -42,7 +39,15 @@ export async function GET(request: Request, context: Params) {
   if (!row) return Response.json({ error: "Not found" }, { status: 404 });
 
   const safe = safeResolvedPath(row.local_path);
-  if (!safe) return Response.json({ error: "Invalid path" }, { status: 400 });
+  if (!safe) {
+    return Response.json(
+      {
+        error:
+          "Fayl yo‘li xavfsiz emas yoki STORAGE_PATH mos emas. web/.env da STORAGE_PATH ni bot bilan bir xil qiling (lokalda odatda ../uploads yoki to‘liq yo‘l).",
+      },
+      { status: 400 }
+    );
+  }
 
   let buf: Buffer;
   try {

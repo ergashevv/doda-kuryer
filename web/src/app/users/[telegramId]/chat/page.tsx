@@ -27,8 +27,8 @@ export default async function UserChatPage(props: Params) {
 
   return (
     <DashboardShell
-      title={`${title} — chat`}
-      subtitle={`${messages.length} xabar · Telegram ID: ${String(profile.telegram_id)}`}
+      title={`${title} — suhbat`}
+      subtitle={messages.length ? `${messages.length} ta xabar` : "Xabar yo‘q"}
       backHref={`/users/${telegramId}`}
       backLabel="← Profil"
       actions={<LogoutButton />}

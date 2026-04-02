@@ -44,18 +44,6 @@ export function ChatMessages({
           day: "2-digit",
           month: "2-digit",
         });
-        const extra =
-          m.extra && Object.keys(m.extra).length > 0 ? (
-            <span
-              className={
-                v === "light"
-                  ? "mt-1 block font-mono text-[10px] leading-tight text-slate-500"
-                  : "mt-1 block font-mono text-[10px] leading-tight opacity-70"
-              }
-            >
-              {JSON.stringify(m.extra)}
-            </span>
-          ) : null;
 
         if (isUser) {
           if (v === "light") {
@@ -65,7 +53,6 @@ export function ChatMessages({
                   <p className="whitespace-pre-wrap break-words">
                     {humanizeChatMessageText(m.text, messageLang)}
                   </p>
-                  {extra}
                   <p className="mt-1 text-right text-[11px] text-sky-100/90">{time}</p>
                 </div>
               </div>
@@ -77,7 +64,6 @@ export function ChatMessages({
                 <p className="whitespace-pre-wrap break-words">
                   {humanizeChatMessageText(m.text, messageLang)}
                 </p>
-                {extra}
                 <p className="mt-1 text-right text-[11px] text-white/55">{time}</p>
               </div>
             </div>
@@ -91,7 +77,6 @@ export function ChatMessages({
                 <p className="whitespace-pre-wrap break-words">
                   {humanizeChatMessageText(m.text, messageLang)}
                 </p>
-                {extra}
                 <p className="mt-1 text-[11px] text-slate-400">{time}</p>
               </div>
             </div>
@@ -104,7 +89,6 @@ export function ChatMessages({
               <p className="whitespace-pre-wrap break-words">
                 {humanizeChatMessageText(m.text, messageLang)}
               </p>
-              {extra}
               <p className="mt-1 text-[11px] text-zinc-500">{time}</p>
             </div>
           </div>

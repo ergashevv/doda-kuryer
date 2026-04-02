@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+
 import { getPool } from "./db";
 
 export type UserProfileRow = {
@@ -101,4 +103,40 @@ export async function getUploadedFileForUser(
   );
   if (!r.rows[0]) return null;
   return bigIntToString(r.rows[0]) as UploadedFileRow;
+}
+
+/**
+ * Moderator: chat, yuklangan fayllar (DB + disk), profil — to‘liq olib tashlash.
+ */
+export async function clearUserData(telegramId: string): Promise<boolean> {
+  const id = BigInt(telegramId);
+  const pool = getPool();
+  const client = await pool.connect();
+  let paths: string[] = [];
+  try {
+    await client.query("BEGIN");
+    const files = await client.query<{ local_path: string }>(
+      `SELECT local_path FROM uploaded_files WHERE telegram_user_id = $1`,
+      [id]
+    );
+    paths = files.rows.map((r) => r.local_path);
+    await client.query(`DELETE FROM chat_messages WHERE telegram_user_id = $1`, [id]);
+    await client.query(`DELETE FROM uploaded_files WHERE telegram_user_id = $1`, [id]);
+    const del = await client.query(`DELETE FROM user_profiles WHERE telegram_id = $1`, [id]);
+    await client.query("COMMIT");
+    const ok = (del.rowCount ?? 0) > 0;
+    for (const p of paths) {
+      try {
+        await fs.unlink(p);
+      } catch {
+        /* fayl yo‘q yoki disk */
+      }
+    }
+    return ok;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 }

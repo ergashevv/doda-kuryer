@@ -3,16 +3,12 @@ import { Input } from "telegraf";
 import { docLabel } from "../i18n.js";
 import { getPool } from "../db.js";
 
-const SERVICE_RU = {
-  yandex_eda: "Яндекс Еда",
-  yandex_lavka: "Яндекс Лавка",
-  taximeter: "Таксометр (Экспресс) Парк",
-};
-
-const TARIFF_RU = {
-  foot_bike: "Пешком / велосипед",
-  car: "Авто",
-  truck: "Грузовой",
+/** To‘liq nomlar — har bir rasm ostida tushunarli */
+const DOC_TITLE_RU = {
+  license: "Водительское удостоверение (ВУ)",
+  sts: "СТС — свидетельство о регистрации ТС",
+  passport: "Паспорт (разворот)",
+  bank: "Банковские реквизиты",
 };
 
 function cap(s, max = 1024) {
@@ -27,29 +23,92 @@ export function getDocsGroupChatId() {
   return Number.isFinite(n) ? n : null;
 }
 
-function formatAdminProfile(profile) {
-  const un = profile.username ? `@${profile.username}` : "—";
-  const name = [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "—";
-  const phone = profile.phone || "—";
-  const city = profile.city || "—";
-  const svc = SERVICE_RU[profile.service] || profile.service || "—";
-  const trf = TARIFF_RU[profile.tariff] || profile.tariff || "—";
-  return [
-    `TG: ${un}`,
-    `Имя: ${name}`,
-    `Тел: ${phone}  |  Город: ${city}`,
-    `Сервис: ${svc}  |  Тариф: ${trf}`,
-  ].join("\n");
+function docTitleRu(docKey) {
+  return DOC_TITLE_RU[docKey] || docLabel("ru", docKey);
 }
 
-function docCaptionShort(docKey) {
-  const ru = docLabel("ru", docKey);
-  return `Документ: ${ru}`;
+function contactLine(profile) {
+  const name =
+    [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "";
+  const un = profile.username ? `@${profile.username}` : "";
+  if (name && un) return `${name} · ${un}`;
+  if (name) return name;
+  if (un) return un;
+  return "—";
+}
+
+/** Guruh uchun: faqat operatorga kerakli, ID va ichki kodlarsiz */
+function formatAnketaBlock(profile) {
+  const bk = profile?.session_data?.bk || {};
+  const name =
+    [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "—";
+  const un = profile.username ? `@${profile.username}` : "—";
+  const phone = profile.phone || "—";
+  const city = profile.city || "—";
+  const category = bk.categoryLabel || "—";
+  const rf =
+    typeof bk.rfCitizen === "boolean" ? (bk.rfCitizen ? "Да" : "Нет") : "—";
+
+  const lines = [
+    "━━━━━━━━━━━━━━━━━━━━",
+    "📋 АНКЕТА",
+    "━━━━━━━━━━━━━━━━━━━━",
+    `👤 Имя: ${name}`,
+    `📱 Telegram: ${un}`,
+    `📞 Телефон: ${phone}`,
+    "",
+    `🚗 Класс доставки: ${category}`,
+    `🏙 Город: ${city}`,
+    `🪪 Гражданство РФ: ${rf}`,
+  ];
+  return lines.join("\n");
+}
+
+function formatDocsIntroBlock(expectedCount) {
+  if (expectedCount <= 0) {
+    return [
+      "",
+      "━━━━━━━━━━━━━━━━━━━━",
+      "📎 ДОКУМЕНТЫ",
+      "━━━━━━━━━━━━━━━━━━━━",
+      "Файлы по заявке не прикреплены (проверьте загрузки).",
+    ].join("\n");
+  }
+  const lines = [
+    "",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "📎 ДОКУМЕНТЫ",
+    "━━━━━━━━━━━━━━━━━━━━",
+    `Вложений: ${expectedCount} (ниже — по порядку, как в анкете).`,
+  ];
+  return lines.join("\n");
+}
+
+/** Faqat tartib raqami va hujjat nomi + qisqa kontakt (ID yo‘q) */
+function formatDocCaption(index, total, docKey, profile) {
+  const title = docTitleRu(docKey);
+  const who = contactLine(profile);
+  return cap([`[${index}/${total}] ${title}`, "", who].join("\n"));
+}
+
+function formatBankBlock(bankText) {
+  return cap(
+    [
+      "━━━━━━━━━━━━━━━━━━━━",
+      "🏦 БАНК (текст из заявки)",
+      "━━━━━━━━━━━━━━━━━━━━",
+      bankText,
+    ].join("\n\n")
+  );
+}
+
+function formatFooter() {
+  return "━━━━━━━━━━━━━━━━━━━━\n✅ Заявка принята, все файлы получены\n━━━━━━━━━━━━━━━━━━━━";
 }
 
 /**
- * Barcha hujjatlar yig‘ilgach — bitta «paket»: profil, keyin DB dagi fayllar tartibda, oxirida bank.
- * Yig‘ish davomida guruhga hech narsa yuborilmaydi.
+ * Rasmlar/hujjatlar: completed_docs tartibi bo‘yicha DB dan yuklanadi.
+ * Diskda yo‘q fayl o‘tkazib yuboriladi (log).
  */
 export async function notifyGroupFullSubmission(telegram, profile) {
   const chatId = getDocsGroupChatId();
@@ -74,32 +133,45 @@ export async function notifyGroupFullSubmission(telegram, profile) {
       rows = r.rows;
     }
 
+    const missingOnDisk = rows.filter((r) => !r.local_path || !fs.existsSync(r.local_path));
+    if (missingOnDisk.length > 0) {
+      console.warn(
+        "[groupInbox] missing files on disk:",
+        missingOnDisk.map((r) => r.doc_type).join(", ")
+      );
+    }
+
     const header = [
-      `✅ Новая заявка — все документы`,
-      `──────────────`,
-      formatAdminProfile(profile),
-      `──────────────`,
-      `Файлы ниже по порядку.`,
+      "🔔 Новая заявка · Doda taxi",
+      "",
+      formatAnketaBlock(profile),
+      formatDocsIntroBlock(rows.filter((r) => r.local_path && fs.existsSync(r.local_path)).length),
     ].join("\n");
     await telegram.sendMessage(chatId, cap(header));
 
-    for (const row of rows) {
-      if (!row.local_path || !fs.existsSync(row.local_path)) continue;
-      const caption = cap(docCaptionShort(row.doc_type));
+    const validRows = rows.filter((r) => r.local_path && fs.existsSync(r.local_path));
+    const total = validRows.length;
+    for (let i = 0; i < validRows.length; i++) {
+      const row = validRows[i];
+      const caption = formatDocCaption(i + 1, total, row.doc_type, profile);
       const lower = row.local_path.toLowerCase();
       const asPdf = lower.endsWith(".pdf");
       if (asPdf) {
-        await telegram.sendDocument(chatId, Input.fromLocalFile(row.local_path), { caption });
+        await telegram.sendDocument(chatId, Input.fromLocalFile(row.local_path), {
+          caption,
+        });
       } else {
-        await telegram.sendPhoto(chatId, Input.fromLocalFile(row.local_path), { caption });
+        await telegram.sendPhoto(chatId, Input.fromLocalFile(row.local_path), {
+          caption,
+        });
       }
     }
 
     if (completedDocs.includes("bank") && bankText) {
-      await telegram.sendMessage(chatId, cap([`Банк (текст)`, bankText].join("\n\n")));
+      await telegram.sendMessage(chatId, formatBankBlock(bankText));
     }
 
-    await telegram.sendMessage(chatId, `✅ Загрузка завершена`);
+    await telegram.sendMessage(chatId, formatFooter());
   } catch (e) {
     console.error("[groupInbox] notifyGroupFullSubmission:", e?.message || e);
   }

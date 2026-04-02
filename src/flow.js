@@ -40,3 +40,8 @@ export function nextPending(completed, tariff) {
   }
   return null;
 }
+
+/** Doda taxi onboarding: barcha kategoriyalar uchun легковое bilan bir xil — VU → СТС → паспорт */
+export function dodaDocSequence(_categoryKey) {
+  return ["license", "sts", "passport"];
+}

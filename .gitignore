@@ -11,3 +11,7 @@ uploads/
 .mypy_cache/
 *.egg-info/
 dist/
+
+# lokal nusxalar — `assets/placeholders/` da bor
+/паспорт.jpg
+/стс авто.jpg

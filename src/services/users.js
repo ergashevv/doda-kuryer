@@ -12,7 +12,7 @@ export async function ensureProfile(client, telegramId) {
   if (p) return p;
   await client.query(
     `INSERT INTO user_profiles (telegram_id, language, session_state, session_data)
-     VALUES ($1, 'uz', 'language', '{}'::jsonb)`,
+     VALUES ($1, 'ru', 'bk_main', '{}'::jsonb)`,
     [telegramId]
   );
   const r = await client.query("SELECT * FROM user_profiles WHERE telegram_id = $1", [
@@ -25,8 +25,8 @@ export async function resetRegistration(client, telegramId) {
   await ensureProfile(client, telegramId);
   const r = await client.query(
     `UPDATE user_profiles
-     SET language = 'uz', service = NULL, tariff = NULL, city = NULL, phone = NULL,
-         session_state = 'language', session_data = '{}'::jsonb, updated_at = NOW()
+     SET language = 'ru', service = NULL, tariff = NULL, city = NULL, phone = NULL,
+         session_state = 'bk_main', session_data = '{"bk":{}}'::jsonb, updated_at = NOW()
      WHERE telegram_id = $1
      RETURNING *`,
     [telegramId]
