@@ -61,9 +61,19 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "kz_doc" });
   });
 
-  test("TM + viza turi yoq → tm_visa", () => {
+  test("TM: birinchi qadam — pasport (viza turi keyinroq, TZ)", () => {
     const yx = baseYx({ citizen: "tm", tmVisaKind: null });
-    assert.deepEqual(getYandexUiState(yx, 0), { ui: "tm_visa" });
+    const st = getYandexUiState(yx, 0);
+    assert.equal(st.ui, "step");
+    assert.equal(st.step.docType, "yx_tm_pass");
+  });
+
+  test("TM: pasportdan keyin — viza turi tanlovi (choice)", () => {
+    const yx = baseYx({ citizen: "tm", tmVisaKind: null });
+    const st = getYandexUiState(yx, 1);
+    assert.equal(st.ui, "step");
+    assert.equal(st.step.t, "choice");
+    assert.equal(st.step.choiceId, "visa_kind");
   });
 
   test("RF liniyasi: birinchi qadam — pasport beti", () => {
@@ -130,6 +140,20 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     const texts = line.filter((s) => s.t === "text");
     assert.ok(texts.some((s) => s.colKey === "yx_col_tm_contact"));
   });
+
+  test("TM: tmVisaKind tanlanguncha viza foto qadami yoq", () => {
+    const line = buildYxLine(baseYx({ citizen: "tm", tmVisaKind: null }));
+    assert.ok(!line.some((s) => s.docType === "yx_tm_visa"));
+  });
+
+  test("TM: tmkind tanlangach — viza surati qadami bor", () => {
+    const line = buildYxLine(
+      baseYx({ citizen: "tm", tmVisaKind: "study" })
+    );
+    const visaIdx = line.findIndex((s) => s.docType === "yx_tm_visa");
+    assert.ok(visaIdx > 0);
+    assert.equal(line[0].docType, "yx_tm_pass");
+  });
 });
 
 describe("Callback data — handler bilan mos payload", () => {
@@ -154,9 +178,9 @@ describe("Callback data — handler bilan mos payload", () => {
     assert.equal(yxPayload(`${PREFIX_YX}kz:id`).slice(3) === "id", true);
   });
 
-  test("bk_YX:tm:work", () => {
-    const p = yxPayload(`${PREFIX_YX}tm:work`);
-    assert.equal(p.slice(3) === "work", true);
+  test("bk_YX:tmkind:work", () => {
+    const p = yxPayload(`${PREFIX_YX}tmkind:work`);
+    assert.equal(p.slice(7) === "work", true);
   });
 
   test("bk_YX:ram:reg → reg", () => {

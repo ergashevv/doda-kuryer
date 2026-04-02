@@ -153,11 +153,14 @@ function lineRf(yx) {
   ];
 }
 
+/** TZ: pasport → tur viza (tugma) → foto viza → reg/Amina → mig → telefon → rekvizitlar. */
 function lineTm(yx) {
-  const L = [
-    photo("yx_tm_pass", "yx_p_tm_pass"),
-    photo("yx_tm_visa", "yx_p_tm_visa"),
-  ];
+  const L = [photo("yx_tm_pass", "yx_p_tm_pass")];
+  if (!yx.tmVisaKind) {
+    L.push(choice("visa_kind", "yx_ask_tm_visa"));
+    return L;
+  }
+  L.push(photo("yx_tm_visa", "yx_p_tm_visa"));
   if (!yx.regAmina) {
     L.push(choice("ram_tm", "yx_p_ram_choice"));
     return L;
@@ -195,7 +198,6 @@ export function getYandexUiState(yx, completedLen) {
   if (!yx.citizen) return { ui: "citizen" };
   if (yx.citizen === "uz_tj" && !yx.uzDocKind) return { ui: "uz_doc" };
   if (yx.citizen === "kz_kg" && !yx.kzDocKind) return { ui: "kz_doc" };
-  if (yx.citizen === "tm" && !yx.tmVisaKind) return { ui: "tm_visa" };
   const line = buildYxLine(yx);
   if (completedLen >= line.length) return { ui: "done" };
   return { ui: "step", step: line[completedLen] };

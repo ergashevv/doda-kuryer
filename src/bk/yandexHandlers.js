@@ -72,11 +72,12 @@ export function yxKzDocInline(lang) {
   ]);
 }
 
-export function yxTmVisaInline(lang) {
+/** Viza turi — TZ: pasportdan keyin (callback `tmkind`, `completed_yx` saqlanadi). */
+export function yxTmVisaKindInline(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.inlineKeyboard([
-    [Markup.button.callback(tBK(lg, "yx_tm_work"), "bk_YX:tm:work")],
-    [Markup.button.callback(tBK(lg, "yx_tm_study"), "bk_YX:tm:study")],
+    [Markup.button.callback(tBK(lg, "yx_tm_work"), "bk_YX:tmkind:work")],
+    [Markup.button.callback(tBK(lg, "yx_tm_study"), "bk_YX:tmkind:study")],
   ]);
 }
 
@@ -120,10 +121,6 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     await ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxKzDocInline(lg));
     return;
   }
-  if (st.ui === "tm_visa") {
-    await ctx.reply(tBK(lg, "yx_ask_tm_visa"), yxTmVisaInline(lg));
-    return;
-  }
   if (st.ui === "done") {
     const summary = buildYxReviewSummary(lg, profile);
     await updateProfile(client, uid, { session_state: "bk_yx_review" });
@@ -136,7 +133,11 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     return;
   }
   if (st.ui === "step" && st.step.t === "choice") {
-    await ctx.reply(tBK(lg, st.step.promptKey), yxRamInline(lg));
+    const kb =
+      st.step.choiceId === "visa_kind"
+        ? yxTmVisaKindInline(lg)
+        : yxRamInline(lg);
+    await ctx.reply(tBK(lg, st.step.promptKey), kb);
     return;
   }
   if (st.ui === "step") {
@@ -410,11 +411,11 @@ export async function handleYandexCallback(ctx, client, uid, data) {
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
-  if (payload.startsWith("tm:")) {
-    yx.tmVisaKind = payload.slice(3) === "work" ? "work" : "study";
+  if (payload.startsWith("tmkind:")) {
+    yx.tmVisaKind = payload.slice(7) === "work" ? "work" : "study";
     yx.regAmina = null;
     await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: [] },
+      session_data: { ...td, yx, completed_yx: completed },
     });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
