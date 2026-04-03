@@ -188,124 +188,124 @@ const BK_STRINGS = {
     group_value_dash: "—",
 
     ask_service:
-      "Выберите сервис подключения кнопкой ниже.",
+      "Ulanish servisini pastdagi tugma orqali tanlang.",
 
     yx_final_thanks:
-      "Благодарим за предоставленные сведения. Заявка принята; мы свяжемся с вами в ближайшее время.",
+      "Ma'lumotlarni yuborganingiz uchun rahmat. Ariza qabul qilindi, tez orada siz bilan bog'lanamiz.",
 
     yx_review_use_buttons:
-      "На этом шаге доступны только кнопки под сообщением (в т.ч. «✅ Отправить»).",
+      "Bu bosqichda faqat xabar ostidagi tugmalar ishlaydi (jumladan «✅ Yuborish»).",
 
     yx_need_video:
-      "На этом шаге отправьте короткое видео (кружок не подойдёт).",
+      "Bu bosqichda qisqa video yuboring (video-doira mos kelmaydi).",
 
-    group_header_yandex: "🔔 Новая заявка · Яндекс Лавка / Еда",
-    group_label_yandex_service: "🛒 Сервис:",
-    group_label_yandex_city: "🏙 Город:",
-    group_label_yandex_citizen: "🪪 Гражданство / статус:",
-    group_label_yandex_uzdoc: "📄 Тип документа (УЗ/ТЖ):",
-    group_label_yandex_kzdoc: "📄 Документ КЗ/КГ:",
-    group_label_yandex_tmvisa: "📄 Виза ТМ:",
-    group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
-    group_caption_yx_generic: "Вложение заявки (Яндекс)",
+    group_header_yandex: "🔔 Yangi ariza · Yandex Lavka / Eda",
+    group_label_yandex_service: "🛒 Servis:",
+    group_label_yandex_city: "🏙 Shahar:",
+    group_label_yandex_citizen: "🪪 Fuqarolik / status:",
+    group_label_yandex_uzdoc: "📄 Hujjat turi (UZ/TJ):",
+    group_label_yandex_kzdoc: "📄 Hujjat (KZ/KG):",
+    group_label_yandex_tmvisa: "📄 TM vizasi:",
+    group_yandex_text_heading: "📝 MATN MAYDONLARI",
+    group_caption_yx_generic: "Ariza ilovasi (Yandex)",
 
-    yx_btn_doda: "Ru Park Doda курьер",
-    yx_btn_lavka: "Яндекс Лавка",
-    yx_btn_eats: "Яндекс Еда",
+    yx_btn_doda: "Ru Park Doda kuryer",
+    yx_btn_lavka: "Yandex Lavka",
+    yx_btn_eats: "Yandex Eda",
 
-    yx_city_msk: "Москва",
-    yx_city_spb: "Санкт-Петербург",
+    yx_city_msk: "Moskva",
+    yx_city_spb: "Sankt-Peterburg",
 
-    yx_ask_city: "Укажите город работы кнопкой ниже.",
-    yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
-    yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc: "Выберите тип документа (Казахстан / Кыргызстан).",
+    yx_ask_city: "Ishlaydigan shaharingizni pastdagi tugma orqali tanlang.",
+    yx_ask_citizen: "Status / fuqaroligingizni pastdagi tugma orqali tanlang.",
+    yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
+    yx_ask_kz_doc: "Hujjat turini tanlang (Qozog'iston / Qirg'iziston).",
     yx_ask_tm_visa:
-      "Выберите тип визы кнопкой ниже (шаг после загрузки паспорта).",
+      "Viza turini pastdagi tugma orqali tanlang (pasportdan keyingi bosqich).",
 
-    yx_cit_uz_tj: "Узбекистан / Таджикистан",
-    yx_cit_kz_kg: "Казахстан / Кыргызстан",
-    yx_cit_rf: "Гражданин РФ",
-    yx_cit_tm: "Туркменистан",
+    yx_cit_uz_tj: "O'zbekiston / Tojikiston",
+    yx_cit_kz_kg: "Qozog'iston / Qirg'iziston",
+    yx_cit_rf: "RF fuqarosi",
+    yx_cit_tm: "Turkmaniston",
 
-    yx_doc_patent: "Патент",
-    yx_doc_vnzh: "ВНЖ / РВП",
-    yx_doc_student: "Студент",
+    yx_doc_patent: "Patent",
+    yx_doc_vnzh: "VNJ / RVP",
+    yx_doc_student: "Talaba",
 
-    yx_kz_pass: "Паспорт",
-    yx_kz_id: "Удостоверение личности",
+    yx_kz_pass: "Pasport",
+    yx_kz_id: "Shaxsni tasdiqlovchi guvohnoma",
 
-    yx_tm_work: "Рабочая виза",
-    yx_tm_study: "Учебная виза",
+    yx_tm_work: "Ishchi viza",
+    yx_tm_study: "O'quv vizasi",
 
-    yx_ram_reg: "Регистрация",
-    yx_ram_amina: "Амина",
+    yx_ram_reg: "Registratsiya",
+    yx_ram_amina: "Amina",
 
     yx_p_ram_choice:
-      "Укажите: регистрация по месту пребывания или документ «Амина» — кнопкой ниже.",
+      "Quyidagidan birini tanlang: yashash joyi bo'yicha registratsiya yoki «Amina» hujjati.",
 
     yx_review_hint:
-      "Проверьте данные. Для отправки нажмите «✅ Отправить».",
+      "Ma'lumotlarni tekshiring. Yuborish uchun «✅ Yuborish»ni bosing.",
 
-    yx_rev_title: "Проверка заявки (Яндекс)",
-    yx_rev_service: "Сервис",
-    yx_rev_city: "Город",
-    yx_rev_citizen: "Статус",
-    yx_rev_uzdoc: "Документ УЗ/ТЖ",
-    yx_rev_kzdoc: "Документ КЗ/КГ",
-    yx_rev_tmvisa: "Виза ТМ",
-    yx_rev_files: "Шагов пройдено (включая текстовые)",
+    yx_rev_title: "Arizani tekshirish (Yandex)",
+    yx_rev_service: "Servis",
+    yx_rev_city: "Shahar",
+    yx_rev_citizen: "Status",
+    yx_rev_uzdoc: "UZ/TJ hujjati",
+    yx_rev_kzdoc: "KZ/KG hujjati",
+    yx_rev_tmvisa: "TM vizasi",
+    yx_rev_files: "Yakunlangan bosqichlar (matnlar bilan birga)",
 
-    yx_use_buttons: "На этом шаге выберите вариант кнопкой ниже.",
-    yx_need_text: "Отправьте текст одним сообщением (без фото и файлов).",
-    yx_bad_text: "Проверьте формат: для карты — 16 цифр; для телефона — номер РФ; поле не должно быть пустым.",
-    yx_file_ok: "Принято. Переходим к следующему шагу.",
+    yx_use_buttons: "Bu bosqichda variantni pastdagi tugma orqali tanlang.",
+    yx_need_text: "Matnni bitta xabar bilan yuboring (foto yoki faylsiz).",
+    yx_bad_text: "Formatni tekshiring: karta uchun 16 raqam; telefon uchun RF raqami; maydon bo'sh bo'lmasin.",
+    yx_file_ok: "Qabul qilindi. Keyingi bosqichga o'tamiz.",
 
-    yx_lbl_yx_col_req_text: "Реквизиты (текст)",
-    yx_lbl_yx_col_card16: "Номер карты",
-    yx_lbl_yx_col_phone_bank: "Телефон для банка",
-    yx_lbl_yx_col_contact_phone: "Контактный телефон",
-    yx_lbl_yx_col_tm_contact: "Контактный телефон",
+    yx_lbl_yx_col_req_text: "Rekvizitlar (matn)",
+    yx_lbl_yx_col_card16: "Karta raqami",
+    yx_lbl_yx_col_phone_bank: "Bank uchun telefon",
+    yx_lbl_yx_col_contact_phone: "Kontakt telefoni",
+    yx_lbl_yx_col_tm_contact: "Kontakt telefoni",
 
     yx_p_req_video:
-      "Отправьте короткое видео с реквизитами банковской карты (без лица и паспорта).",
+      "Bank kartasi rekvizitlari bilan qisqa video yuboring (yuz va pasportsiz).",
     yx_p_req_photo:
-      "Отправьте фото с реквизитами банковской карты (без лица и паспорта).",
+      "Bank kartasi rekvizitlari bilan foto yuboring (yuz va pasportsiz).",
     yx_p_req_text:
-      "Одним сообщением укажите банковские реквизиты (как в инструкции сервиса).",
-    yx_p_card16: "Введите номер банковской карты — 16 цифр подряд (можно с пробелами).",
+      "Bank rekvizitlarini bitta xabarda yuboring (servis yo'riqnomasiga ko'ra).",
+    yx_p_card16: "Bank karta raqamini kiriting — ketma-ket 16 raqam (bo'shliq bilan ham mumkin).",
     yx_p_phone_bank:
-      "Укажите номер телефона, привязанный к банку (формат РФ: +7… или 8…).",
+      "Bankka ulangan telefon raqamini kiriting (RF formati: +7… yoki 8…).",
 
-    yx_p_uz_pat_pass: "Фото паспорта (разворот с фото).",
-    yx_p_uz_pat_front: "Фото патента — лицевая сторона.",
-    yx_p_uz_pat_back: "Фото патента — оборот.",
-    yx_p_reg_f: "Фото регистрации — лицевая сторона.",
-    yx_p_reg_b: "Фото регистрации — оборот.",
-    yx_p_amina: "Фото документа «Амина».",
-    yx_p_mig: "Фото миграционной карты.",
-    yx_p_pay_ph: "Фото чека / подтверждения оплаты патента.",
-    yx_p_pay_file: "Фото или PDF квитанции об оплате патента.",
+    yx_p_uz_pat_pass: "Pasport fotosi (rasmli sahifa).",
+    yx_p_uz_pat_front: "Patent fotosi — old tomoni.",
+    yx_p_uz_pat_back: "Patent fotosi — orqa tomoni.",
+    yx_p_reg_f: "Registratsiya fotosi — old tomoni.",
+    yx_p_reg_b: "Registratsiya fotosi — orqa tomoni.",
+    yx_p_amina: "«Amina» hujjati fotosi.",
+    yx_p_mig: "Migratsion karta fotosi.",
+    yx_p_pay_ph: "Patent to'lovi cheki / tasdig'i fotosi.",
+    yx_p_pay_file: "Patent to'lovi kvitansiyasi (foto yoki PDF).",
 
-    yx_p_vnzh_f: "Фото ВНЖ / РВП — лицевая сторона.",
-    yx_p_vnzh_b: "Фото ВНЖ / РВП — оборот.",
+    yx_p_vnzh_f: "VNJ / RVP fotosi — old tomoni.",
+    yx_p_vnzh_b: "VNJ / RVP fotosi — orqa tomoni.",
 
-    yx_p_st_bilet: "Фото студенческого билета.",
-    yx_p_st_spravka: "Фото справки с места учёбы.",
-    yx_p_st_pass: "Фото паспорта (разворот с фото).",
+    yx_p_st_bilet: "Talabalik guvohnomasi fotosi.",
+    yx_p_st_spravka: "O'qish joyidan ma'lumotnoma fotosi.",
+    yx_p_st_pass: "Pasport fotosi (rasmli sahifa).",
 
-    yx_p_kz_pass_face: "Фото паспорта (разворот с фото).",
-    yx_p_kz_id_f: "Фото удостоверения личности — лицевая сторона.",
-    yx_p_kz_id_b: "Фото удостоверения личности — оборот.",
+    yx_p_kz_pass_face: "Pasport fotosi (rasmli sahifa).",
+    yx_p_kz_id_f: "Shaxsni tasdiqlovchi guvohnoma — old tomoni.",
+    yx_p_kz_id_b: "Shaxsni tasdiqlovchi guvohnoma — orqa tomoni.",
 
-    yx_p_rf_pass_face: "Фото паспорта РФ (разворот с фото).",
-    yx_p_rf_pass_prop: "Фото страницы с пропиской.",
+    yx_p_rf_pass_face: "RF pasporti fotosi (rasmli sahifa).",
+    yx_p_rf_pass_prop: "Propiska sahifasi fotosi.",
 
-    yx_p_tm_pass: "Фото паспорта (разворот с фото).",
+    yx_p_tm_pass: "Pasport fotosi (rasmli sahifa).",
     yx_p_tm_visa:
-      "Отправьте фото визы / разрешения (тип выбран на предыдущем шаге).",
+      "Viza / ruxsatnoma fotosini yuboring (turi oldingi bosqichda tanlangan).",
 
-    yx_p_contact_phone: "Укажите контактный номер телефона (РФ).",
+    yx_p_contact_phone: "Kontakt telefon raqamini kiriting (RF).",
 
     faq: [
       {
@@ -618,124 +618,124 @@ const BK_STRINGS = {
     group_value_dash: "—",
 
     ask_service:
-      "Выберите сервис подключения кнопкой ниже.",
+      "Хидмати пайвастшавиро бо тугмаи поён интихоб кунед.",
 
     yx_final_thanks:
-      "Благодарим за предоставленные сведения. Заявка принята; мы свяжемся с вами в ближайшее время.",
+      "Ташаккур барои маълумоти пешниҳодшуда. Дархост қабул шуд; ба наздикӣ бо шумо тамос мегирем.",
 
     yx_review_use_buttons:
-      "На этом шаге доступны только кнопки под сообщением (в т.ч. «✅ Отправить»).",
+      "Дар ин қадам танҳо тугмаҳои зери паём фаъоланд (аз ҷумла «✅ Фиристодан»).",
 
     yx_need_video:
-      "На этом шаге отправьте короткое видео (кружок не подойдёт).",
+      "Дар ин қадам видеои кӯтоҳ фиристед (видеодоира мувофиқ нест).",
 
-    group_header_yandex: "🔔 Новая заявка · Яндекс Лавка / Еда",
-    group_label_yandex_service: "🛒 Сервис:",
-    group_label_yandex_city: "🏙 Город:",
-    group_label_yandex_citizen: "🪪 Гражданство / статус:",
-    group_label_yandex_uzdoc: "📄 Тип документа (УЗ/ТЖ):",
-    group_label_yandex_kzdoc: "📄 Документ КЗ/КГ:",
-    group_label_yandex_tmvisa: "📄 Виза ТМ:",
-    group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
-    group_caption_yx_generic: "Вложение заявки (Яндекс)",
+    group_header_yandex: "🔔 Дархости нав · Yandex Lavka / Eda",
+    group_label_yandex_service: "🛒 Хидмат:",
+    group_label_yandex_city: "🏙 Шаҳр:",
+    group_label_yandex_citizen: "🪪 Шаҳрвандӣ / мақом:",
+    group_label_yandex_uzdoc: "📄 Навъи ҳуҷҷат (УЗ/ТҶ):",
+    group_label_yandex_kzdoc: "📄 Ҳуҷҷат (ҚЗ/ҚҒ):",
+    group_label_yandex_tmvisa: "📄 Визаи ТМ:",
+    group_yandex_text_heading: "📝 МАЙДОНҲОИ МАТНӢ",
+    group_caption_yx_generic: "Замимаи дархост (Yandex)",
 
     yx_btn_doda: "Ru Park Doda курьер",
-    yx_btn_lavka: "Яндекс Лавка",
-    yx_btn_eats: "Яндекс Еда",
+    yx_btn_lavka: "Yandex Lavka",
+    yx_btn_eats: "Yandex Eda",
 
     yx_city_msk: "Москва",
     yx_city_spb: "Санкт-Петербург",
 
-    yx_ask_city: "Укажите город работы кнопкой ниже.",
-    yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
-    yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc: "Выберите тип документа (Казахстан / Кыргызстан).",
+    yx_ask_city: "Шаҳри корро бо тугмаи поён интихоб кунед.",
+    yx_ask_citizen: "Мақом / шаҳрвандии худро бо тугмаи поён интихоб кунед.",
+    yx_ask_uz_doc: "Навъи ҳуҷҷати тасдиқкунандаро интихоб кунед.",
+    yx_ask_kz_doc: "Навъи ҳуҷҷатро интихоб кунед (Қазоқистон / Қирғизистон).",
     yx_ask_tm_visa:
-      "Выберите тип визы кнопкой ниже (шаг после загрузки паспорта).",
+      "Навъи визаро бо тугмаи поён интихоб кунед (қадам пас аз боркунии паспорт).",
 
-    yx_cit_uz_tj: "Узбекистан / Таджикистан",
-    yx_cit_kz_kg: "Казахстан / Кыргызстан",
-    yx_cit_rf: "Гражданин РФ",
-    yx_cit_tm: "Туркменистан",
+    yx_cit_uz_tj: "Ӯзбекистон / Тоҷикистон",
+    yx_cit_kz_kg: "Қазоқистон / Қирғизистон",
+    yx_cit_rf: "Шаҳрванди ФР",
+    yx_cit_tm: "Туркманистон",
 
     yx_doc_patent: "Патент",
     yx_doc_vnzh: "ВНЖ / РВП",
-    yx_doc_student: "Студент",
+    yx_doc_student: "Донишҷӯ",
 
     yx_kz_pass: "Паспорт",
-    yx_kz_id: "Удостоверение личности",
+    yx_kz_id: "Шаҳодатномаи шахсият",
 
-    yx_tm_work: "Рабочая виза",
-    yx_tm_study: "Учебная виза",
+    yx_tm_work: "Визаи корӣ",
+    yx_tm_study: "Визаи таҳсил",
 
-    yx_ram_reg: "Регистрация",
+    yx_ram_reg: "Бақайдгирӣ",
     yx_ram_amina: "Амина",
 
     yx_p_ram_choice:
-      "Укажите: регистрация по месту пребывания или документ «Амина» — кнопкой ниже.",
+      "Интихоб кунед: бақайдгирӣ аз рӯи ҷои истиқомат ё ҳуҷҷати «Амина» (бо тугмаи поён).",
 
     yx_review_hint:
-      "Проверьте данные. Для отправки нажмите «✅ Отправить».",
+      "Маълумотро санҷед. Барои фиристодан «✅ Фиристодан»-ро пахш кунед.",
 
-    yx_rev_title: "Проверка заявки (Яндекс)",
-    yx_rev_service: "Сервис",
-    yx_rev_city: "Город",
-    yx_rev_citizen: "Статус",
-    yx_rev_uzdoc: "Документ УЗ/ТЖ",
-    yx_rev_kzdoc: "Документ КЗ/КГ",
-    yx_rev_tmvisa: "Виза ТМ",
-    yx_rev_files: "Шагов пройдено (включая текстовые)",
+    yx_rev_title: "Санҷиши дархост (Yandex)",
+    yx_rev_service: "Хидмат",
+    yx_rev_city: "Шаҳр",
+    yx_rev_citizen: "Мақом",
+    yx_rev_uzdoc: "Ҳуҷҷати УЗ/ТҶ",
+    yx_rev_kzdoc: "Ҳуҷҷати ҚЗ/ҚҒ",
+    yx_rev_tmvisa: "Визаи ТМ",
+    yx_rev_files: "Қадамҳои гузаронидашуда (бо матнӣ)",
 
-    yx_use_buttons: "На этом шаге выберите вариант кнопкой ниже.",
-    yx_need_text: "Отправьте текст одним сообщением (без фото и файлов).",
-    yx_bad_text: "Проверьте формат: для карты — 16 цифр; для телефона — номер РФ; поле не должно быть пустым.",
-    yx_file_ok: "Принято. Переходим к следующему шагу.",
+    yx_use_buttons: "Дар ин қадам вариантро бо тугмаи поён интихоб кунед.",
+    yx_need_text: "Матнро дар як паём фиристед (бе акс ва файл).",
+    yx_bad_text: "Форматро санҷед: барои корт — 16 рақам; барои телефон — рақами ФР; майдон холӣ набошад.",
+    yx_file_ok: "Қабул шуд. Ба қадами навбатӣ мегузарем.",
 
-    yx_lbl_yx_col_req_text: "Реквизиты (текст)",
-    yx_lbl_yx_col_card16: "Номер карты",
-    yx_lbl_yx_col_phone_bank: "Телефон для банка",
-    yx_lbl_yx_col_contact_phone: "Контактный телефон",
-    yx_lbl_yx_col_tm_contact: "Контактный телефон",
+    yx_lbl_yx_col_req_text: "Реквизитҳо (матн)",
+    yx_lbl_yx_col_card16: "Рақами корт",
+    yx_lbl_yx_col_phone_bank: "Телефон барои бонк",
+    yx_lbl_yx_col_contact_phone: "Телефони тамос",
+    yx_lbl_yx_col_tm_contact: "Телефони тамос",
 
     yx_p_req_video:
-      "Отправьте короткое видео с реквизитами банковской карты (без лица и паспорта).",
+      "Видеои кӯтоҳ бо реквизитҳои корти бонкиро фиристед (бе рӯй ва паспорт).",
     yx_p_req_photo:
-      "Отправьте фото с реквизитами банковской карты (без лица и паспорта).",
+      "Акс бо реквизитҳои корти бонкиро фиристед (бе рӯй ва паспорт).",
     yx_p_req_text:
-      "Одним сообщением укажите банковские реквизиты (как в инструкции сервиса).",
-    yx_p_card16: "Введите номер банковской карты — 16 цифр подряд (можно с пробелами).",
+      "Реквизитҳои бонкиро дар як паём нависед (мувофиқи дастури сервис).",
+    yx_p_card16: "Рақами корти бонкиро ворид кунед — 16 рақам пайдарпай (бо фосила ҳам мешавад).",
     yx_p_phone_bank:
-      "Укажите номер телефона, привязанный к банку (формат РФ: +7… или 8…).",
+      "Рақами телефони ба бонк пайвастро нишон диҳед (формати ФР: +7… ё 8…).",
 
-    yx_p_uz_pat_pass: "Фото паспорта (разворот с фото).",
-    yx_p_uz_pat_front: "Фото патента — лицевая сторона.",
-    yx_p_uz_pat_back: "Фото патента — оборот.",
-    yx_p_reg_f: "Фото регистрации — лицевая сторона.",
-    yx_p_reg_b: "Фото регистрации — оборот.",
-    yx_p_amina: "Фото документа «Амина».",
-    yx_p_mig: "Фото миграционной карты.",
-    yx_p_pay_ph: "Фото чека / подтверждения оплаты патента.",
-    yx_p_pay_file: "Фото или PDF квитанции об оплате патента.",
+    yx_p_uz_pat_pass: "Акс аз паспорт (саҳифаи суратдор).",
+    yx_p_uz_pat_front: "Акс аз патент — тарафи рӯй.",
+    yx_p_uz_pat_back: "Акс аз патент — тарафи пушт.",
+    yx_p_reg_f: "Акс аз бақайдгирӣ — тарафи рӯй.",
+    yx_p_reg_b: "Акс аз бақайдгирӣ — тарафи пушт.",
+    yx_p_amina: "Акс аз ҳуҷҷати «Амина».",
+    yx_p_mig: "Акс аз корти муҳоҷират.",
+    yx_p_pay_ph: "Акс аз чек / тасдиқи пардохти патент.",
+    yx_p_pay_file: "Акс ё PDF-и квитансияи пардохти патент.",
 
-    yx_p_vnzh_f: "Фото ВНЖ / РВП — лицевая сторона.",
-    yx_p_vnzh_b: "Фото ВНЖ / РВП — оборот.",
+    yx_p_vnzh_f: "Акс ВНЖ / РВП — тарафи рӯй.",
+    yx_p_vnzh_b: "Акс ВНЖ / РВП — тарафи пушт.",
 
-    yx_p_st_bilet: "Фото студенческого билета.",
-    yx_p_st_spravka: "Фото справки с места учёбы.",
-    yx_p_st_pass: "Фото паспорта (разворот с фото).",
+    yx_p_st_bilet: "Акс аз билети донишҷӯӣ.",
+    yx_p_st_spravka: "Акс аз маълумотнома аз ҷои таҳсил.",
+    yx_p_st_pass: "Акс аз паспорт (саҳифаи суратдор).",
 
-    yx_p_kz_pass_face: "Фото паспорта (разворот с фото).",
-    yx_p_kz_id_f: "Фото удостоверения личности — лицевая сторона.",
-    yx_p_kz_id_b: "Фото удостоверения личности — оборот.",
+    yx_p_kz_pass_face: "Акс аз паспорт (саҳифаи суратдор).",
+    yx_p_kz_id_f: "Акс аз шаҳодатномаи шахсият — тарафи рӯй.",
+    yx_p_kz_id_b: "Акс аз шаҳодатномаи шахсият — тарафи пушт.",
 
-    yx_p_rf_pass_face: "Фото паспорта РФ (разворот с фото).",
-    yx_p_rf_pass_prop: "Фото страницы с пропиской.",
+    yx_p_rf_pass_face: "Акс аз паспорти ФР (саҳифаи суратдор).",
+    yx_p_rf_pass_prop: "Акс аз саҳифаи прописка.",
 
-    yx_p_tm_pass: "Фото паспорта (разворот с фото).",
+    yx_p_tm_pass: "Акс аз паспорт (саҳифаи суратдор).",
     yx_p_tm_visa:
-      "Отправьте фото визы / разрешения (тип выбран на предыдущем шаге).",
+      "Акс аз виза / иҷозатномаро фиристед (навъ дар қадами пеш интихоб шудааст).",
 
-    yx_p_contact_phone: "Укажите контактный номер телефона (РФ).",
+    yx_p_contact_phone: "Рақами телефони тамосро нишон диҳед (ФР).",
 
     faq: [
       {
@@ -923,124 +923,124 @@ const BK_STRINGS = {
     group_value_dash: "—",
 
     ask_service:
-      "Выберите сервис подключения кнопкой ниже.",
+      "Туташуу сервисин төмөнкү баскыч менен тандаңыз.",
 
     yx_final_thanks:
-      "Благодарим за предоставленные сведения. Заявка принята; мы свяжемся с вами в ближайшее время.",
+      "Маалымат бергениңиз үчүн рахмат. Арыз кабыл алынды, жакын арада сиз менен байланышабыз.",
 
     yx_review_use_buttons:
-      "На этом шаге доступны только кнопки под сообщением (в т.ч. «✅ Отправить»).",
+      "Бул кадамда билдирүүнүн астындагы баскычтар гана иштейт (анын ичинде «✅ Жөнөтүү»).",
 
     yx_need_video:
-      "На этом шаге отправьте короткое видео (кружок не подойдёт).",
+      "Бул кадамда кыска видео жөнөтүңүз (видео-доира туура келбейт).",
 
-    group_header_yandex: "🔔 Новая заявка · Яндекс Лавка / Еда",
+    group_header_yandex: "🔔 Жаңы арыз · Yandex Lavka / Eda",
     group_label_yandex_service: "🛒 Сервис:",
-    group_label_yandex_city: "🏙 Город:",
-    group_label_yandex_citizen: "🪪 Гражданство / статус:",
-    group_label_yandex_uzdoc: "📄 Тип документа (УЗ/ТЖ):",
-    group_label_yandex_kzdoc: "📄 Документ КЗ/КГ:",
-    group_label_yandex_tmvisa: "📄 Виза ТМ:",
-    group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
-    group_caption_yx_generic: "Вложение заявки (Яндекс)",
+    group_label_yandex_city: "🏙 Шаар:",
+    group_label_yandex_citizen: "🪪 Жарандык / статус:",
+    group_label_yandex_uzdoc: "📄 Документ түрү (УЗ/ТЖ):",
+    group_label_yandex_kzdoc: "📄 Документ (КЗ/КГ):",
+    group_label_yandex_tmvisa: "📄 ТМ визасы:",
+    group_yandex_text_heading: "📝 ТЕКСТ ТАЛААЛАРЫ",
+    group_caption_yx_generic: "Арыз тиркемеси (Yandex)",
 
     yx_btn_doda: "Ru Park Doda курьер",
-    yx_btn_lavka: "Яндекс Лавка",
-    yx_btn_eats: "Яндекс Еда",
+    yx_btn_lavka: "Yandex Lavka",
+    yx_btn_eats: "Yandex Eda",
 
     yx_city_msk: "Москва",
     yx_city_spb: "Санкт-Петербург",
 
-    yx_ask_city: "Укажите город работы кнопкой ниже.",
-    yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
-    yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc: "Выберите тип документа (Казахстан / Кыргызстан).",
+    yx_ask_city: "Иштей турган шаарыңызды төмөнкү баскыч менен тандаңыз.",
+    yx_ask_citizen: "Статус / жарандыгыңызды төмөнкү баскыч менен тандаңыз.",
+    yx_ask_uz_doc: "Тастыктоочу документтин түрүн тандаңыз.",
+    yx_ask_kz_doc: "Документтин түрүн тандаңыз (Казакстан / Кыргызстан).",
     yx_ask_tm_visa:
-      "Выберите тип визы кнопкой ниже (шаг после загрузки паспорта).",
+      "Визанын түрүн төмөнкү баскыч менен тандаңыз (паспорт жүктөлгөндөн кийинки кадам).",
 
-    yx_cit_uz_tj: "Узбекистан / Таджикистан",
-    yx_cit_kz_kg: "Казахстан / Кыргызстан",
-    yx_cit_rf: "Гражданин РФ",
-    yx_cit_tm: "Туркменистан",
+    yx_cit_uz_tj: "Өзбекстан / Тажикстан",
+    yx_cit_kz_kg: "Казакстан / Кыргызстан",
+    yx_cit_rf: "РФ жараны",
+    yx_cit_tm: "Түркмөнстан",
 
     yx_doc_patent: "Патент",
     yx_doc_vnzh: "ВНЖ / РВП",
     yx_doc_student: "Студент",
 
     yx_kz_pass: "Паспорт",
-    yx_kz_id: "Удостоверение личности",
+    yx_kz_id: "Жеке күбөлүк",
 
-    yx_tm_work: "Рабочая виза",
-    yx_tm_study: "Учебная виза",
+    yx_tm_work: "Жумушчу виза",
+    yx_tm_study: "Окуу визасы",
 
-    yx_ram_reg: "Регистрация",
+    yx_ram_reg: "Каттоо",
     yx_ram_amina: "Амина",
 
     yx_p_ram_choice:
-      "Укажите: регистрация по месту пребывания или документ «Амина» — кнопкой ниже.",
+      "Төмөнкүдөн тандаңыз: жашаган жер боюнча каттоо же «Амина» документи.",
 
     yx_review_hint:
-      "Проверьте данные. Для отправки нажмите «✅ Отправить».",
+      "Маалыматты текшериңиз. Жөнөтүү үчүн «✅ Жөнөтүү» баскычын басыңыз.",
 
-    yx_rev_title: "Проверка заявки (Яндекс)",
+    yx_rev_title: "Арызды текшерүү (Yandex)",
     yx_rev_service: "Сервис",
-    yx_rev_city: "Город",
+    yx_rev_city: "Шаар",
     yx_rev_citizen: "Статус",
-    yx_rev_uzdoc: "Документ УЗ/ТЖ",
-    yx_rev_kzdoc: "Документ КЗ/КГ",
-    yx_rev_tmvisa: "Виза ТМ",
-    yx_rev_files: "Шагов пройдено (включая текстовые)",
+    yx_rev_uzdoc: "УЗ/ТЖ документи",
+    yx_rev_kzdoc: "КЗ/КГ документи",
+    yx_rev_tmvisa: "ТМ визасы",
+    yx_rev_files: "Өтүлгөн кадамдар (текст менен кошо)",
 
-    yx_use_buttons: "На этом шаге выберите вариант кнопкой ниже.",
-    yx_need_text: "Отправьте текст одним сообщением (без фото и файлов).",
-    yx_bad_text: "Проверьте формат: для карты — 16 цифр; для телефона — номер РФ; поле не должно быть пустым.",
-    yx_file_ok: "Принято. Переходим к следующему шагу.",
+    yx_use_buttons: "Бул кадамда вариантты төмөнкү баскыч менен тандаңыз.",
+    yx_need_text: "Текстти бир билдирүү менен жөнөтүңүз (сүрөтсүз жана файлсыз).",
+    yx_bad_text: "Форматты текшериңиз: карта үчүн — 16 сан; телефон үчүн — РФ номери; талаа бош болбосун.",
+    yx_file_ok: "Кабыл алынды. Кийинки кадамга өтөбүз.",
 
-    yx_lbl_yx_col_req_text: "Реквизиты (текст)",
-    yx_lbl_yx_col_card16: "Номер карты",
-    yx_lbl_yx_col_phone_bank: "Телефон для банка",
-    yx_lbl_yx_col_contact_phone: "Контактный телефон",
-    yx_lbl_yx_col_tm_contact: "Контактный телефон",
+    yx_lbl_yx_col_req_text: "Реквизиттер (текст)",
+    yx_lbl_yx_col_card16: "Карта номери",
+    yx_lbl_yx_col_phone_bank: "Банк үчүн телефон",
+    yx_lbl_yx_col_contact_phone: "Байланыш телефону",
+    yx_lbl_yx_col_tm_contact: "Байланыш телефону",
 
     yx_p_req_video:
-      "Отправьте короткое видео с реквизитами банковской карты (без лица и паспорта).",
+      "Банк картасынын реквизиттери менен кыска видео жөнөтүңүз (бет жана паспорт жок).",
     yx_p_req_photo:
-      "Отправьте фото с реквизитами банковской карты (без лица и паспорта).",
+      "Банк картасынын реквизиттери менен сүрөт жөнөтүңүз (бет жана паспорт жок).",
     yx_p_req_text:
-      "Одним сообщением укажите банковские реквизиты (как в инструкции сервиса).",
-    yx_p_card16: "Введите номер банковской карты — 16 цифр подряд (можно с пробелами).",
+      "Банк реквизиттерин бир билдирүү менен жазыңыз (сервис нускамасына ылайык).",
+    yx_p_card16: "Банк картасынын номерин киргизиңиз — 16 сан катары менен (боштук менен да болот).",
     yx_p_phone_bank:
-      "Укажите номер телефона, привязанный к банку (формат РФ: +7… или 8…).",
+      "Банкка байланган телефон номерин көрсөтүңүз (РФ форматы: +7… же 8…).",
 
-    yx_p_uz_pat_pass: "Фото паспорта (разворот с фото).",
-    yx_p_uz_pat_front: "Фото патента — лицевая сторона.",
-    yx_p_uz_pat_back: "Фото патента — оборот.",
-    yx_p_reg_f: "Фото регистрации — лицевая сторона.",
-    yx_p_reg_b: "Фото регистрации — оборот.",
-    yx_p_amina: "Фото документа «Амина».",
-    yx_p_mig: "Фото миграционной карты.",
-    yx_p_pay_ph: "Фото чека / подтверждения оплаты патента.",
-    yx_p_pay_file: "Фото или PDF квитанции об оплате патента.",
+    yx_p_uz_pat_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
+    yx_p_uz_pat_front: "Патенттин сүрөтү — алдыңкы бет.",
+    yx_p_uz_pat_back: "Патенттин сүрөтү — арткы бет.",
+    yx_p_reg_f: "Каттоонун сүрөтү — алдыңкы бет.",
+    yx_p_reg_b: "Каттоонун сүрөтү — арткы бет.",
+    yx_p_amina: "«Амина» документинин сүрөтү.",
+    yx_p_mig: "Миграция картасынын сүрөтү.",
+    yx_p_pay_ph: "Патент төлөмүнүн чеки / тастыктоосу сүрөтү.",
+    yx_p_pay_file: "Патент төлөм квитанциясы (сүрөт же PDF).",
 
-    yx_p_vnzh_f: "Фото ВНЖ / РВП — лицевая сторона.",
-    yx_p_vnzh_b: "Фото ВНЖ / РВП — оборот.",
+    yx_p_vnzh_f: "ВНЖ / РВП сүрөтү — алдыңкы бет.",
+    yx_p_vnzh_b: "ВНЖ / РВП сүрөтү — арткы бет.",
 
-    yx_p_st_bilet: "Фото студенческого билета.",
-    yx_p_st_spravka: "Фото справки с места учёбы.",
-    yx_p_st_pass: "Фото паспорта (разворот с фото).",
+    yx_p_st_bilet: "Студенттик билеттин сүрөтү.",
+    yx_p_st_spravka: "Окуу жайдан маалымкаттын сүрөтү.",
+    yx_p_st_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
 
-    yx_p_kz_pass_face: "Фото паспорта (разворот с фото).",
-    yx_p_kz_id_f: "Фото удостоверения личности — лицевая сторона.",
-    yx_p_kz_id_b: "Фото удостоверения личности — оборот.",
+    yx_p_kz_pass_face: "Паспорттун сүрөтү (сүрөтү бар бети).",
+    yx_p_kz_id_f: "Жеке күбөлүктүн сүрөтү — алдыңкы бет.",
+    yx_p_kz_id_b: "Жеке күбөлүктүн сүрөтү — арткы бет.",
 
-    yx_p_rf_pass_face: "Фото паспорта РФ (разворот с фото).",
-    yx_p_rf_pass_prop: "Фото страницы с пропиской.",
+    yx_p_rf_pass_face: "РФ паспортунун сүрөтү (сүрөтү бар бети).",
+    yx_p_rf_pass_prop: "Каттоо барагынын сүрөтү.",
 
-    yx_p_tm_pass: "Фото паспорта (разворот с фото).",
+    yx_p_tm_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
     yx_p_tm_visa:
-      "Отправьте фото визы / разрешения (тип выбран на предыдущем шаге).",
+      "Виза / уруксат кагазынын сүрөтүн жөнөтүңүз (түрү мурунку кадамда тандалган).",
 
-    yx_p_contact_phone: "Укажите контактный номер телефона (РФ).",
+    yx_p_contact_phone: "Байланыш телефон номерин көрсөтүңүз (РФ).",
 
     faq: [
       {
