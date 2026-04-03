@@ -260,13 +260,10 @@ function formatYandexAnketaBlock(profile) {
     yx.citizen && citMap[yx.citizen] ? tBK(lg, citMap[yx.citizen]) : yx.citizen || dash;
 
   const lines = [
-    tBK(lg, "group_separator"),
-    tBK(lg, "group_anketa_heading"),
-    tBK(lg, "group_separator"),
+    "ANKETA",
     `${tBK(lg, "group_label_name")} ${name}`,
     `${tBK(lg, "group_label_telegram")} ${un}`,
     `${tBK(lg, "group_label_phone")} ${phone}`,
-    "",
     `${tBK(lg, "group_label_yandex_service")} ${svc}`,
     `${tBK(lg, "group_label_yandex_city")} ${city}`,
     `${tBK(lg, "group_label_yandex_citizen")} ${citizen}`,
@@ -289,14 +286,55 @@ function formatYandexAnketaBlock(profile) {
   return lines.join("\n");
 }
 
+function yandexDocPromptKey(docType) {
+  const map = {
+    yx_uz_pat_pass: "yx_p_uz_pat_pass",
+    yx_uz_pat_front: "yx_p_uz_pat_front",
+    yx_uz_pat_back: "yx_p_uz_pat_back",
+    yx_uz_pat_reg_f: "yx_p_reg_f",
+    yx_uz_pat_reg_b: "yx_p_reg_b",
+    yx_uz_pat_amina: "yx_p_amina",
+    yx_uz_pat_mig: "yx_p_mig",
+    yx_uz_pat_pay_ph: "yx_p_pay_ph",
+    yx_uz_pat_pay_file: "yx_p_pay_file",
+    yx_uz_vnzh_f: "yx_p_vnzh_f",
+    yx_uz_vnzh_b: "yx_p_vnzh_b",
+    yx_uz_vnzh_mig: "yx_p_mig",
+    yx_uz_st_bilet: "yx_p_st_bilet",
+    yx_uz_st_spravka: "yx_p_st_spravka",
+    yx_uz_st_pass: "yx_p_st_pass",
+    yx_uz_st_reg_f: "yx_p_reg_f",
+    yx_uz_st_reg_b: "yx_p_reg_b",
+    yx_uz_st_amina: "yx_p_amina",
+    yx_uz_st_mig: "yx_p_mig",
+    yx_kz_pass_face: "yx_p_kz_pass_face",
+    yx_kz_id_f: "yx_p_kz_id_f",
+    yx_kz_id_b: "yx_p_kz_id_b",
+    yx_kz_mig: "yx_p_mig",
+    yx_kz_reg_f: "yx_p_reg_f",
+    yx_kz_reg_b: "yx_p_reg_b",
+    yx_kz_amina: "yx_p_amina",
+    yx_rf_pass_face: "yx_p_rf_pass_face",
+    yx_rf_pass_prop: "yx_p_rf_pass_prop",
+    yx_tm_pass: "yx_p_tm_pass",
+    yx_tm_visa: "yx_p_tm_visa",
+    yx_tm_reg_f: "yx_p_reg_f",
+    yx_tm_reg_b: "yx_p_reg_b",
+    yx_tm_amina: "yx_p_amina",
+    yx_tm_mig: "yx_p_mig",
+  };
+  return map[docType] || null;
+}
+
 function formatYandexDocCaption(index, total, docKey, profile) {
   const lg = normalizeBKLang(profile?.language);
-  const k = `group_caption_${docKey}`;
-  let t = tBK(lg, k);
-  if (t === k) {
-    t = tBK(lg, "group_caption_yx_generic");
+  const promptKey = yandexDocPromptKey(docKey);
+  let title = promptKey ? tBK(lg, promptKey) : tBK(lg, "group_caption_yx_generic");
+  if (!title || title === promptKey) {
+    title = tBK(lg, "group_caption_yx_generic");
   }
-  return cap(`[${index}/${total}] ${t}`);
+  title = String(title).replace(/\s+/g, " ").trim().replace(/[.]+$/, "");
+  return cap(`[${index}/${total}] ${docKey} — ${title}`);
 }
 
 function formatYandexTextFieldsBlock(profile, lang) {
@@ -312,12 +350,7 @@ function formatYandexTextFieldsBlock(profile, lang) {
     }
   }
   if (!parts.length) return "";
-  return [
-    tBK(lg, "group_separator"),
-    tBK(lg, "group_yandex_text_heading"),
-    tBK(lg, "group_separator"),
-    parts.join("\n"),
-  ].join("\n");
+  return ["TEXT", parts.join("\n")].join("\n");
 }
 
 /** Яндекс Лавка / Еда: анкета + вложения yx_* по порядку completed_yx */
@@ -345,14 +378,13 @@ export async function notifyGroupYandexSubmission(telegram, profile) {
       rows = r.rows;
     }
 
+    const docsCount = rows.filter((r) => r.local_path && fs.existsSync(r.local_path)).length;
     const header = [
       tBK(lg, "group_header_yandex"),
       "",
       formatYandexAnketaBlock(profile),
-      formatDocsIntroBlock(
-        rows.filter((r) => r.local_path && fs.existsSync(r.local_path)).length,
-        lg
-      ),
+      "",
+      `DOKUMENTI: ${docsCount}`,
     ].join("\n");
     await telegram.sendMessage(chatId, cap(header));
 
