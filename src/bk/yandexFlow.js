@@ -48,9 +48,8 @@ function choice(choiceId, promptKey) {
 }
 
 function tailRekvizitCard16Phone() {
+  // Rekvizitlar: faqat matn + karta raqami + bank telefoni (selfie / video yo'q)
   return [
-    video("yx_req_video", "yx_p_req_video"),
-    photo("yx_req_photo", "yx_p_req_photo"),
     textField("yx_col_req_text", "yx_p_req_text", "plain"),
     textField("yx_col_card16", "yx_p_card16", "digits16"),
     textField("yx_col_phone_bank", "yx_p_phone_bank", "phone"),

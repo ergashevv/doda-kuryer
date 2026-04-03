@@ -108,11 +108,12 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
 });
 
 describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
-  test("RF: migratsiyadan keyin rekvizitlar (video) bor", () => {
+  test("RF: migratsiyadan keyin rekvizitlar text + karta + tel", () => {
     const line = buildYxLine(baseYx({ citizen: "rf" }));
-    const videos = line.filter((s) => s.t === "video");
-    assert.equal(videos.length, 1);
-    assert.equal(videos[0].docType, "yx_req_video");
+    const texts = line.filter((s) => s.t === "text");
+    assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
+    assert.ok(texts.some((s) => s.colKey === "yx_col_card16"));
+    assert.ok(texts.some((s) => s.colKey === "yx_col_phone_bank"));
   });
 
   test("VNJ: qisqa yo'l — choice yoq", () => {
@@ -242,7 +243,7 @@ describe("validateYxText", () => {
 
 describe("yxForbiddenMedia / yxExtractFile", () => {
   test("video qadamda oddiy video ruxsat; video_note taqiq", () => {
-    const step = { t: "video", docType: "yx_req_video" };
+    const step = { t: "video", docType: "any_video_doc" };
     assert.equal(yxForbiddenMedia({ video: {} }, step), false);
     assert.equal(yxForbiddenMedia({ video_note: {} }, step), true);
   });
