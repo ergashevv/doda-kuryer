@@ -216,7 +216,7 @@ export function yxExtractFile(msg, step) {
     const f = msg.video;
     return { fileId: f.file_id, mime: f.mime_type || "video/mp4" };
   }
-  if (step.t === "photo" && msg.photo?.length) {
+  if ((step.t === "photo" || step.t === "doc") && msg.photo?.length) {
     const f = msg.photo[msg.photo.length - 1];
     return { fileId: f.file_id, mime: "image/jpeg" };
   }
