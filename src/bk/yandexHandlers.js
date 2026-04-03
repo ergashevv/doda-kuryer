@@ -443,7 +443,9 @@ export async function handleYandexCallback(ctx, client, uid, data) {
   }
   if (payload === "ram:reg" || payload === "ram:amina") {
     yx.regAmina = payload === "ram:reg" ? "reg" : "amina";
-    await updateProfile(client, uid, { session_data: { ...td, yx, completed_yx } });
+    await updateProfile(client, uid, {
+      session_data: { ...td, yx, completed_yx: completed },
+    });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
