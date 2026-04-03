@@ -20,7 +20,7 @@ function requireHost(urlString: string) {
 function poolOptions(connectionString: string): pg.PoolConfig {
   const opts: pg.PoolConfig = { connectionString };
   const needsSsl =
-    /sslmode=require/i.test(connectionString) ||
+    /sslmode=(require|verify-full)/i.test(connectionString) ||
     connectionString.includes("neon.tech") ||
     process.env.DATABASE_SSL === "1" ||
     process.env.DASHBOARD_DATABASE_SSL === "true";

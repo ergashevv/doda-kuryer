@@ -25,7 +25,7 @@ function requireDatabaseHost(urlString) {
 function poolOptions(connectionString) {
   const opts = { connectionString };
   const needsSsl =
-    /sslmode=require/i.test(connectionString) ||
+    /sslmode=(require|verify-full)/i.test(connectionString) ||
     connectionString.includes("neon.tech") ||
     process.env.DATABASE_SSL === "1" ||
     process.env.DATABASE_SSL === "true";
