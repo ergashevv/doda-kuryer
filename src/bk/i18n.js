@@ -76,6 +76,48 @@ const BK_STRINGS = {
 
     confirm_category: (label) => `Танланган категория: ${label}`,
 
+    ask_vehicle_rf:
+      "🚗 Енгил авто: транспорт қайерда рўйхатдан ўтган?\n\n" +
+      "• Россияда (🇷🇺) — СТС: одатда битта фото (барча майдонлар яхши ўқилсин).\n" +
+      "• Чет эл транспорт (🌍) — техпаспорт: аввал олд томони, кейин орқа томони — жами 2 та алоҳида фото.",
+
+    btn_vehicle_rf_sts: "🇷🇺 Россияда рўйхат — СТС",
+    btn_vehicle_foreign_tech: "🌍 Чет эл ТС — техпаспорт (олд + орқа)",
+
+    confirm_vehicle_rf: (rf) =>
+      rf
+        ? "Россияда учёт — кейинги қадамда СТС расми."
+        : "Чет эл ТС — аввал техпаспорт олд томони, сўнгра орқа томони расмлари.",
+
+    summary_vehicle_rf: "Россия — СТС",
+    summary_vehicle_foreign: "Чет эл ТС — техпаспорт (олд/орқа)",
+
+    btn_continue: "Давом этиш 👉",
+
+    ask_license_front:
+      "Ҳайдовчилик гувоҳномаси (ВУ) — олд томонидан битта фото юборинг.",
+
+    confirm_license_uploaded:
+      "✅ ВУ фото қабул қилинди\n\nМайдонлар аниқ кўринишини текширинг ва «Давом этиш 👉»ни босинг\n\nёки алмаштириш учун бошқа фото юборинг.",
+
+    ask_sts_front:
+      "СТС — битта фото: барча ёзувлар аниқ кўринадиган қилиб юборинг (одатда жойланма ёки асосий бет).",
+
+    ask_tech_passport_front:
+      "Чет эл ТС техпаспорти — ОЛД томони (битта фото).",
+
+    ask_tech_passport_back:
+      "Чет эл ТС техпаспорти — ОРҚА томони (битта фото).",
+
+    confirm_tech_passport_front:
+      "✅ Техпаспорт олд томони қабул қилинди\n\nЎқилишини текширинг, «Давом этиш 👉» ёки бошқа фото.",
+
+    confirm_tech_passport_back:
+      "✅ Техпаспорт орқа томони қабул қилинди\n\nЎқилишини текширинг, «Давом этиш 👉» ёки бошқа фото.",
+
+    confirm_sts_uploaded:
+      "✅ СТС фото қабул қилинди\n\nМайдонлар аниқ кўринишини текширинг ва «Давом этиш 👉»ни босинг\n\nёки алмаштириш учун бошқа фото юборинг.",
+
     ask_city:
       "Қайси шаҳарда ишлайсиз? Тугма ёки матн. Бир нечта бўлса — асосийини ёзинг.",
 
@@ -87,6 +129,25 @@ const BK_STRINGS = {
     ask_citizenship: "РФ фуқаросимисиз?",
 
     confirm_citizenship: (yes) => `РФ фуқаролиги: ${yes ? "Ҳа" : "Йўқ"}`,
+
+    ask_bike_smz_phone:
+      "«Мой налог» иложига уланган телефон рақамини ёзинг (РФ: +7… ёки 8…).",
+
+    err_bike_smz_phone_invalid:
+      "Фақат Россия рақами: +7XXXXXXXXXX, 8XXXXXXXXXX ёки 10 рақам.",
+
+    confirm_bike_smz_phone: (phone) => `«Мой налог» телефони: ${phone}`,
+
+    ask_bike_smz_address:
+      "Тўлиқ манзилни битта хабарда ёзинг: шаҳар, кўча, подъезд, квартира (барчаси аниқ).",
+
+    err_bike_smz_address_short:
+      "Жуда қисқа. Шаҳар, кўча, подъезд ва квартирани ёзинг.",
+
+    err_bike_smz_address_no_media:
+      "Манзилни матн билан ёзинг; расм юборманг.",
+
+    confirm_bike_smz_address: (addr) => `Манзил: ${addr}`,
 
     ask_thermal: "Термокороб борми?",
 
@@ -138,6 +199,8 @@ const BK_STRINGS = {
       truck_wrap: "Брендинг / ёпиш",
       self_employed: "Ўз-ўзини банд қилиш",
       inn: "ИНН",
+      bike_smz_phone: "«Мой налог» телефони",
+      bike_smz_address: "Яшаш манзили (СМЗ)",
       bike_thermal: "Вело термокороб",
       bike_passport: "Паспорт",
     },
@@ -164,6 +227,8 @@ const BK_STRINGS = {
     group_label_truck_branding: "🏷 Брендинг:",
     group_label_bike_self: "🧾 Ўз-ўзини банд:",
     group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_smz_phone: "📱 «Мой налог» телефони:",
+    group_label_bike_smz_address: "📍 Манзил (шаҳар, кўча, подъезд, квартира):",
     group_label_bike_thermal: "📦 Вело термокороб:",
     group_docs_heading: "📎 ҲУЖЖАТЛАР",
     group_docs_empty:
@@ -219,10 +284,15 @@ const BK_STRINGS = {
     yx_ask_city: "Ishlaydigan shaharingizni pastdagi tugma orqali tanlang.",
     yx_ask_citizen: "Status / fuqaroligingizni pastdagi tugma orqali tanlang.",
     yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
-    yx_ask_kz_doc: "Hujjat turini tanlang (Qozog'iston / Qirg'iziston).",
+    yx_ask_kz_doc: "Hujjat turini tanlang.",
     yx_ask_tm_visa:
       "Viza turini pastdagi tugma orqali tanlang (pasportdan keyingi bosqich).",
 
+    yx_cit_uz: "O'zbekiston",
+    yx_cit_tj: "Tojikiston",
+    yx_cit_kz: "Qozog'iston",
+    yx_cit_kg: "Qirg'iziston",
+    yx_cit_other: "Yoki boshqa",
     yx_cit_uz_tj: "O'zbekiston / Tojikiston",
     yx_cit_kz_kg: "Qozog'iston / Qirg'iziston",
     yx_cit_rf: "RF fuqarosi",
@@ -403,15 +473,17 @@ const BK_STRINGS = {
     confirm_category: (label) => `Ты выбрал выполнять заказы в категории ${label}`,
 
     ask_vehicle_rf:
-      "🚗 Легковое авто: где учёт транспорта?\n\n• Россия — загрузим СТС (как обычно).\n• Иностранное ТС — нужен техпаспорт: лицевая сторона и оборот (два фото).",
+      "🚗 Легковое авто: где зарегистрирован транспорт?\n\n" +
+      "• Россия (🇷🇺) — СТС: обычно одно фото, все поля должны быть читаемы.\n" +
+      "• Иностранное ТС (🌍) — техпаспорт: два отдельных шага — сначала лицевая сторона, затем оборот (два фото).",
 
-    btn_vehicle_rf_sts: "🇷🇺 Учёт в РФ — есть СТС",
-    btn_vehicle_foreign_tech: "🌍 Иностранное ТС — техпаспорт (2 фото)",
+    btn_vehicle_rf_sts: "🇷🇺 Учёт в РФ — СТС",
+    btn_vehicle_foreign_tech: "🌍 Иностранное ТС — техпаспорт (лицо + оборот)",
 
     confirm_vehicle_rf: (rf) =>
       rf
-        ? "Учёт ТС: Россия — далее загрузим СТС"
-        : "Учёт ТС: иностранное — далее техпаспорт (лицевая и оборот)",
+        ? "Учёт в РФ — далее загрузим фото СТС."
+        : "Иностранное ТС — далее два фото техпаспорта: лицевая сторона, затем оборот.",
 
     ask_city:
       "В каком городе будешь выполнять заказы? Можешь нажать кнопку или написать город текстом. Если городов несколько — укажи основной.",
@@ -435,6 +507,25 @@ const BK_STRINGS = {
     err_inn_invalid: "ИНН должен быть числом из 10–13 цифр.",
 
     confirm_inn: (inn) => `Ты указал ИНН: ${inn}`,
+
+    ask_bike_smz_phone:
+      "Укажи номер телефона, привязанный к приложению «Мой налог» (РФ: +7… или 8…).",
+
+    err_bike_smz_phone_invalid:
+      "Нужен номер РФ: +7XXXXXXXXXX, 8XXXXXXXXXX или 10 цифр без кода страны.",
+
+    confirm_bike_smz_phone: (phone) => `Телефон «Мой налог»: ${phone}`,
+
+    ask_bike_smz_address:
+      "Напиши полный адрес одним сообщением: город, улица, подъезд, квартира (всё читаемо).",
+
+    err_bike_smz_address_short:
+      "Слишком коротко. Укажи город, улицу, подъезд и квартиру.",
+
+    err_bike_smz_address_no_media:
+      "Нужен текст адреса, без фото.",
+
+    confirm_bike_smz_address: (addr) => `Адрес: ${addr}`,
 
     ask_thermal: "У тебя есть термокороб?",
 
@@ -463,13 +554,13 @@ const BK_STRINGS = {
       "✅ Фото ВУ загружено\n\nУбедись, что на фото хорошо видны и читабельны все поля и нажми кнопку «Продолжить 👉»\n\nлибо отправь другое фото ВУ с передней стороны для замены",
 
     ask_sts_front:
-      "Отправь ОДНО фото СТС автомобиля с передней стороны",
+      "Отправь ОДНО фото СТС: все поля должны быть читаемы (обычно разворот или лицевая сторона бланка).",
 
     ask_tech_passport_front:
-      "Отправь ОДНО фото лицевой стороны техпаспорта иностранного ТС",
+      "Техпаспорт иностранного ТС — ЛИЦЕВАЯ сторона (одно фото).",
 
     ask_tech_passport_back:
-      "Отправь ОДНО фото оборота техпаспорта иностранного ТС",
+      "Техпаспорт иностранного ТС — ОБОРОТ (одно фото).",
 
     confirm_tech_passport_front:
       "✅ Лицевая сторона техпаспорта загружена\n\nПроверь читаемость и нажми «Продолжить 👉» или пришли другое фото.",
@@ -568,6 +659,8 @@ const BK_STRINGS = {
       truck_wrap: "Грузовое оклейка",
       self_employed: "Самозанятость",
       inn: "ИНН",
+      bike_smz_phone: "Тел. «Мой налог»",
+      bike_smz_address: "Адрес (СМЗ)",
       bike_thermal: "Вело термокороб",
       bike_passport: "Вело паспорт",
     },
@@ -594,6 +687,8 @@ const BK_STRINGS = {
     group_label_truck_branding: "🏷 Оклейка / брендинг:",
     group_label_bike_self: "🧾 Самозанятость:",
     group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_smz_phone: "📱 Телефон «Мой налог»:",
+    group_label_bike_smz_address: "📍 Адрес (город, улица, подъезд, квартира):",
     group_label_bike_thermal: "📦 Вело термокороб:",
     group_docs_heading: "📎 ДОКУМЕНТЫ",
     group_docs_empty:
@@ -649,10 +744,15 @@ const BK_STRINGS = {
     yx_ask_city: "Шаҳри корро бо тугмаи поён интихоб кунед.",
     yx_ask_citizen: "Мақом / шаҳрвандии худро бо тугмаи поён интихоб кунед.",
     yx_ask_uz_doc: "Навъи ҳуҷҷати тасдиқкунандаро интихоб кунед.",
-    yx_ask_kz_doc: "Навъи ҳуҷҷатро интихоб кунед (Қазоқистон / Қирғизистон).",
+    yx_ask_kz_doc: "Навъи ҳуҷҷатро интихоб кунед.",
     yx_ask_tm_visa:
       "Навъи визаро бо тугмаи поён интихоб кунед (қадам пас аз боркунии паспорт).",
 
+    yx_cit_uz: "Ӯзбекистон",
+    yx_cit_tj: "Тоҷикистон",
+    yx_cit_kz: "Қазоқистон",
+    yx_cit_kg: "Қирғизистон",
+    yx_cit_other: "Ё дигар",
     yx_cit_uz_tj: "Ӯзбекистон / Тоҷикистон",
     yx_cit_kz_kg: "Қазоқистон / Қирғизистон",
     yx_cit_rf: "Шаҳрванди ФР",
@@ -817,6 +917,48 @@ const BK_STRINGS = {
 
     confirm_category: (label) => `Категория: ${label}`,
 
+    ask_vehicle_rf:
+      "🚗 Мошини сабук: нақлиёт дар куҷо ба қайд гирифта шудааст?\n\n" +
+      "• Дар Русия (🇷🇺) — СТС: одатан як акс (ҳамаи майдонҳо хонда шаванд).\n" +
+      "• ТС-и хориҷӣ (🌍) — техпаспорт: аввал рӯй, баъд пушт — 2 акси алоҳида.",
+
+    btn_vehicle_rf_sts: "🇷🇺 Дар РФ ба қайд — СТС",
+    btn_vehicle_foreign_tech: "🌍 ТС хориҷӣ — техпаспорт (рӯй + пушт)",
+
+    confirm_vehicle_rf: (rf) =>
+      rf
+        ? "Ба қайд дар РФ — баъд акси СТС."
+        : "ТС хориҷӣ — аввал рӯи техпаспорт, баъд пушт.",
+
+    summary_vehicle_rf: "РФ — СТС",
+    summary_vehicle_foreign: "ТС хориҷӣ — техпаспорт",
+
+    btn_continue: "Идома 👉",
+
+    ask_license_front:
+      "Гувоҳномаи ронандагӣ (ВУ) — аз тарафи пеш як акс фиристед.",
+
+    confirm_license_uploaded:
+      "✅ Акси ВУ гирифта шуд\n\nХонданашро санҷед ва «Идома 👉»-ро пахш кунед\n\nё акси дигар фиристед.",
+
+    ask_sts_front:
+      "СТС — як акс: ҳамаи сатрҳо хонда шаванд (одатан кушода ё саҳифаи асосӣ).",
+
+    ask_tech_passport_front:
+      "Техпаспорти ТС хориҷӣ — тарафи РӮЙ (як акс).",
+
+    ask_tech_passport_back:
+      "Техпаспорти ТС хориҷӣ — тарафи ПУШТ (як акс).",
+
+    confirm_tech_passport_front:
+      "✅ Рӯи техпаспорт гирифта шуд\n\n«Идома 👉» ё акси дигар.",
+
+    confirm_tech_passport_back:
+      "✅ Пушти техпаспорт гирифта шуд\n\n«Идома 👉» ё акси дигар.",
+
+    confirm_sts_uploaded:
+      "✅ Акси СТС гирифта шуд\n\nХонданашро санҷед ва «Идома 👉»-ро пахш кунед\n\nё акси дигар фиристед.",
+
     ask_city: "Дар кадом шаҳр кор мекунед? Тугма ё матн.",
 
     err_city_need_text: "Номи шаҳрро матн нависед, акс нафиристед.",
@@ -826,6 +968,25 @@ const BK_STRINGS = {
     ask_citizenship: "Шумо шаҳрванди РФ ҳастед?",
 
     confirm_citizenship: (yes) => `Шаҳрвандии РФ: ${yes ? "Ҳа" : "Не"}`,
+
+    ask_bike_smz_phone:
+      "Рақами телефонро нависед, ки ба барномаи «Мой налог» пайваст аст (РФ: +7… ё 8…).",
+
+    err_bike_smz_phone_invalid:
+      "Рақами РФ лозим: +7XXXXXXXXXX, 8XXXXXXXXXX ё 10 рақам бе коди кишвар.",
+
+    confirm_bike_smz_phone: (phone) => `Телефони «Мой налог»: ${phone}`,
+
+    ask_bike_smz_address:
+      "Суроғаи пурраро дар як паём нависед: шаҳр, кӯча, даромадгоҳ, квартира.",
+
+    err_bike_smz_address_short:
+      "Хеле кӯтоҳ. Шаҳр, кӯча, даромадгоҳ ва квартираро нишон диҳед.",
+
+    err_bike_smz_address_no_media:
+      "Суроға матн бошад; акс нафиристед.",
+
+    confirm_bike_smz_address: (addr) => `Суроға: ${addr}`,
 
     ask_thermal: "Қуттии термӣ доред?",
 
@@ -875,6 +1036,8 @@ const BK_STRINGS = {
       truck_wrap: "Брендинг",
       self_employed: "Худкорӣ",
       inn: "ИНН",
+      bike_smz_phone: "Тел. «Мой налог»",
+      bike_smz_address: "Суроға (СМЗ)",
       bike_thermal: "Термокороби вело",
       bike_passport: "Паспорт",
     },
@@ -901,6 +1064,8 @@ const BK_STRINGS = {
     group_label_truck_branding: "🏷 Брендинг:",
     group_label_bike_self: "🧾 Худкорӣ:",
     group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_smz_phone: "📱 Телефони «Мой налог»:",
+    group_label_bike_smz_address: "📍 Суроға (шаҳр, кӯча, даромадгоҳ, квартира):",
     group_label_bike_thermal: "📦 Термокороби вело:",
     group_docs_heading: "📎 ҲУҶҶАТҲО",
     group_docs_empty: "Ба ариза файлҳо замима нашудаанд.",
@@ -954,10 +1119,15 @@ const BK_STRINGS = {
     yx_ask_city: "Иштей турган шаарыңызды төмөнкү баскыч менен тандаңыз.",
     yx_ask_citizen: "Статус / жарандыгыңызды төмөнкү баскыч менен тандаңыз.",
     yx_ask_uz_doc: "Тастыктоочу документтин түрүн тандаңыз.",
-    yx_ask_kz_doc: "Документтин түрүн тандаңыз (Казакстан / Кыргызстан).",
+    yx_ask_kz_doc: "Документтин түрүн тандаңыз.",
     yx_ask_tm_visa:
       "Визанын түрүн төмөнкү баскыч менен тандаңыз (паспорт жүктөлгөндөн кийинки кадам).",
 
+    yx_cit_uz: "Өзбекстан",
+    yx_cit_tj: "Тажикстан",
+    yx_cit_kz: "Казакстан",
+    yx_cit_kg: "Кыргызстан",
+    yx_cit_other: "Же башка",
     yx_cit_uz_tj: "Өзбекстан / Тажикстан",
     yx_cit_kz_kg: "Казакстан / Кыргызстан",
     yx_cit_rf: "РФ жараны",
@@ -1122,6 +1292,48 @@ const BK_STRINGS = {
 
     confirm_category: (label) => `Тандалган категория: ${label}`,
 
+    ask_vehicle_rf:
+      "🚗 Жеңил унаа: транспорт кайда катталган?\n\n" +
+      "• Россияда (🇷🇺) — СТС: адатта бир сүрөт (бардык талаалар окула турган болсун).\n" +
+      "• Чет өлкө ТС (🌍) — техпаспорт: алды менен алдыңкы бет, андан кийин арткы бет — эки өзүнчө сүрөт.",
+
+    btn_vehicle_rf_sts: "🇷🇺 Россияда каттоо — СТС",
+    btn_vehicle_foreign_tech: "🌍 Чет өлкө ТС — техпаспорт (алд + арт)",
+
+    confirm_vehicle_rf: (rf) =>
+      rf
+        ? "Россияда эсеп — кийинки кадамда СТС сүрөтү."
+        : "Чет өлкө ТС — алды менен техпаспорттун алдыңкы бети, андан кийин арткы бет.",
+
+    summary_vehicle_rf: "Россия — СТС",
+    summary_vehicle_foreign: "Чет өлкө ТС — техпаспорт",
+
+    btn_continue: "Улантуу 👉",
+
+    ask_license_front:
+      "Айдоочулук күбөлүгү (ВУ) — алдыңкы жагынан бир сүрөт жөнөтүңүз.",
+
+    confirm_license_uploaded:
+      "✅ ВУ сүрөтү кабыл алынды\n\nОкула тургандыгын текшерип «Улантуу 👉» басыңыз\n\nже башка сүрөт жөнөтүңүз.",
+
+    ask_sts_front:
+      "СТС — бир сүрөт: бардык жазуулар ачык көрүнсүн (адатта жайылма же негизги бет).",
+
+    ask_tech_passport_front:
+      "Чет өлкө ТС техпаспорту — АЛДЫНКЫ ЖАГЫ (бир сүрөт).",
+
+    ask_tech_passport_back:
+      "Чет өлкө ТС техпаспорту — АРТКЫ ЖАГЫ (бир сүрөт).",
+
+    confirm_tech_passport_front:
+      "✅ Техпаспорттун алдыңкы жагы кабыл алынды\n\n«Улантуу 👉» же башка сүрөт.",
+
+    confirm_tech_passport_back:
+      "✅ Техпаспорттун арткы жагы кабыл алынды\n\n«Улантуу 👉» же башка сүрөт.",
+
+    confirm_sts_uploaded:
+      "✅ СТС сүрөтү кабыл алынды\n\nОкула тургандыгын текшерип «Улантуу 👉» басыңыз\n\nже башка сүрөт жөнөтүңүз.",
+
     ask_city: "Кайсы шаарда иштейсиз? Баскыч же текст.",
 
     err_city_need_text: "Шаардын атын текст менен жазыңыз; сүрөт жөнөтпөңүз.",
@@ -1131,6 +1343,25 @@ const BK_STRINGS = {
     ask_citizenship: "РФ жаранысызбы?",
 
     confirm_citizenship: (yes) => `РФ жарандыгы: ${yes ? "Ооба" : "Жок"}`,
+
+    ask_bike_smz_phone:
+      "«Мой налог» колдонмосуна байланган телефон номерин жазыңыз (РФ: +7… же 8…).",
+
+    err_bike_smz_phone_invalid:
+      "РФ номери керек: +7XXXXXXXXXX, 8XXXXXXXXXX же 10 сан коду жок.",
+
+    confirm_bike_smz_phone: (phone) => `«Мой налог» телефону: ${phone}`,
+
+    ask_bike_smz_address:
+      "Толук даректи бир билдирүү менен жазыңыз: шаар, көчө, подъезд, батир.",
+
+    err_bike_smz_address_short:
+      "Өтө кыска. Шаар, көчө, подъезд жана батирди көрсөтүңүз.",
+
+    err_bike_smz_address_no_media:
+      "Дарек текст менен; сүрөт жөнөтпөңүз.",
+
+    confirm_bike_smz_address: (addr) => `Дарек: ${addr}`,
 
     ask_thermal: "Термокороб барбы?",
 
@@ -1181,6 +1412,8 @@ const BK_STRINGS = {
       truck_wrap: "Брендинг",
       self_employed: "Өзүн өзү эмгекке жаратуу",
       inn: "ИНН",
+      bike_smz_phone: "«Мой налог» тел.",
+      bike_smz_address: "Дарек (СМЗ)",
       bike_thermal: "Вело термокороб",
       bike_passport: "Паспорт",
     },
@@ -1207,6 +1440,8 @@ const BK_STRINGS = {
     group_label_truck_branding: "🏷 Брендинг:",
     group_label_bike_self: "🧾 Өзүн эмгекке жаратуу:",
     group_label_bike_inn: "#️⃣ ИНН:",
+    group_label_bike_smz_phone: "📱 «Мой налог» телефону:",
+    group_label_bike_smz_address: "📍 Дарек (шаар, көчө, подъезд, батир):",
     group_label_bike_thermal: "📦 Вело термокороб:",
     group_docs_heading: "📎 ДОКУМЕНТТЕР",
     group_docs_empty: "Арызга файлдар тиркелген эмес.",
@@ -1260,10 +1495,15 @@ const BK_STRINGS = {
     yx_ask_city: "Укажите город работы кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc: "Выберите тип документа (Казахстан / Кыргызстан).",
+    yx_ask_kz_doc: "Выберите тип документа.",
     yx_ask_tm_visa:
       "Выберите тип визы кнопкой ниже (шаг после загрузки паспорта).",
 
+    yx_cit_uz: "Узбекистан",
+    yx_cit_tj: "Таджикистан",
+    yx_cit_kz: "Казахстан",
+    yx_cit_kg: "Кыргызстан",
+    yx_cit_other: "Или другое",
     yx_cit_uz_tj: "Узбекистан / Таджикистан",
     yx_cit_kz_kg: "Казахстан / Кыргызстан",
     yx_cit_rf: "Гражданин РФ",
@@ -1455,14 +1695,19 @@ export function buildBkSummaryI18n(lang, profile) {
         }`
       );
     }
-    if (bk.selfEmployed === true && bk.inn) {
+    if (bk.selfEmployed === true && bk.rfCitizen === true) {
+      if (bk.moyNalogPhone) {
+        lines.push(
+          `${n++}. ${summaryTitle(lg, "bike_smz_phone")}: ${bk.moyNalogPhone}`
+        );
+      }
+      if (bk.smzAddress) {
+        lines.push(
+          `${n++}. ${summaryTitle(lg, "bike_smz_address")}: ${bk.smzAddress}`
+        );
+      }
+    } else if (bk.selfEmployed === true && bk.inn) {
       lines.push(`${n++}. ${summaryTitle(lg, "inn")}: ${bk.inn}`);
-    }
-    if (typeof bk.hasThermal === "boolean") {
-      const thLabel = bk.hasThermal ? y : tBK(lang, "summary_thermal_no");
-      lines.push(
-        `${n++}. ${summaryTitle(lg, "bike_thermal")}: ${thLabel}`
-      );
     }
   }
   if (bk.categoryKey === "truck") {
@@ -1478,15 +1723,6 @@ export function buildBkSummaryI18n(lang, profile) {
       lines.push(
         `${n++}. ${summaryTitle(lg, "truck_payload")}: ${formatted}`
       );
-    }
-    if (bk.truckLoaders != null) {
-      const loaderLabels = [
-        tBK(lang, "truck_loader_btn_0"),
-        tBK(lang, "truck_loader_btn_1"),
-        tBK(lang, "truck_loader_btn_2"),
-      ];
-      const lbl = loaderLabels[bk.truckLoaders] ?? String(bk.truckLoaders);
-      lines.push(`${n++}. ${summaryTitle(lg, "truck_loaders")}: ${lbl}`);
     }
     if (typeof bk.truckBranding === "boolean") {
       lines.push(

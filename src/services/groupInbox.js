@@ -82,13 +82,6 @@ function formatAnketaBlock(profile) {
                 ),
               })}`
             : `${tBK(lg, "group_label_truck_payload")} ${dash}`,
-          bk.truckLoaders != null
-            ? `${tBK(lg, "group_label_truck_loaders")} ${
-                [0, 1, 2].includes(bk.truckLoaders)
-                  ? tBK(lg, `group_truck_loader_word_${bk.truckLoaders}`)
-                  : bk.truckLoaders
-              }`
-            : `${tBK(lg, "group_label_truck_loaders")} ${dash}`,
           typeof bk.truckBranding === "boolean"
             ? `${tBK(lg, "group_label_truck_branding")} ${
                 bk.truckBranding ? y : no
@@ -105,13 +98,13 @@ function formatAnketaBlock(profile) {
               }`
             : `${tBK(lg, "group_label_bike_self")} ${dash}`,
           ...(bk.selfEmployed === true
-            ? [`${tBK(lg, "group_label_bike_inn")} ${bk.inn || dash}`]
+            ? bk.rfCitizen === true
+              ? [
+                  `${tBK(lg, "group_label_bike_smz_phone")} ${bk.moyNalogPhone || dash}`,
+                  `${tBK(lg, "group_label_bike_smz_address")} ${bk.smzAddress || dash}`,
+                ]
+              : [`${tBK(lg, "group_label_bike_inn")} ${bk.inn || dash}`]
             : []),
-          typeof bk.hasThermal === "boolean"
-            ? `${tBK(lg, "group_label_bike_thermal")} ${
-                bk.hasThermal ? y : tBK(lg, "summary_thermal_no")
-              }`
-            : `${tBK(lg, "group_label_bike_thermal")} ${dash}`,
         ]
       : []),
   ];
@@ -251,10 +244,15 @@ function formatYandexAnketaBlock(profile) {
         ? tBK(lg, "yx_city_spb")
         : dash;
   const citMap = {
+    uz: "yx_cit_uz",
+    tj: "yx_cit_tj",
+    kz: "yx_cit_kz",
+    kg: "yx_cit_kg",
     uz_tj: "yx_cit_uz_tj",
     kz_kg: "yx_cit_kz_kg",
     rf: "yx_cit_rf",
     tm: "yx_cit_tm",
+    other: "yx_cit_other",
   };
   const citizen =
     yx.citizen && citMap[yx.citizen] ? tBK(lg, citMap[yx.citizen]) : yx.citizen || dash;

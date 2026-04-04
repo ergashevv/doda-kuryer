@@ -56,9 +56,10 @@ export function isDodaUploadDocKey(key) {
 
 /**
  * Doda taxi: VU → (legkovoy: RF=СТС | chet el=2× техпаспорт) → загран паспорт.
- * Yuk mashinasi: VU → СТС → габариты → грузоподъемность → грузчики → оклейка → паспорт.
- * Velosiped: самозанятость → (если да — ИНН) → термокороб → паспорт.
- * Piyoda / moto: VU → СТС → паспорт.
+ * Yuk mashinasi: VU → СТС → габариты → грузоподъемность → оклейка → паспорт.
+ * Velosiped: самозанятость → (РФ+да: «Мой налог» тел. + адрес | иначе ИНН) → паспорт.
+ * Moto: telefon (til qadamida) → VU → pasport; shahar va RK fuqaroligi so‘ralmaydi.
+ * Piyoda: VU → СТС → паспорт.
  */
 export function dodaDocSequence(categoryKey, bk = {}) {
   if (categoryKey === "truck") {
@@ -67,16 +68,24 @@ export function dodaDocSequence(categoryKey, bk = {}) {
       "sts",
       "truck_dimensions",
       "truck_payload",
-      "truck_loaders",
       "truck_branding",
       "passport",
     ];
   }
   if (categoryKey === "bike") {
     const seq = ["self_employed"];
-    if (bk.selfEmployed === true) seq.push("inn");
-    seq.push("thermal", "passport");
+    if (bk.selfEmployed === true) {
+      if (bk.rfCitizen === true) {
+        seq.push("bike_smz_phone", "bike_smz_address");
+      } else {
+        seq.push("inn");
+      }
+    }
+    seq.push("passport");
     return seq;
+  }
+  if (categoryKey === "moto") {
+    return ["license", "passport"];
   }
   if (categoryKey !== "car") {
     return ["license", "sts", "passport"];
@@ -103,8 +112,14 @@ export function getFirstMissingDodaStepSync(bk, uploaded) {
       if (!bk.inn || String(bk.inn).trim() === "") return key;
       continue;
     }
-    if (key === "thermal") {
-      if (typeof bk.hasThermal !== "boolean") return key;
+    if (key === "bike_smz_phone") {
+      if (!bk.moyNalogPhone || String(bk.moyNalogPhone).trim() === "")
+        return key;
+      continue;
+    }
+    if (key === "bike_smz_address") {
+      const a = bk.smzAddress != null ? String(bk.smzAddress).trim() : "";
+      if (a.length < 12) return key;
       continue;
     }
     if (isDodaUploadDocKey(key)) {
@@ -117,10 +132,6 @@ export function getFirstMissingDodaStepSync(bk, uploaded) {
     }
     if (key === "truck_payload") {
       if (bk.truckPayloadKg == null || bk.truckPayloadKg === "") return key;
-      continue;
-    }
-    if (key === "truck_loaders") {
-      if (bk.truckLoaders == null) return key;
       continue;
     }
     if (key === "truck_branding") {

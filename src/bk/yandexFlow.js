@@ -177,16 +177,31 @@ function lineTm(yx) {
   return L;
 }
 
+/** UZ/TJ guruh (alohida tugmalar: uz, tj; eski: uz_tj) */
+export function isYxCitizenUzTjGroup(c) {
+  return c === "uz" || c === "tj" || c === "uz_tj";
+}
+
+/** KZ/KG guruh (alohida: kz, kg; eski: kz_kg) */
+export function isYxCitizenKzKgGroup(c) {
+  return c === "kz" || c === "kg" || c === "kz_kg";
+}
+
+/** Boshqa davlat — hujjatlar RF bilan bir xil ketma-kilik */
+export function isYxCitizenOther(c) {
+  return c === "other";
+}
+
 export function buildYxLine(yx) {
   if (!yx?.citizen) return [];
-  if (yx.citizen === "uz_tj") {
+  if (isYxCitizenUzTjGroup(yx.citizen)) {
     if (yx.uzDocKind === "patent") return lineUzPatent(yx);
     if (yx.uzDocKind === "vnzh") return lineUzVnzh(yx);
     if (yx.uzDocKind === "student") return lineUzStudent(yx);
     return [];
   }
-  if (yx.citizen === "kz_kg") return lineKzKg(yx);
-  if (yx.citizen === "rf") return lineRf(yx);
+  if (isYxCitizenKzKgGroup(yx.citizen)) return lineKzKg(yx);
+  if (yx.citizen === "rf" || isYxCitizenOther(yx.citizen)) return lineRf(yx);
   if (yx.citizen === "tm") return lineTm(yx);
   return [];
 }
@@ -195,8 +210,8 @@ export function getYandexUiState(yx, completedLen) {
   if (!yx?.service) return { ui: "none" };
   if (!yx.cityKey) return { ui: "city" };
   if (!yx.citizen) return { ui: "citizen" };
-  if (yx.citizen === "uz_tj" && !yx.uzDocKind) return { ui: "uz_doc" };
-  if (yx.citizen === "kz_kg" && !yx.kzDocKind) return { ui: "kz_doc" };
+  if (isYxCitizenUzTjGroup(yx.citizen) && !yx.uzDocKind) return { ui: "uz_doc" };
+  if (isYxCitizenKzKgGroup(yx.citizen) && !yx.kzDocKind) return { ui: "kz_doc" };
   const line = buildYxLine(yx);
   if (completedLen >= line.length) return { ui: "done" };
   return { ui: "step", step: line[completedLen] };

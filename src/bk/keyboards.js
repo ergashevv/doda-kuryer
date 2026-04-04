@@ -134,17 +134,6 @@ export function selfEmployedInline(lang) {
   ]);
 }
 
-/** Velosiped: термокороб */
-export function thermalBikeInline(lang) {
-  const lg = normalizeBKLang(lang);
-  return Markup.inlineKeyboard([
-    [
-      Markup.button.callback(tBK(lg, "btn_therm_yes"), "bk_TH:1"),
-      Markup.button.callback(tBK(lg, "btn_therm_no"), "bk_TH:0"),
-    ],
-  ]);
-}
-
 const TRUCK_DIM_CODES = ["S", "M", "L", "XL", "XXL"];
 
 export function truckDimensionsInline(lang) {
@@ -154,17 +143,6 @@ export function truckDimensionsInline(lang) {
       Markup.button.callback(tBK(lg, `truck_dim_btn_${c}`), `bk_TR:d:${c}`),
     ])
   );
-}
-
-export function truckLoadersInline(lang) {
-  const lg = normalizeBKLang(lang);
-  return Markup.inlineKeyboard([
-    [
-      Markup.button.callback(tBK(lg, "truck_loader_btn_0"), "bk_TR:l:0"),
-      Markup.button.callback(tBK(lg, "truck_loader_btn_1"), "bk_TR:l:1"),
-      Markup.button.callback(tBK(lg, "truck_loader_btn_2"), "bk_TR:l:2"),
-    ],
-  ]);
 }
 
 export function truckBrandingInline(lang) {
@@ -228,25 +206,38 @@ export function reviewKb(lang, bk = {}) {
       Markup.button.callback(`⚖️ ${summaryTitle(lg, "truck_payload")}`, "bk_R:e:tpay"),
     ]);
     rows.push([
-      Markup.button.callback(`👷 ${summaryTitle(lg, "truck_loaders")}`, "bk_R:e:tload"),
       Markup.button.callback(`🏷 ${summaryTitle(lg, "truck_wrap")}`, "bk_R:e:twrap"),
     ]);
   }
   if (bk.categoryKey === "bike") {
     rows.push([
       Markup.button.callback(`🧾 ${summaryTitle(lg, "self_employed")}`, "bk_R:e:bself"),
-      Markup.button.callback(`#️⃣ ${summaryTitle(lg, "inn")}`, "bk_R:e:binn"),
     ]);
-    rows.push([
-      Markup.button.callback(`📦 ${summaryTitle(lg, "bike_thermal")}`, "bk_R:e:bth"),
-    ]);
+    if (bk.selfEmployed === true && bk.rfCitizen === true) {
+      rows.push([
+        Markup.button.callback(
+          `📱 ${summaryTitle(lg, "bike_smz_phone")}`,
+          "bk_R:e:bsmzphone"
+        ),
+        Markup.button.callback(
+          `📍 ${summaryTitle(lg, "bike_smz_address")}`,
+          "bk_R:e:bsmzaddr"
+        ),
+      ]);
+    } else if (bk.selfEmployed === true) {
+      rows.push([
+        Markup.button.callback(`#️⃣ ${summaryTitle(lg, "inn")}`, "bk_R:e:binn"),
+      ]);
+    }
   }
-  rows.push(
-    [
+  if (bk.categoryKey !== "moto") {
+    rows.push([
       Markup.button.callback(`🏙 ${summaryTitle(lg, "city")}`, "bk_R:e:city"),
       Markup.button.callback(`🪪 ${summaryTitle(lg, "citizenship")}`, "bk_R:e:cit"),
-    ],
-    [Markup.button.callback(`🛂 ${summaryTitle(lg, "passport")}`, "bk_R:e:passport")]
-  );
+    ]);
+  }
+  rows.push([
+    Markup.button.callback(`🛂 ${summaryTitle(lg, "passport")}`, "bk_R:e:passport"),
+  ]);
   return Markup.inlineKeyboard(rows);
 }

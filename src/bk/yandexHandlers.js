@@ -63,12 +63,19 @@ export function yxCityInline(lang) {
 export function yxCitizenInline(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.inlineKeyboard([
-    [Markup.button.callback(tBK(lg, "yx_cit_uz_tj"), "bk_YX:cit:uz_tj")],
-    [Markup.button.callback(tBK(lg, "yx_cit_kz_kg"), "bk_YX:cit:kz_kg")],
+    [
+      Markup.button.callback(tBK(lg, "yx_cit_uz"), "bk_YX:cit:uz"),
+      Markup.button.callback(tBK(lg, "yx_cit_tj"), "bk_YX:cit:tj"),
+    ],
+    [
+      Markup.button.callback(tBK(lg, "yx_cit_kz"), "bk_YX:cit:kz"),
+      Markup.button.callback(tBK(lg, "yx_cit_kg"), "bk_YX:cit:kg"),
+    ],
     [
       Markup.button.callback(tBK(lg, "yx_cit_rf"), "bk_YX:cit:rf"),
       Markup.button.callback(tBK(lg, "yx_cit_tm"), "bk_YX:cit:tm"),
     ],
+    [Markup.button.callback(tBK(lg, "yx_cit_other"), "bk_YX:cit:other")],
   ]);
 }
 
@@ -172,10 +179,15 @@ export async function promptYandexStep(ctx, client, uid, profile) {
 
 function yxCitizenLabel(lg, code) {
   const m = {
+    uz: "yx_cit_uz",
+    tj: "yx_cit_tj",
+    kz: "yx_cit_kz",
+    kg: "yx_cit_kg",
     uz_tj: "yx_cit_uz_tj",
     kz_kg: "yx_cit_kz_kg",
     rf: "yx_cit_rf",
     tm: "yx_cit_tm",
+    other: "yx_cit_other",
   };
   const k = m[code];
   return k ? tBK(lg, k) : code || "—";
@@ -399,6 +411,18 @@ export async function handleYandexCallback(ctx, client, uid, data) {
   }
   if (payload.startsWith("cit:")) {
     const c = payload.slice(4);
+    const allowed = new Set([
+      "uz",
+      "tj",
+      "kz",
+      "kg",
+      "rf",
+      "tm",
+      "other",
+      "uz_tj",
+      "kz_kg",
+    ]);
+    if (!allowed.has(c)) return false;
     yx.citizen = c;
     yx.uzDocKind = null;
     yx.kzDocKind = null;

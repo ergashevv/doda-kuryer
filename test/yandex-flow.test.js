@@ -56,8 +56,18 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
   });
 
+  test("UZ (alohida) + hujjat turi yoq → uz_doc", () => {
+    const yx = baseYx({ citizen: "uz", uzDocKind: null });
+    assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
+  });
+
   test("KZ/KG + doc tur yoq → kz_doc", () => {
     const yx = baseYx({ citizen: "kz_kg", kzDocKind: null });
+    assert.deepEqual(getYandexUiState(yx, 0), { ui: "kz_doc" });
+  });
+
+  test("KG (alohida) + doc tur yoq → kz_doc", () => {
+    const yx = baseYx({ citizen: "kg", kzDocKind: null });
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "kz_doc" });
   });
 
@@ -82,6 +92,14 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.equal(st.ui, "step");
     assert.equal(st.step.docType, "yx_rf_pass_face");
     assert.equal(st.step.t, "photo");
+  });
+
+  test("Boshqa davlat: RF bilan bir xil liniya", () => {
+    const rf = buildYxLine(baseYx({ citizen: "rf" }));
+    const other = buildYxLine(baseYx({ citizen: "other" }));
+    assert.deepEqual(other, rf);
+    const st = getYandexUiState(baseYx({ citizen: "other" }), 0);
+    assert.equal(st.step.docType, "yx_rf_pass_face");
   });
 
   test("RF: completedLen toliq bolsa → done", () => {
@@ -167,6 +185,11 @@ describe("Callback data — handler bilan mos payload", () => {
   test("bk_YX:cit:uz_tj → fuqarolik kodi", () => {
     const p = yxPayload(`${PREFIX_YX}cit:uz_tj`);
     assert.equal(p.slice(4), "uz_tj");
+  });
+
+  test("bk_YX:cit:uz / cit:other", () => {
+    assert.equal(yxPayload(`${PREFIX_YX}cit:uz`).slice(4), "uz");
+    assert.equal(yxPayload(`${PREFIX_YX}cit:other`).slice(4), "other");
   });
 
   test("bk_YX:uz:patent → patent", () => {
