@@ -1,14 +1,24 @@
 #!/usr/bin/env node
 /**
  * Barcha foydalanuvchi profillari, chat log va yuklangan fayllar yozuvlarini o‘chiradi.
- * Ishlatish: DATABASE_URL bilan `node scripts/clear-all-user-data.mjs`
+ * DATABASE_URL: muhit o‘zgaruvchisi yoki loyiha ildizidagi `.env`, keyin `web/.env`.
  */
-import "dotenv/config";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import pg from "pg";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+for (const p of [resolve(root, ".env"), resolve(root, "web/.env")]) {
+  if (!existsSync(p)) continue;
+  dotenv.config({ path: p });
+  if ((process.env.DATABASE_URL || "").trim()) break;
+}
 
 const url = (process.env.DATABASE_URL || "").trim();
 if (!url) {
-  console.error("DATABASE_URL is required");
+  console.error("DATABASE_URL topilmadi (.env yoki web/.env da qo‘ying).");
   process.exit(1);
 }
 
