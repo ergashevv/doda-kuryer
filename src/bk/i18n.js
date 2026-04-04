@@ -28,8 +28,8 @@ const BK_STRINGS = {
     main_menu_after_faq: "Асосий меню:",
     faq_freedom_hint: "Саволни пастдаги тугма орқали танланг ёки /start",
 
-    btn_in_park: "😎 Men allaqachon BK parkidaman",
-    btn_not_in_park: "🙏 BK parkida emasman, ulash kerak",
+    btn_in_park: "😎 Men allaqachon DODA parkidaman",
+    btn_not_in_park: "🙏 DODA parkida emasman, ulash kerak",
     btn_support: "❓ Texnik yordam",
     btn_therm_yes: "Ҳа",
     btn_therm_no: "Йўқ, сотиб олиш керак",
@@ -420,8 +420,8 @@ const BK_STRINGS = {
     main_menu_after_faq: "Главное меню:",
     faq_freedom_hint: "Выбери вопрос кнопкой ниже или нажми /start.",
 
-    btn_in_park: "😎 Я уже в парке Doda taxi",
-    btn_not_in_park: "🙏 Я не в парке Doda taxi, нужно подключить",
+    btn_in_park: "😎 Я уже в парке DODA",
+    btn_not_in_park: "🙏 Я не в парке DODA, нужно подключить",
     btn_support: "❓ Нужна помощь техподдержки",
     btn_phone_from_telegram:
       "Использовать номер телефона, привязанный к Telegram",
@@ -889,8 +889,8 @@ const BK_STRINGS = {
     main_menu_after_faq: "Менюи асосӣ:",
     faq_freedom_hint: "Саволро бо тугма интихоб кунед ё /start",
 
-    btn_in_park: "😎 Ман аллакай дар парки БК ҳастам",
-    btn_not_in_park: "🙏 Дар парки БК нестам, пайваст кардан лозим",
+    btn_in_park: "😎 Ман аллакай дар парки DODA ҳастам",
+    btn_not_in_park: "🙏 Дар парки DODA нестам, пайваст кардан лозим",
     btn_support: "❓ Кӯмаки техникӣ",
     btn_therm_yes: "Ҳа",
     btn_therm_no: "Не, харидан лозим",
@@ -1275,8 +1275,8 @@ const BK_STRINGS = {
     main_menu_after_faq: "Негизги меню:",
     faq_freedom_hint: "Суроону төмөнкү баскыч менен тандаңыз же /start",
 
-    btn_in_park: "😎 Мен БК паркындамын",
-    btn_not_in_park: "🙏 БК паркында эмесмин, туташтыруу керек",
+    btn_in_park: "😎 Мен DODA паркындамын",
+    btn_not_in_park: "🙏 DODA паркында эмесмин, туташтыруу керек",
     btn_support: "❓ Техникалык жардам",
     btn_therm_yes: "Ооба",
     btn_therm_no: "Жок, сатып алуу керек",
