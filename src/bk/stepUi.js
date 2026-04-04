@@ -10,7 +10,10 @@ export function bkCollectMessageIds(sent) {
   return [sent.message_id].filter((id) => id != null);
 }
 
-/** Shaxsiy chatda bot foydalanuvchi xabarini o‘chira oladi — chatda «yig‘ilib» qolmasin. */
+/**
+ * Shaxsiy chatda user xabarini o‘chirish (handlers faqat `bk_doc_*` qadamlarida chaqiradi).
+ * Bot tomonda `bkSendStepMessage` avvalgi `bk_ui_message_ids` bo‘yicha bot xabarlarini almashtirish uchun o‘chiradi.
+ */
 export async function tryBkDeleteUserMessage(ctx, msg) {
   const chatId = ctx.chat?.id;
   const mid = msg?.message_id;

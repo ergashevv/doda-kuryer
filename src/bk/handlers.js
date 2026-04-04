@@ -85,9 +85,9 @@ function langOf(profile) {
   return normalizeBKLang(profile?.language);
 }
 
-/** Ro‘yxatdan o‘tish: `bk_*` holatida chatni tozalash; `done` va tashqarida user xabari qoladi. */
-function isBkOnboardingSessionState(sessionState) {
-  return typeof sessionState === "string" && sessionState.startsWith("bk_");
+/** Faqat hujjat suraladigan qadam (`bk_doc_*`): user yuborgan xabar o‘chiriladi. Telefon, menyu, shahar, Yandex matn — chatda qoladi. */
+function isDocRequestSessionState(sessionState) {
+  return typeof sessionState === "string" && /^bk_doc_/.test(sessionState);
 }
 
 function clearTruckBkFields(bk) {
@@ -405,7 +405,6 @@ export function registerBkHandlers(bot) {
       await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(pick, kb));
       await logChat(client, uid, "assistant", pick);
     });
-    await tryBkDeleteUserMessage(ctx, ctx.message);
   });
 
   bot.command("ARENDA", async (ctx) => {
@@ -1458,7 +1457,7 @@ export function registerBkHandlers(bot) {
     const text = (msg.text || "").trim();
 
     let deleteProcessedUserMessage = false;
-    let allowDeleteUserOnboardingMsg = false;
+    let allowDeleteUserDocStepMsg = false;
     const markConsumed = () => {
       deleteProcessedUserMessage = true;
     };
@@ -1466,7 +1465,7 @@ export function registerBkHandlers(bot) {
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
-      allowDeleteUserOnboardingMsg = isBkOnboardingSessionState(profile.session_state);
+      allowDeleteUserDocStepMsg = isDocRequestSessionState(profile.session_state);
       const state = profile.session_state;
       const lg = langOf(profile);
       const bkMsg = profile.session_data?.bk || {};
@@ -1513,10 +1512,7 @@ export function registerBkHandlers(bot) {
 
       if (state === "bk_yx") {
         const yxDone = await handleYandexMessage(ctx, client, uid, profile, msg);
-        if (yxDone) {
-          markConsumed();
-          return;
-        }
+        if (yxDone) return;
       }
 
       if (state === "bk_service") {
@@ -2014,7 +2010,7 @@ export function registerBkHandlers(bot) {
         markConsumed();
       }
     });
-    if (deleteProcessedUserMessage && allowDeleteUserOnboardingMsg) {
+    if (deleteProcessedUserMessage && allowDeleteUserDocStepMsg) {
       await tryBkDeleteUserMessage(ctx, msg);
     }
   });
