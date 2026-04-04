@@ -249,6 +249,10 @@ export function getYandexUiState(yx, completedLen, td) {
   if (isYxCitizenUzTjGroup(yx.citizen) && !yx.uzDocKind) return { ui: "uz_doc" };
   if (isYxCitizenKzKgGroup(yx.citizen) && !yx.kzDocKind) return { ui: "kz_doc" };
   const line = buildYxLine(yx);
+  if (line.length === 0) {
+    if (isYxCitizenUzTjGroup(yx.citizen)) return { ui: "uz_doc" };
+    return { ui: "none" };
+  }
   if (completedLen >= line.length) return { ui: "done" };
   return { ui: "step", step: line[completedLen] };
 }

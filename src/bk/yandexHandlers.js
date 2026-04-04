@@ -4,7 +4,7 @@ import { downloadTelegramFile } from "../services/storage.js";
 import { ensureProfile, updateProfile } from "../services/users.js";
 import { isAllowedDocumentMime } from "./media.js";
 import { normalizeRussianPhone } from "./phone.js";
-import { categoryInline } from "./keyboards.js";
+import { categoryInline, mainMenuReply } from "./keyboards.js";
 import { normalizeBKLang, tBK } from "./i18n.js";
 import {
   YX_EATS,
@@ -600,6 +600,12 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     );
     return;
   }
+  if (st.ui === "none") {
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg))
+    );
+    return;
+  }
   if (st.ui === "done") {
     const summary = buildYxReviewSummary(lg, profile);
     await updateProfile(client, uid, { session_state: "bk_yx_review" });
@@ -737,6 +743,9 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
     return true;
   }
   if (st.ui !== "step" || !st.step) {
+    if (st.ui === "none") {
+      await ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg));
+    }
     return true;
   }
 

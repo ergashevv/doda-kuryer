@@ -62,6 +62,11 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
   });
 
+  test("UZ: noto'g'ri uzDocKind → bo'sh line done emas, qayta uz_doc", () => {
+    const yx = baseYx({ citizen: "uz", uzDocKind: "bogus" });
+    assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
+  });
+
   test("KZ/KG + doc tur yoq → kz_doc", () => {
     const yx = baseYx({ citizen: "kz_kg", kzDocKind: null });
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "kz_doc" });
