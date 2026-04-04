@@ -1490,6 +1490,49 @@ export function registerBkHandlers(bot) {
         return;
       }
 
+      const mainMenuParkStates = new Set([
+        "bk_main",
+        "bk_yx",
+        "bk_yx_review",
+      ]);
+      if (mainMenuParkStates.has(state) && text === menuIn) {
+        await updateProfile(client, uid, { session_state: "bk_faq" });
+        await logChat(client, uid, "user", text);
+        await logChat(client, uid, "assistant", tBK(lg, "faq_intro"));
+        profile = await ensureProfile(client, uid);
+        await sendBkPlaceholderStep(ctx, client, uid, profile, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
+        markConsumed();
+        return;
+      }
+
+      if (mainMenuParkStates.has(state) && text === menuOut) {
+        await logChat(client, uid, "user", text);
+        if (!profile.phone) {
+          const td0 = { ...(profile.session_data || {}) };
+          const bk0 = { ...(td0.bk || {}) };
+          bk0.afterPhone = "service";
+          td0.bk = bk0;
+          await updateProfile(client, uid, {
+            session_state: "bk_phone",
+            session_data: td0,
+          });
+          await logChat(client, uid, "assistant", "[ask_phone service]");
+          profile = await ensureProfile(client, uid);
+          lg = langOf(profile);
+          await sendBkAskPhonePrompt(ctx, client, uid, profile, lg);
+        } else {
+          await updateProfile(client, uid, { session_state: "bk_service" });
+          await logChat(client, uid, "assistant", "[ask_service]");
+          profile = await ensureProfile(client, uid);
+          lg = langOf(profile);
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
+          );
+        }
+        markConsumed();
+        return;
+      }
+
       if (state === "bk_lang") {
         await logChat(client, uid, "user", text || "[non-text]");
         await bkSendStepMessage(ctx, client, uid, profile, () =>
@@ -1531,44 +1574,6 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
         );
-        markConsumed();
-        return;
-      }
-
-      if (state === "bk_main" && text === menuIn) {
-        await updateProfile(client, uid, { session_state: "bk_faq" });
-        await logChat(client, uid, "user", text);
-        await logChat(client, uid, "assistant", tBK(lg, "faq_intro"));
-        profile = await ensureProfile(client, uid);
-        await sendBkPlaceholderStep(ctx, client, uid, profile, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
-        markConsumed();
-        return;
-      }
-
-      if (state === "bk_main" && text === menuOut) {
-        await logChat(client, uid, "user", text);
-        if (!profile.phone) {
-          const td0 = { ...(profile.session_data || {}) };
-          const bk0 = { ...(td0.bk || {}) };
-          bk0.afterPhone = "service";
-          td0.bk = bk0;
-          await updateProfile(client, uid, {
-            session_state: "bk_phone",
-            session_data: td0,
-          });
-          await logChat(client, uid, "assistant", "[ask_phone service]");
-          profile = await ensureProfile(client, uid);
-          lg = langOf(profile);
-          await sendBkAskPhonePrompt(ctx, client, uid, profile, lg);
-        } else {
-          await updateProfile(client, uid, { session_state: "bk_service" });
-          await logChat(client, uid, "assistant", "[ask_service]");
-          profile = await ensureProfile(client, uid);
-          lg = langOf(profile);
-          await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
-          );
-        }
         markConsumed();
         return;
       }
