@@ -51,11 +51,15 @@ import {
   vehicleRfInline,
 } from "./keyboards.js";
 import {
+  applyBkServiceSelection,
+  applyYandexEditCallback,
   handleYandexCallback,
   handleYandexMessage,
+  matchBkServiceText,
   promptYandexStep,
-  servicePickInline,
-  yxReplyOptions,
+  servicePickReply,
+  yxReplyKeyboardOpts,
+  yxSubmitReply,
 } from "./yandexHandlers.js";
 import {
   bkClearStepUi,
@@ -85,6 +89,66 @@ function bkPayload(profile) {
 
 function langOf(profile) {
   return normalizeBKLang(profile?.language);
+}
+
+/** Yandex ariza tekshiruvidan yuborish (inline callback yoki reply «Yuborish»). */
+async function finalizeYandexReviewSubmit(ctx, uid) {
+  let profileAfter = null;
+  try {
+    profileAfter = await withTransaction(async (client) => {
+      const profile = await ensureProfile(client, uid);
+      if (profile.session_state !== "bk_yx_review") return null;
+      await updateProfile(client, uid, { session_state: "done" });
+      return getProfile(client, uid);
+    });
+  } catch (e) {
+    console.error("[bk] yx_review_send DB:", e?.stack || e?.message || e);
+    try {
+      await ctx.reply(
+        "Временная ошибка сервера. Попробуйте ещё раз или отправьте /start"
+      );
+    } catch (replyErr) {
+      console.warn("[bk] yx_review_send fallback reply:", replyErr?.message || replyErr);
+    }
+    return;
+  }
+  if (!profileAfter) {
+    let p;
+    try {
+      p = await withTransaction(async (client) => ensureProfile(client, uid));
+    } catch (e) {
+      console.error("[bk] yx_review_send stale read:", e?.message || e);
+      return;
+    }
+    const lg = langOf(p);
+    try {
+      await withTransaction(async (client) => {
+        const pr = await ensureProfile(client, uid);
+        await bkSendStepMessage(ctx, client, uid, pr, () =>
+          ctx.reply(tBK(lg, "review_callback_stale"))
+        );
+      });
+    } catch (replyErr) {
+      console.warn("[bk] stale reply:", replyErr?.message || replyErr);
+    }
+    return;
+  }
+  const lg = langOf(profileAfter);
+  try {
+    await notifyGroupYandexSubmission(ctx.telegram, profileAfter);
+  } catch (e) {
+    console.error("[bk] notifyGroupYandexSubmission:", e?.stack || e?.message || e);
+  }
+  const tail = tBK(lg, "yx_final_thanks");
+  try {
+    await withTransaction(async (client) => {
+      const p = await ensureProfile(client, uid);
+      await bkSendStepMessage(ctx, client, uid, p, () => ctx.reply(tail, mainMenuReply(lg)));
+      await logChat(client, uid, "assistant", tail);
+    });
+  } catch (e) {
+    console.error("[bk] yx_final reply/log:", e?.stack || e?.message || e);
+  }
 }
 
 function clearTruckBkFields(bk) {
@@ -430,64 +494,8 @@ export function registerBkHandlers(bot) {
       console.warn("[bk] answerCbQuery:", e?.description || e?.message || e);
     }
 
-    /** Yandex «Отправить»: faqat DB — commit bo‘lgach Telegram (xato rollback qilmaydi). */
     if (data === "bk_YR:send") {
-      let profileAfter = null;
-      try {
-        profileAfter = await withTransaction(async (client) => {
-          const profile = await ensureProfile(client, uid);
-          if (profile.session_state !== "bk_yx_review") return null;
-          await updateProfile(client, uid, { session_state: "done" });
-          return getProfile(client, uid);
-        });
-      } catch (e) {
-        console.error("[bk] bk_YR:send DB:", e?.stack || e?.message || e);
-        try {
-          await ctx.reply(
-            "Временная ошибка сервера. Попробуйте ещё раз или отправьте /start"
-          );
-        } catch (replyErr) {
-          console.warn("[bk] bk_YR:send fallback reply:", replyErr?.message || replyErr);
-        }
-        return;
-      }
-      if (!profileAfter) {
-        let p;
-        try {
-          p = await withTransaction(async (client) => ensureProfile(client, uid));
-        } catch (e) {
-          console.error("[bk] bk_YR:send stale read:", e?.message || e);
-          return;
-        }
-        const lg = langOf(p);
-        try {
-          await withTransaction(async (client) => {
-            const pr = await ensureProfile(client, uid);
-            await bkSendStepMessage(ctx, client, uid, pr, () =>
-              ctx.reply(tBK(lg, "review_callback_stale"))
-            );
-          });
-        } catch (replyErr) {
-          console.warn("[bk] stale reply:", replyErr?.message || replyErr);
-        }
-        return;
-      }
-      const lg = langOf(profileAfter);
-      try {
-        await notifyGroupYandexSubmission(ctx.telegram, profileAfter);
-      } catch (e) {
-        console.error("[bk] notifyGroupYandexSubmission:", e?.stack || e?.message || e);
-      }
-      const tail = tBK(lg, "yx_final_thanks");
-      try {
-        await withTransaction(async (client) => {
-          const p = await ensureProfile(client, uid);
-          await bkSendStepMessage(ctx, client, uid, p, () => ctx.reply(tail, mainMenuReply(lg)));
-          await logChat(client, uid, "assistant", tail);
-        });
-      } catch (e) {
-        console.error("[bk] yx_final reply/log:", e?.stack || e?.message || e);
-      }
+      await finalizeYandexReviewSubmit(ctx, uid);
       return;
     }
 
@@ -873,35 +881,7 @@ export function registerBkHandlers(bot) {
           return;
         }
         if (field === "yx") {
-          if (profile.session_state !== "bk_yx") {
-            await bkSendStepMessage(ctx, client, uid, profile, () =>
-              ctx.reply(tBK(lg, "review_callback_stale"))
-            );
-            return;
-          }
-          const tdYx = { ...(profile.session_data || {}) };
-          if (tdYx.yx_staged_doc) {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = $2`,
-              [uid, tdYx.yx_staged_doc]
-            );
-            const chatIdYx = ctx.chat?.id;
-            await flushBkPendingUserMessage(ctx, tdYx, chatIdYx);
-            const pv = [...(tdYx.yx_preview_msg_ids || [])];
-            if (chatIdYx && pv.length) {
-              for (const mid of pv) {
-                try {
-                  await ctx.telegram.deleteMessage(chatIdYx, mid);
-                } catch (_) {}
-              }
-            }
-            delete tdYx.yx_staged_doc;
-            tdYx.yx_preview_msg_ids = [];
-            await updateProfile(client, uid, { session_data: tdYx });
-            profile = await ensureProfile(client, uid);
-          }
-          await logChat(client, uid, "user", "edit:yx_reprompt");
-          await promptYandexStep(ctx, client, uid, profile);
+          await applyYandexEditCallback(ctx, client, uid);
           return;
         }
         if (field === "cat") {
@@ -1521,8 +1501,13 @@ export function registerBkHandlers(bot) {
 
       if (state === "bk_yx_review") {
         await logChat(client, uid, "user", text || "[non-text at yx review]");
+        if (text === tBK(lg, "submit_btn")) {
+          await finalizeYandexReviewSubmit(ctx, uid);
+          markConsumed();
+          return;
+        }
         await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "yx_review_use_buttons"))
+          ctx.reply(tBK(lg, "yx_review_use_buttons"), yxReplyKeyboardOpts(yxSubmitReply(lg)))
         );
         markConsumed();
         return;
@@ -1537,8 +1522,14 @@ export function registerBkHandlers(bot) {
         profile = await ensureProfile(client, uid);
         lg = langOf(profile);
         await logChat(client, uid, "user", text || "[non-text at service]");
+        const svcPick = matchBkServiceText(lg, text);
+        if (svcPick) {
+          await applyBkServiceSelection(ctx, client, uid, svcPick);
+          markConsumed();
+          return;
+        }
         await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
+          ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
         );
         markConsumed();
         return;
@@ -1575,7 +1566,7 @@ export function registerBkHandlers(bot) {
           profile = await ensureProfile(client, uid);
           lg = langOf(profile);
           await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
+            ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
           );
         }
         markConsumed();
@@ -1949,7 +1940,10 @@ export function registerBkHandlers(bot) {
         if (afterPhone === "service") {
           await bkSendStepMessage(ctx, client, uid, profile, async () => {
             const m1 = await ctx.reply(cmsg, editOnly(lg, "bk_E:phone"));
-            const m2 = await ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)));
+            const m2 = await ctx.reply(
+              tBK(lg, "ask_service"),
+              yxReplyKeyboardOpts(servicePickReply(lg))
+            );
             return [m1, m2];
           });
         } else {
