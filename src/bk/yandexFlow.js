@@ -14,7 +14,6 @@ export function initYandexSession(td, serviceKey, registeredPhone = null) {
     collected = {
       ...collected,
       yx_col_contact_phone: phone,
-      yx_col_tm_contact: phone,
     };
   }
   return clearYandexStagingSessionFields({

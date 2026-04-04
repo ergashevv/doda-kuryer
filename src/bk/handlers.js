@@ -55,11 +55,11 @@ import {
   applyYandexEditCallback,
   handleYandexCallback,
   handleYandexMessage,
+  isYandexSubmitButtonText,
   matchBkServiceText,
   promptYandexStep,
   servicePickReply,
-  yxReplyKeyboardOpts,
-  yxSubmitReply,
+  yxReviewSendOptions,
 } from "./yandexHandlers.js";
 import {
   bkClearStepUi,
@@ -1544,13 +1544,13 @@ export function registerBkHandlers(bot) {
 
       if (state === "bk_yx_review") {
         await logChat(client, uid, "user", text || "[non-text at yx review]");
-        if (text === tBK(lg, "submit_btn")) {
+        if (isYandexSubmitButtonText(lg, text)) {
           await finalizeYandexReviewSubmit(ctx, uid);
           markConsumed();
           return;
         }
         await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "yx_review_use_buttons"), yxReplyKeyboardOpts(yxSubmitReply(lg)))
+          ctx.reply(tBK(lg, "yx_review_use_buttons"), yxReviewSendOptions(lg))
         );
         markConsumed();
         return;

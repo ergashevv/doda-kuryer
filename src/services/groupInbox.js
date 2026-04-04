@@ -343,14 +343,19 @@ function formatYandexDocCaption(index, total, docKey, profile) {
 function formatYandexTextFieldsBlock(profile, lang) {
   const lg = normalizeBKLang(lang);
   const coll = profile?.session_data?.collected || {};
+  const phoneDup =
+    coll.yx_col_contact_phone &&
+    coll.yx_col_tm_contact &&
+    String(coll.yx_col_contact_phone).trim() ===
+      String(coll.yx_col_tm_contact).trim();
   const parts = [];
   for (const [k, v] of Object.entries(coll)) {
-    if (k.startsWith("yx_col_") && v) {
-      const lk = `yx_lbl_${k}`;
-      const lbl = tBK(lg, lk);
-      const label = lbl === lk ? k : lbl;
-      parts.push(`${label}: ${v}`);
-    }
+    if (!k.startsWith("yx_col_") || !v) continue;
+    if (phoneDup && k === "yx_col_tm_contact") continue;
+    const lk = `yx_lbl_${k}`;
+    const lbl = tBK(lg, lk);
+    const label = lbl === lk ? k : lbl;
+    parts.push(`${label}: ${v}`);
   }
   if (!parts.length) return "";
   return ["TEXT", parts.join("\n")].join("\n");
@@ -359,7 +364,13 @@ function formatYandexTextFieldsBlock(profile, lang) {
 /** Яндекс Лавка / Еда: анкета + вложения yx_* по порядку completed_yx */
 export async function notifyGroupYandexSubmission(telegram, profile) {
   const chatId = getDocsGroupChatId();
-  if (!chatId || !profile) return;
+  if (!profile) return;
+  if (!chatId) {
+    console.warn(
+      "[groupInbox] DOCS_GROUP_ID o‘rnatilmagan — Yandex arizasi kanalga yuborilmaydi"
+    );
+    return;
+  }
 
   const lg = normalizeBKLang(profile.language);
   const uid = profile.telegram_id;

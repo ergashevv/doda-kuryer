@@ -16,6 +16,10 @@ import {
   yxExtractFile,
   yxForbiddenMedia,
 } from "../src/bk/yandexFlow.js";
+import {
+  isYandexSubmitButtonText,
+  normalizeYandexReplyLabelText,
+} from "../src/bk/yandexHandlers.js";
 
 const PREFIX_YX = "bk_YX:";
 
@@ -312,11 +316,11 @@ describe("initYandexSession / clearYandexCollected", () => {
     assert.equal(td.yx.useRegisteredPhone, false);
   });
 
-  test("init: telefon berilsa — yx_col_contact_phone collected va useRegisteredPhone", () => {
+  test("init: telefon berilsa — faqat yx_col_contact_phone (dublikat tm_contact yo‘q)", () => {
     const td = initYandexSession({ bk: {} }, YX_EATS, "+79991234567");
     assert.equal(td.yx.useRegisteredPhone, true);
     assert.equal(td.collected.yx_col_contact_phone, "+79991234567");
-    assert.equal(td.collected.yx_col_tm_contact, "+79991234567");
+    assert.equal(td.collected.yx_col_tm_contact, undefined);
   });
 
   test("clearYandexCollected: faqat yx_col_* ochadi", () => {
@@ -325,6 +329,14 @@ describe("initYandexSession / clearYandexCollected", () => {
     });
     assert.equal(coll.bank, "keep");
     assert.equal(coll.yx_col_x, undefined);
+  });
+});
+
+describe("Yandex tugma matni (submit)", () => {
+  test("variation selector va bo‘shliq — baribir mos", () => {
+    const raw = "✅\uFE0F Yuborish";
+    assert.equal(normalizeYandexReplyLabelText(raw), normalizeYandexReplyLabelText("✅ Yuborish"));
+    assert.equal(isYandexSubmitButtonText("uz", raw), true);
   });
 });
 
