@@ -6,9 +6,7 @@ import {
   parseBkTrCallbackData,
 } from "../flow.js";
 import {
-  buildAskPhoneHtml,
   buildBkFinalWait,
-  buildBkSummaryI18n,
   categoryLabelForLang,
   faqItems,
   normalizeBKLang,
@@ -59,6 +57,16 @@ import {
   servicePickInline,
   yxReplyOptions,
 } from "./yandexHandlers.js";
+import {
+  bkClearStepUi,
+  bkReplyStep,
+  bkSendStepMessage,
+  replyBkAskPhoneNoPhoto,
+  replyBkDocUploadedEcho,
+  sendBkAskPhonePrompt,
+  sendBkPlaceholderStep,
+  sendBkReviewMessage,
+} from "./stepUi.js";
 import fs from "node:fs";
 
 function mapCategoryToTariff(cat) {
@@ -112,129 +120,6 @@ async function ensureDodaTariffService(client, uid, profile) {
     service: "doda_taxi",
   });
   return ensureProfile(client, uid);
-}
-
-async function sendPlaceholder(ctx, key, caption, extra = {}) {
-  const p = resolvePlaceholderPath(key);
-  if (p && fs.existsSync(p)) {
-    await ctx.replyWithPhoto({ source: p }, { caption, ...extra });
-  } else {
-    await ctx.reply(caption, extra);
-  }
-}
-
-function bkCollectMessageIds(sent) {
-  if (sent == null) return [];
-  if (Array.isArray(sent)) return sent.map((m) => m?.message_id).filter((id) => id != null);
-  return [sent.message_id].filter((id) => id != null);
-}
-
-/** Ro‘yxatdan o‘tishda chatda faqat oxirgi bot savoli qolishi uchun eski qadam xabarlarini o‘chiradi. */
-async function bkSendStepMessage(ctx, client, uid, profile, send) {
-  const chatId = ctx.chat?.id;
-  let td = { ...(profile.session_data || {}) };
-  const prev = [...(td.bk_ui_message_ids || [])];
-  if (chatId && prev.length) {
-    for (const mid of prev) {
-      try {
-        await ctx.telegram.deleteMessage(chatId, mid);
-      } catch (_) {}
-    }
-  }
-  td.bk_ui_message_ids = [];
-  await updateProfile(client, uid, { session_data: td });
-  profile = await ensureProfile(client, uid);
-  const sent = await send();
-  const ids = bkCollectMessageIds(sent);
-  td = { ...(profile.session_data || {}) };
-  td.bk_ui_message_ids = ids;
-  await updateProfile(client, uid, { session_data: td });
-  return sent;
-}
-
-async function bkClearStepUi(ctx, client, uid, profile) {
-  const chatId = ctx.chat?.id;
-  const td = { ...(profile.session_data || {}) };
-  const prev = [...(td.bk_ui_message_ids || [])];
-  if (chatId && prev.length) {
-    for (const mid of prev) {
-      try {
-        await ctx.telegram.deleteMessage(chatId, mid);
-      } catch (_) {}
-    }
-  }
-  td.bk_ui_message_ids = [];
-  await updateProfile(client, uid, { session_data: td });
-}
-
-async function sendBkPlaceholderStep(ctx, client, uid, profile, key, caption, extra = {}) {
-  return bkSendStepMessage(ctx, client, uid, profile, async () => {
-    const p = resolvePlaceholderPath(key);
-    if (p && fs.existsSync(p)) {
-      return await ctx.replyWithPhoto({ source: p }, { caption, ...extra });
-    }
-    return await ctx.reply(caption, extra);
-  });
-}
-
-async function bkReplyStep(ctx, client, uid, profile, text, extra = {}) {
-  return bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(text, extra));
-}
-
-async function sendBkAskPhonePrompt(ctx, client, uid, profile, lg) {
-  return bkSendStepMessage(ctx, client, uid, profile, async () => {
-    const { text, parse_mode } = buildAskPhoneHtml(lg);
-    const kb = phoneStepReply(lg);
-    const p = resolvePlaceholderPath("phone");
-    const hasPhoto = p && fs.existsSync(p);
-    if (hasPhoto) {
-      const m1 = await ctx.replyWithPhoto(
-        { source: p },
-        { caption: text, parse_mode: parse_mode || undefined }
-      );
-      const m2 = await ctx.reply(tBK(lg, "ask_phone_keyboard_nudge"), kb);
-      return [m1, m2];
-    }
-    const ex = { ...kb };
-    if (parse_mode) ex.parse_mode = parse_mode;
-    return await ctx.reply(text, ex);
-  });
-}
-
-async function replyBkAskPhoneNoPhoto(ctx, client, uid, profile, lg) {
-  return bkSendStepMessage(ctx, client, uid, profile, async () => {
-    const { text, parse_mode } = buildAskPhoneHtml(lg);
-    const extra = { ...phoneStepReply(lg) };
-    if (parse_mode) extra.parse_mode = parse_mode;
-    return await ctx.reply(text, extra);
-  });
-}
-
-async function replyBkDocUploadedEcho(ctx, client, uid, profile, lg, msg, caption, markup) {
-  return bkSendStepMessage(ctx, client, uid, profile, async () => {
-    let fileId = null;
-    if (msg.photo?.length) {
-      fileId = msg.photo[msg.photo.length - 1].file_id;
-    } else if (msg.document) {
-      fileId = msg.document.file_id;
-    }
-    if (!fileId) {
-      return await ctx.reply(caption, markup);
-    }
-    return await ctx.replyWithPhoto(fileId, {
-      caption,
-      ...markup,
-    });
-  });
-}
-
-async function sendBkReviewMessage(ctx, client, uid, profile) {
-  const lg = langOf(profile);
-  const bk2 = profile.session_data?.bk || {};
-  const summary = buildBkSummaryI18n(lg, profile);
-  return bkSendStepMessage(ctx, client, uid, profile, () =>
-    ctx.reply(`${summary}\n\n${tBK(lg, "review_hint")}`, reviewKb(lg, bk2))
-  );
 }
 
 async function tryAcceptDoc(client, ctx, profile, uid, doc, msg) {
@@ -338,18 +223,19 @@ async function promptFirstMissingDodaDoc(ctx, client, uid, profile) {
   await sendBkReviewMessage(ctx, client, uid, p2);
 }
 
-async function promptDodaDocStep(ctx, client, uid, profile, docKey) {
+async function promptDodaDocStep(ctx, client, uid, profile, docKey, errPrefix = null) {
   const lg = langOf(profile);
+  const c = (s) => (errPrefix ? `${errPrefix}\n\n${s}` : s);
   if (docKey === "license") {
     await updateProfile(client, uid, { session_state: "bk_doc_license" });
     profile = await ensureProfile(client, uid);
-    await sendBkPlaceholderStep(ctx, client, uid, profile, "license", tBK(lg, "ask_license_front"));
+    await sendBkPlaceholderStep(ctx, client, uid, profile, "license", c(tBK(lg, "ask_license_front")));
     return;
   }
   if (docKey === "sts") {
     await updateProfile(client, uid, { session_state: "bk_doc_sts" });
     profile = await ensureProfile(client, uid);
-    await sendBkPlaceholderStep(ctx, client, uid, profile, "sts", tBK(lg, "ask_sts_front"));
+    await sendBkPlaceholderStep(ctx, client, uid, profile, "sts", c(tBK(lg, "ask_sts_front")));
     return;
   }
   if (docKey === "tech_passport_front") {
@@ -361,7 +247,7 @@ async function promptDodaDocStep(ctx, client, uid, profile, docKey) {
       uid,
       profile,
       "tech_passport_front",
-      tBK(lg, "ask_tech_passport_front")
+      c(tBK(lg, "ask_tech_passport_front"))
     );
     return;
   }
@@ -374,50 +260,50 @@ async function promptDodaDocStep(ctx, client, uid, profile, docKey) {
       uid,
       profile,
       "tech_passport_back",
-      tBK(lg, "ask_tech_passport_back")
+      c(tBK(lg, "ask_tech_passport_back"))
     );
     return;
   }
   if (docKey === "truck_dimensions") {
     await updateProfile(client, uid, { session_state: "bk_truck_dimensions" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_truck_dimensions"), truckDimensionsInline(lg));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_truck_dimensions")), truckDimensionsInline(lg));
     return;
   }
   if (docKey === "truck_payload") {
     await updateProfile(client, uid, { session_state: "bk_truck_payload" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_truck_payload"));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_truck_payload")));
     return;
   }
   if (docKey === "truck_branding") {
     await updateProfile(client, uid, { session_state: "bk_truck_branding" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_truck_branding"), truckBrandingInline(lg));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_truck_branding")), truckBrandingInline(lg));
     return;
   }
   if (docKey === "self_employed") {
     await updateProfile(client, uid, { session_state: "bk_self_employed" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_self_employed"), selfEmployedInline(lg));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_self_employed")), selfEmployedInline(lg));
     return;
   }
   if (docKey === "inn") {
     await updateProfile(client, uid, { session_state: "bk_inn" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_inn"));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_inn")));
     return;
   }
   if (docKey === "bike_smz_phone") {
     await updateProfile(client, uid, { session_state: "bk_bike_smz_phone" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_phone"));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_bike_smz_phone")));
     return;
   }
   if (docKey === "bike_smz_address") {
     await updateProfile(client, uid, { session_state: "bk_bike_smz_address" });
     profile = await ensureProfile(client, uid);
-    await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_address"));
+    await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_bike_smz_address")));
     return;
   }
   if (docKey === "passport") {
@@ -428,12 +314,13 @@ async function promptDodaDocStep(ctx, client, uid, profile, docKey) {
       bk.categoryKey === "bike"
         ? tBK(lg, "passport_legal_block_bike")
         : tBK(lg, "passport_legal_block");
+    const legalCap = c(legal);
     const p = resolvePlaceholderPath("passport");
     await bkSendStepMessage(ctx, client, uid, profile, async () => {
       if (p && fs.existsSync(p)) {
-        return await ctx.replyWithPhoto({ source: p }, { caption: legal });
+        return await ctx.replyWithPhoto({ source: p }, { caption: legalCap });
       }
-      return await ctx.reply(legal);
+      return await ctx.reply(legalCap);
     });
   }
 }
@@ -455,23 +342,30 @@ const DOC_OK_STATE = {
 };
 
 /** Ketma-ketlik: til → asosiy menyu → (FAQ | ro‘yxatdan o‘tish) → telefon → kategoriya → shahar → fuqarolik → termokorob → hujjatlar → ko‘rib chiqish → yuborish */
-async function sendWelcomeAfterLanguage(ctx, uid, lang) {
+async function sendWelcomeAfterLanguage(ctx, client, uid, profile, lang) {
   const lg = normalizeBKLang(lang);
-  const vid = resolveWelcomeVideoNotePath();
-  if (vid) {
-    try {
-      await ctx.replyWithVideoNote({ source: vid });
-    } catch (e) {
-      console.error("[bk] video note:", e?.message || e);
+  const vidPath = resolveWelcomeVideoNotePath();
+  let capForLog = vidPath ? tBK(lg, "welcome_after_video") : tBK(lg, "welcome_video_missing");
+  await bkSendStepMessage(ctx, client, uid, profile, async () => {
+    const parts = [];
+    if (vidPath) {
+      try {
+        parts.push(await ctx.replyWithVideoNote({ source: vidPath }));
+      } catch (e) {
+        console.error("[bk] video note:", e?.message || e);
+        capForLog = tBK(lg, "welcome_video_missing");
+      }
     }
-  }
-  const cap = vid
-    ? tBK(lg, "welcome_after_video")
-    : tBK(lg, "welcome_video_missing");
-  await sendPlaceholder(ctx, "welcome", cap, mainMenuReply(lg));
-  await withTransaction(async (client) => {
-    await logChat(client, uid, "assistant", cap);
+    const cap = capForLog;
+    const p = resolvePlaceholderPath("welcome");
+    if (p && fs.existsSync(p)) {
+      parts.push(await ctx.replyWithPhoto({ source: p }, { caption: cap, ...mainMenuReply(lg) }));
+    } else {
+      parts.push(await ctx.reply(cap, mainMenuReply(lg)));
+    }
+    return parts;
   });
+  await logChat(client, uid, "assistant", capForLog);
 }
 
 export function registerBkHandlers(bot) {
@@ -498,8 +392,11 @@ export function registerBkHandlers(bot) {
     });
     const pick = tBK("ru", "pick_language");
     const kb = languagePickKb();
-    await ctx.reply(pick, kb);
     await withTransaction(async (client) => {
+      let profile = await ensureProfile(client, uid);
+      await bkClearStepUi(ctx, client, uid, profile);
+      profile = await ensureProfile(client, uid);
+      await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(pick, kb));
       await logChat(client, uid, "assistant", pick);
     });
   });
@@ -507,18 +404,15 @@ export function registerBkHandlers(bot) {
   bot.command("ARENDA", async (ctx) => {
     const uid = ctx.from?.id;
     if (!uid) return;
-    let lg = "ru";
     await withTransaction(async (client) => {
       const p = await ensureProfile(client, uid);
-      lg = langOf(p);
-    });
-    const arendaText = tBK(lg, "arenda", {
-      manager: arendaManagerUsername(),
-    });
-    await sendPlaceholder(ctx, "arenda", arendaText, mainMenuReply(lg));
-    await withTransaction(async (client) => {
+      const lg = langOf(p);
+      const arendaText = tBK(lg, "arenda", {
+        manager: arendaManagerUsername(),
+      });
       await logChat(client, uid, "user", "/ARENDA");
       await logChat(client, uid, "assistant", arendaText);
+      await sendBkPlaceholderStep(ctx, client, uid, p, "arenda", arendaText, mainMenuReply(lg));
     });
   });
 
@@ -564,7 +458,12 @@ export function registerBkHandlers(bot) {
         }
         const lg = langOf(p);
         try {
-          await ctx.reply(tBK(lg, "review_callback_stale"));
+          await withTransaction(async (client) => {
+            const pr = await ensureProfile(client, uid);
+            await bkSendStepMessage(ctx, client, uid, pr, () =>
+              ctx.reply(tBK(lg, "review_callback_stale"))
+            );
+          });
         } catch (replyErr) {
           console.warn("[bk] stale reply:", replyErr?.message || replyErr);
         }
@@ -578,16 +477,13 @@ export function registerBkHandlers(bot) {
       }
       const tail = tBK(lg, "yx_final_thanks");
       try {
-        await ctx.reply(tail, mainMenuReply(lg));
-      } catch (e) {
-        console.error("[bk] yx_final reply:", e?.stack || e?.message || e);
-      }
-      try {
         await withTransaction(async (client) => {
+          const p = await ensureProfile(client, uid);
+          await bkSendStepMessage(ctx, client, uid, p, () => ctx.reply(tail, mainMenuReply(lg)));
           await logChat(client, uid, "assistant", tail);
         });
       } catch (e) {
-        console.error("[bk] yx_final logChat:", e?.stack || e?.message || e);
+        console.error("[bk] yx_final reply/log:", e?.stack || e?.message || e);
       }
       return;
     }
@@ -636,19 +532,23 @@ export function registerBkHandlers(bot) {
       const id = data.slice(5);
       await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
-        const profile = await ensureProfile(client, uid);
+        let profile = await ensureProfile(client, uid);
         const lg = langOf(profile);
         if (id === "back") {
           await updateProfile(client, uid, { session_state: "bk_main" });
           await logChat(client, uid, "user", "faq:back");
-          await ctx.reply(tBK(lg, "main_menu_after_faq"), mainMenuReply(lg));
+          profile = await ensureProfile(client, uid);
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "main_menu_after_faq"), mainMenuReply(lg))
+          );
           return;
         }
         const item = faqItems(lg).find((x) => x.id === id);
         if (item) {
           await logChat(client, uid, "user", `faq:${id}`);
           await logChat(client, uid, "assistant", item.a);
-          await ctx.reply(item.a, faqMenu(lg));
+          profile = await ensureProfile(client, uid);
+          await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(item.a, faqMenu(lg)));
         }
       });
       return;
@@ -966,7 +866,9 @@ export function registerBkHandlers(bot) {
         }
         if (field === "yx") {
           if (profile.session_state !== "bk_yx") {
-            await ctx.reply(tBK(lg, "review_callback_stale"));
+            await bkSendStepMessage(ctx, client, uid, profile, () =>
+              ctx.reply(tBK(lg, "review_callback_stale"))
+            );
             return;
           }
           await logChat(client, uid, "user", "edit:yx_reprompt");
@@ -1256,7 +1158,9 @@ export function registerBkHandlers(bot) {
         let profile = await ensureProfile(client, uid);
         const lg = langOf(profile);
         if (profile.session_state !== "bk_review") {
-          await ctx.reply(tBK(lg, "review_callback_stale"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "review_callback_stale"))
+          );
           return;
         }
         if (rest === "send") {
@@ -1268,9 +1172,8 @@ export function registerBkHandlers(bot) {
           const link = communityLinkForCategory(bk.categoryKey);
           const tail = buildBkFinalWait(lg, link);
           await logChat(client, uid, "assistant", tail);
-          await bkClearStepUi(ctx, client, uid, profile);
           profile = await ensureProfile(client, uid);
-          await ctx.reply(tail, mainMenuReply(lg));
+          await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(tail, mainMenuReply(lg)));
           return;
         }
         if (rest.startsWith("e:")) {
@@ -1563,19 +1466,25 @@ export function registerBkHandlers(bot) {
       if (text === menuSupport) {
         await logChat(client, uid, "user", text);
         await logChat(client, uid, "assistant", tBK(lg, "support"));
-        await ctx.reply(tBK(lg, "support"), mainMenuReply(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "support"), mainMenuReply(lg))
+        );
         return;
       }
 
       if (state === "bk_lang") {
         await logChat(client, uid, "user", text || "[non-text]");
-        await ctx.reply(tBK("ru", "err_pick_lang"), languagePickKb());
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK("ru", "err_pick_lang"), languagePickKb())
+        );
         return;
       }
 
       if (state === "bk_yx_review") {
         await logChat(client, uid, "user", text || "[non-text at yx review]");
-        await ctx.reply(tBK(lg, "yx_review_use_buttons"));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "yx_review_use_buttons"))
+        );
         return;
       }
 
@@ -1586,7 +1495,9 @@ export function registerBkHandlers(bot) {
 
       if (state === "bk_service") {
         await logChat(client, uid, "user", text || "[non-text at service]");
-        await ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
+        );
         return;
       }
 
@@ -1594,7 +1505,8 @@ export function registerBkHandlers(bot) {
         await updateProfile(client, uid, { session_state: "bk_faq" });
         await logChat(client, uid, "user", text);
         await logChat(client, uid, "assistant", tBK(lg, "faq_intro"));
-        await sendPlaceholder(ctx, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
+        profile = await ensureProfile(client, uid);
+        await sendBkPlaceholderStep(ctx, client, uid, profile, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
         return;
       }
 
@@ -1615,20 +1527,27 @@ export function registerBkHandlers(bot) {
         } else {
           await updateProfile(client, uid, { session_state: "bk_service" });
           await logChat(client, uid, "assistant", "[ask_service]");
-          await ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)));
+          profile = await ensureProfile(client, uid);
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
+          );
         }
         return;
       }
 
       if (state === "bk_vehicle_rf") {
         await logChat(client, uid, "user", text || "[non-text]");
-        await ctx.reply(tBK(lg, "err_use_buttons_category"), vehicleRfInline(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "err_use_buttons_category"), vehicleRfInline(lg))
+        );
         return;
       }
 
       if (state === "bk_self_employed") {
         await logChat(client, uid, "user", text || "[non-text]");
-        await ctx.reply(tBK(lg, "err_use_buttons_category"), selfEmployedInline(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "err_use_buttons_category"), selfEmployedInline(lg))
+        );
         return;
       }
       if (state === "bk_bike_thermal") {
@@ -1637,13 +1556,17 @@ export function registerBkHandlers(bot) {
       }
       if (state === "bk_bike_smz_phone") {
         if (msg.photo || msg.document) {
-          await ctx.reply(tBK(lg, "err_bike_smz_phone_invalid"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_bike_smz_phone_invalid"))
+          );
           return;
         }
         const phone = normalizeRussianPhone(msg);
         if (!phone) {
           await logChat(client, uid, "user", text || "[bad smz phone]");
-          await ctx.reply(tBK(lg, "err_bike_smz_phone_invalid"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_bike_smz_phone_invalid"))
+          );
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1663,17 +1586,23 @@ export function registerBkHandlers(bot) {
       if (state === "bk_bike_smz_address") {
         if (msg.photo || msg.document) {
           await logChat(client, uid, "user", "[media at smz address]");
-          await ctx.reply(tBK(lg, "err_bike_smz_address_no_media"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_bike_smz_address_no_media"))
+          );
           return;
         }
         if (!text) {
-          await ctx.reply(tBK(lg, "err_bike_smz_address_short"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_bike_smz_address_short"))
+          );
           return;
         }
         const addr = text.trim();
         if (addr.length < 12) {
           await logChat(client, uid, "user", addr);
-          await ctx.reply(tBK(lg, "err_bike_smz_address_short"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_bike_smz_address_short"))
+          );
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1700,16 +1629,22 @@ export function registerBkHandlers(bot) {
           return;
         }
         if (msg.photo || msg.document) {
-          await ctx.reply(tBK(lg, "err_inn_invalid"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_inn_invalid"))
+          );
           return;
         }
         if (!text) {
-          await ctx.reply(tBK(lg, "err_inn_invalid"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_inn_invalid"))
+          );
           return;
         }
         const raw = text.replace(/\s/g, "").replace(/\u00a0/g, "");
         if (!/^\d{10,13}$/.test(raw)) {
-          await ctx.reply(tBK(lg, "err_inn_invalid"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_inn_invalid"))
+          );
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1729,7 +1664,9 @@ export function registerBkHandlers(bot) {
 
       if (state === "bk_truck_dimensions") {
         await logChat(client, uid, "user", text || "[non-text]");
-        await ctx.reply(tBK(lg, "err_use_buttons_category"), truckDimensionsInline(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "err_use_buttons_category"), truckDimensionsInline(lg))
+        );
         return;
       }
       /** Eski versiya: грузчики qadami olib tashlangan — qolganlar brandingga yo‘naltiriladi */
@@ -1755,28 +1692,38 @@ export function registerBkHandlers(bot) {
       }
       if (state === "bk_truck_branding") {
         await logChat(client, uid, "user", text || "[non-text]");
-        await ctx.reply(tBK(lg, "err_use_buttons_category"), truckBrandingInline(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "err_use_buttons_category"), truckBrandingInline(lg))
+        );
         return;
       }
 
       if (state === "bk_truck_payload") {
         if (msg.photo || msg.document) {
           await logChat(client, uid, "user", "[media at truck payload]");
-          await ctx.reply(tBK(lg, "err_truck_payload_number"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_truck_payload_number"))
+          );
           return;
         }
         if (!text) {
-          await ctx.reply(tBK(lg, "err_truck_payload_number"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_truck_payload_number"))
+          );
           return;
         }
         const raw = text.replace(/\s/g, "").replace(/\u00a0/g, "");
         if (!/^\d+$/.test(raw)) {
-          await ctx.reply(tBK(lg, "err_truck_payload_number"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_truck_payload_number"))
+          );
           return;
         }
         const kg = parseInt(raw, 10);
         if (kg < 1 || kg > 100000) {
-          await ctx.reply(tBK(lg, "err_truck_payload_number"));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_truck_payload_number"))
+          );
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1798,21 +1745,31 @@ export function registerBkHandlers(bot) {
       if (docKeyFromState) {
         if (!msg.photo && !msg.document) {
           await logChat(client, uid, "user", text || "[no media at doc step]");
-          await ctx.reply(tBK(lg, "err_doc_need_photo"));
+          profile = await ensureProfile(client, uid);
+          await promptDodaDocStep(ctx, client, uid, profile, docKeyFromState, tBK(lg, "err_doc_need_photo"));
           return;
         }
         if (hasForbiddenMediaTypes(msg)) {
-          await ctx.reply(tBK(lg, "err_wrong_media_type"));
+          profile = await ensureProfile(client, uid);
+          await promptDodaDocStep(ctx, client, uid, profile, docKeyFromState, tBK(lg, "err_wrong_media_type"));
           return;
         }
         if (msg.document && !isAllowedDocumentMime(msg.document.mime_type)) {
-          await ctx.reply(tBK(lg, "err_doc_mime"));
+          profile = await ensureProfile(client, uid);
+          await promptDodaDocStep(ctx, client, uid, profile, docKeyFromState, tBK(lg, "err_doc_mime"));
           return;
         }
         profile = await ensureProfile(client, uid);
         const accepted = await replaceAcceptDoc(client, ctx, profile, uid, docKeyFromState, msg);
         if (!accepted) {
-          await ctx.reply(t(normalizeLang(lg), "invalid_input"));
+          await promptDodaDocStep(
+            ctx,
+            client,
+            uid,
+            profile,
+            docKeyFromState,
+            t(normalizeLang(lg), "invalid_input")
+          );
           return;
         }
         const okState = `bk_doc_${docKeyFromState}_ok`;
@@ -1840,7 +1797,9 @@ export function registerBkHandlers(bot) {
       if (state === "bk_category" && text) {
         await logChat(client, uid, "user", text);
         await logChat(client, uid, "assistant", tBK(lg, "err_use_buttons_category"));
-        await ctx.reply(tBK(lg, "err_use_buttons_category"), categoryInline(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "err_use_buttons_category"), categoryInline(lg))
+        );
         return;
       }
 
@@ -1849,19 +1808,25 @@ export function registerBkHandlers(bot) {
         if (text === manualBtn) {
           await logChat(client, uid, "user", text);
           await logChat(client, uid, "assistant", tBK(lg, "ask_phone_manual_hint"));
-          await ctx.reply(tBK(lg, "ask_phone_manual_hint"), phoneStepReply(lg));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "ask_phone_manual_hint"), phoneStepReply(lg))
+          );
           return;
         }
         if (msg.photo || msg.document) {
           await logChat(client, uid, "user", "[media at phone step]");
-          await ctx.reply(tBK(lg, "err_phone_no_media"), phoneStepReply(lg));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_phone_no_media"), phoneStepReply(lg))
+          );
           return;
         }
         const phone = normalizeRussianPhone(msg);
         if (!phone) {
           await logChat(client, uid, "user", text || "[bad phone]");
           await logChat(client, uid, "assistant", tBK(lg, "err_phone_invalid"));
-          await ctx.reply(tBK(lg, "err_phone_invalid"), phoneStepReply(lg));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_phone_invalid"), phoneStepReply(lg))
+          );
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1908,7 +1873,8 @@ export function registerBkHandlers(bot) {
           });
         } else {
           await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:phone"));
-          await sendWelcomeAfterLanguage(ctx, uid, lg);
+          profile = await ensureProfile(client, uid);
+          await sendWelcomeAfterLanguage(ctx, client, uid, profile, lg);
         }
         return;
       }
@@ -1916,11 +1882,15 @@ export function registerBkHandlers(bot) {
       if (state === "bk_city_text" || state === "bk_city_pick") {
         if (msg.photo || msg.document) {
           await logChat(client, uid, "user", "[media at city step]");
-          await ctx.reply(tBK(lg, "err_city_need_text"), cityInline(lg));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "err_city_need_text"), cityInline(lg))
+          );
           return;
         }
         if (!text) {
-          await ctx.reply(tBK(lg, "ask_city"), cityInline(lg));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tBK(lg, "ask_city"), cityInline(lg))
+          );
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1954,20 +1924,26 @@ export function registerBkHandlers(bot) {
           await logChat(client, uid, "user", text);
           await logChat(client, uid, "assistant", tBK(lg, "use_menu"));
         }
-        await ctx.reply(tBK(lg, "use_menu"), reviewKb(lg, bkRv));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "use_menu"), reviewKb(lg, bkRv))
+        );
         return;
       }
 
       if (state === "bk_faq") {
         if (text) await logChat(client, uid, "user", text);
-        await ctx.reply(tBK(lg, "faq_freedom_hint"), faqMenu(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "faq_freedom_hint"), faqMenu(lg))
+        );
         return;
       }
 
       if (text && state !== "bk_faq") {
         await logChat(client, uid, "user", text);
         await logChat(client, uid, "assistant", tBK(lg, "use_menu"));
-        await ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg));
+        await bkSendStepMessage(ctx, client, uid, profile, () =>
+          ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg))
+        );
       }
     });
   });

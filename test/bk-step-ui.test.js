@@ -4,12 +4,7 @@
  */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-
-function bkCollectMessageIds(sent) {
-  if (sent == null) return [];
-  if (Array.isArray(sent)) return sent.map((m) => m?.message_id).filter((id) => id != null);
-  return [sent.message_id].filter((id) => id != null);
-}
+import { bkCollectMessageIds } from "../src/bk/stepUi.js";
 
 /** handlers.js dagi bkSendStepMessage bilan bir xil ketma-ketlik (mock). */
 async function simulateBkSendStepMessage(profile, send) {

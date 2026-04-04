@@ -16,6 +16,7 @@ import {
   yxForbiddenMedia,
   validateYxText,
 } from "./yandexFlow.js";
+import { bkSendStepMessage, sendBkPlaceholderStep } from "./stepUi.js";
 
 function lgOf(profile) {
   return normalizeBKLang(profile?.language);
@@ -130,30 +131,41 @@ export async function promptYandexStep(ctx, client, uid, profile) {
   const st = getYandexUiState(yx, done);
 
   if (st.ui === "city") {
-    await ctx.reply(tBK(lg, "yx_ask_city"), yxReplyOptions(yxCityInline(lg)));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "yx_ask_city"), yxReplyOptions(yxCityInline(lg)))
+    );
     return;
   }
   if (st.ui === "citizen") {
-    await ctx.reply(tBK(lg, "yx_ask_citizen"), yxReplyOptions(yxCitizenInline(lg)));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "yx_ask_citizen"), yxReplyOptions(yxCitizenInline(lg)))
+    );
     return;
   }
   if (st.ui === "uz_doc") {
-    await ctx.reply(tBK(lg, "yx_ask_uz_doc"), yxReplyOptions(yxUzDocInline(lg)));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "yx_ask_uz_doc"), yxReplyOptions(yxUzDocInline(lg)))
+    );
     return;
   }
   if (st.ui === "kz_doc") {
-    await ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxReplyOptions(yxKzDocInline(lg)));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxReplyOptions(yxKzDocInline(lg)))
+    );
     return;
   }
   if (st.ui === "done") {
     const summary = buildYxReviewSummary(lg, profile);
     await updateProfile(client, uid, { session_state: "bk_yx_review" });
-    await ctx.reply(
-      `${summary}\n\n${tBK(lg, "yx_review_hint")}`,
-      yxReplyOptions(
-        Markup.inlineKeyboard([
-          [Markup.button.callback(tBK(lg, "submit_btn"), "bk_YR:send")],
-        ])
+    profile = await ensureProfile(client, uid);
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(
+        `${summary}\n\n${tBK(lg, "yx_review_hint")}`,
+        yxReplyOptions(
+          Markup.inlineKeyboard([
+            [Markup.button.callback(tBK(lg, "submit_btn"), "bk_YR:send")],
+          ])
+        )
       )
     );
     return;
@@ -163,17 +175,17 @@ export async function promptYandexStep(ctx, client, uid, profile) {
       st.step.choiceId === "visa_kind"
         ? yxTmVisaKindInline(lg)
         : yxRamInline(lg);
-    await ctx.reply(tBK(lg, st.step.promptKey), yxReplyOptions(kb));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, st.step.promptKey), yxReplyOptions(kb))
+    );
     return;
   }
   if (st.ui === "step") {
     const step = st.step;
     const cap = tBK(lg, step.promptKey);
-    if (step.t === "text") {
-      await ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")));
-      return;
-    }
-    await ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")))
+    );
   }
 }
 
@@ -327,12 +339,12 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
     [uid, step.docType, ex.fileId, path]
   );
   completed.push(step.docType);
-  await updateProfile(client, uid, {
-    session_data: { ...td, yx, completed_yx: completed },
-  });
+  const nextTd = { ...td, yx, completed_yx: completed };
+  if (msg?.message_id != null) nextTd.bk_pending_user_message_id = msg.message_id;
+  else delete nextTd.bk_pending_user_message_id;
+  await updateProfile(client, uid, { session_data: nextTd });
   await logChat(client, uid, "user", `yx:file:${step.docType}`);
   const p2 = await ensureProfile(client, uid);
-  await ctx.reply(tBK(lg, "yx_file_ok"), yxReplyOptionsTextOnly());
   await promptYandexStep(ctx, client, uid, p2);
   return true;
 }
@@ -358,7 +370,16 @@ export async function handleYandexCallback(ctx, client, uid, data) {
         service: null,
         tariff: null,
       });
-      await ctx.reply(tBK(lg, "ask_category"), yxReplyOptions(categoryInline(lg)));
+      profile = await ensureProfile(client, uid);
+      await sendBkPlaceholderStep(
+        ctx,
+        client,
+        uid,
+        profile,
+        "category",
+        tBK(lg, "ask_category"),
+        yxReplyOptions(categoryInline(lg))
+      );
       return true;
     }
     if (svc === "lavka" || svc === "eats") {
