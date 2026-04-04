@@ -66,6 +66,7 @@ import {
   sendBkAskPhonePrompt,
   sendBkPlaceholderStep,
   sendBkReviewMessage,
+  tryBkDeleteUserMessage,
 } from "./stepUi.js";
 import fs from "node:fs";
 
@@ -399,6 +400,7 @@ export function registerBkHandlers(bot) {
       await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(pick, kb));
       await logChat(client, uid, "assistant", pick);
     });
+    await tryBkDeleteUserMessage(ctx, ctx.message);
   });
 
   bot.command("ARENDA", async (ctx) => {
@@ -414,6 +416,7 @@ export function registerBkHandlers(bot) {
       await logChat(client, uid, "assistant", arendaText);
       await sendBkPlaceholderStep(ctx, client, uid, p, "arenda", arendaText, mainMenuReply(lg));
     });
+    if (ctx.message) await tryBkDeleteUserMessage(ctx, ctx.message);
   });
 
   // Telegraf 4: callback query uchun `action`, `callbackQuery` metodi yo‘q
@@ -1445,6 +1448,11 @@ export function registerBkHandlers(bot) {
     if (!msg.text && !msg.photo && !msg.document && !msg.contact && !msg.video) return;
     const text = (msg.text || "").trim();
 
+    let deleteProcessedUserMessage = false;
+    const markConsumed = () => {
+      deleteProcessedUserMessage = true;
+    };
+
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
@@ -1456,6 +1464,7 @@ export function registerBkHandlers(bot) {
         (state === "bk_doc_sts" || state === "bk_doc_sts_ok")
       ) {
         await promptFirstMissingDodaDoc(ctx, client, uid, profile);
+        markConsumed();
         return;
       }
 
@@ -1469,6 +1478,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "support"), mainMenuReply(lg))
         );
+        markConsumed();
         return;
       }
 
@@ -1477,6 +1487,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK("ru", "err_pick_lang"), languagePickKb())
         );
+        markConsumed();
         return;
       }
 
@@ -1485,12 +1496,16 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "yx_review_use_buttons"))
         );
+        markConsumed();
         return;
       }
 
       if (state === "bk_yx") {
         const yxDone = await handleYandexMessage(ctx, client, uid, profile, msg);
-        if (yxDone) return;
+        if (yxDone) {
+          markConsumed();
+          return;
+        }
       }
 
       if (state === "bk_service") {
@@ -1498,6 +1513,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
         );
+        markConsumed();
         return;
       }
 
@@ -1507,6 +1523,7 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "assistant", tBK(lg, "faq_intro"));
         profile = await ensureProfile(client, uid);
         await sendBkPlaceholderStep(ctx, client, uid, profile, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
+        markConsumed();
         return;
       }
 
@@ -1532,6 +1549,7 @@ export function registerBkHandlers(bot) {
             ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
           );
         }
+        markConsumed();
         return;
       }
 
@@ -1540,6 +1558,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "err_use_buttons_category"), vehicleRfInline(lg))
         );
+        markConsumed();
         return;
       }
 
@@ -1548,10 +1567,12 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "err_use_buttons_category"), selfEmployedInline(lg))
         );
+        markConsumed();
         return;
       }
       if (state === "bk_bike_thermal") {
         await promptFirstMissingDodaDoc(ctx, client, uid, profile);
+        markConsumed();
         return;
       }
       if (state === "bk_bike_smz_phone") {
@@ -1559,6 +1580,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_bike_smz_phone_invalid"))
           );
+          markConsumed();
           return;
         }
         const phone = normalizeRussianPhone(msg);
@@ -1567,6 +1589,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_bike_smz_phone_invalid"))
           );
+          markConsumed();
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1581,6 +1604,7 @@ export function registerBkHandlers(bot) {
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:bsmzphone"));
         profile = await ensureProfile(client, uid);
         await promptNextAfterTruckStep(ctx, client, uid, profile);
+        markConsumed();
         return;
       }
       if (state === "bk_bike_smz_address") {
@@ -1589,12 +1613,14 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_bike_smz_address_no_media"))
           );
+          markConsumed();
           return;
         }
         if (!text) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_bike_smz_address_short"))
           );
+          markConsumed();
           return;
         }
         const addr = text.trim();
@@ -1603,6 +1629,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_bike_smz_address_short"))
           );
+          markConsumed();
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1617,6 +1644,7 @@ export function registerBkHandlers(bot) {
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:bsmzaddr"));
         profile = await ensureProfile(client, uid);
         await promptNextAfterTruckStep(ctx, client, uid, profile);
+        markConsumed();
         return;
       }
       if (state === "bk_inn") {
@@ -1626,18 +1654,21 @@ export function registerBkHandlers(bot) {
           bkInn.rfCitizen === true
         ) {
           await promptFirstMissingDodaDoc(ctx, client, uid, profile);
+          markConsumed();
           return;
         }
         if (msg.photo || msg.document) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_inn_invalid"))
           );
+          markConsumed();
           return;
         }
         if (!text) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_inn_invalid"))
           );
+          markConsumed();
           return;
         }
         const raw = text.replace(/\s/g, "").replace(/\u00a0/g, "");
@@ -1645,6 +1676,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_inn_invalid"))
           );
+          markConsumed();
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1659,6 +1691,7 @@ export function registerBkHandlers(bot) {
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:binn"));
         profile = await ensureProfile(client, uid);
         await promptNextAfterTruckStep(ctx, client, uid, profile);
+        markConsumed();
         return;
       }
 
@@ -1667,6 +1700,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "err_use_buttons_category"), truckDimensionsInline(lg))
         );
+        markConsumed();
         return;
       }
       /** Eski versiya: грузчики qadami olib tashlangan — qolganlar brandingga yo‘naltiriladi */
@@ -1688,6 +1722,7 @@ export function registerBkHandlers(bot) {
           tBK(lg, "ask_truck_branding"),
           truckBrandingInline(lg)
         );
+        markConsumed();
         return;
       }
       if (state === "bk_truck_branding") {
@@ -1695,6 +1730,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "err_use_buttons_category"), truckBrandingInline(lg))
         );
+        markConsumed();
         return;
       }
 
@@ -1704,12 +1740,14 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_truck_payload_number"))
           );
+          markConsumed();
           return;
         }
         if (!text) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_truck_payload_number"))
           );
+          markConsumed();
           return;
         }
         const raw = text.replace(/\s/g, "").replace(/\u00a0/g, "");
@@ -1717,6 +1755,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_truck_payload_number"))
           );
+          markConsumed();
           return;
         }
         const kg = parseInt(raw, 10);
@@ -1724,6 +1763,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_truck_payload_number"))
           );
+          markConsumed();
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1738,6 +1778,7 @@ export function registerBkHandlers(bot) {
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:truck_pay"));
         profile = await ensureProfile(client, uid);
         await promptNextAfterTruckStep(ctx, client, uid, profile);
+        markConsumed();
         return;
       }
 
@@ -1747,16 +1788,19 @@ export function registerBkHandlers(bot) {
           await logChat(client, uid, "user", text || "[no media at doc step]");
           profile = await ensureProfile(client, uid);
           await promptDodaDocStep(ctx, client, uid, profile, docKeyFromState, tBK(lg, "err_doc_need_photo"));
+          markConsumed();
           return;
         }
         if (hasForbiddenMediaTypes(msg)) {
           profile = await ensureProfile(client, uid);
           await promptDodaDocStep(ctx, client, uid, profile, docKeyFromState, tBK(lg, "err_wrong_media_type"));
+          markConsumed();
           return;
         }
         if (msg.document && !isAllowedDocumentMime(msg.document.mime_type)) {
           profile = await ensureProfile(client, uid);
           await promptDodaDocStep(ctx, client, uid, profile, docKeyFromState, tBK(lg, "err_doc_mime"));
+          markConsumed();
           return;
         }
         profile = await ensureProfile(client, uid);
@@ -1770,6 +1814,7 @@ export function registerBkHandlers(bot) {
             docKeyFromState,
             t(normalizeLang(lg), "invalid_input")
           );
+          markConsumed();
           return;
         }
         const okState = `bk_doc_${docKeyFromState}_ok`;
@@ -1800,6 +1845,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "err_use_buttons_category"), categoryInline(lg))
         );
+        markConsumed();
         return;
       }
 
@@ -1811,6 +1857,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "ask_phone_manual_hint"), phoneStepReply(lg))
           );
+          markConsumed();
           return;
         }
         if (msg.photo || msg.document) {
@@ -1818,6 +1865,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_phone_no_media"), phoneStepReply(lg))
           );
+          markConsumed();
           return;
         }
         const phone = normalizeRussianPhone(msg);
@@ -1827,6 +1875,7 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_phone_invalid"), phoneStepReply(lg))
           );
+          markConsumed();
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1852,6 +1901,7 @@ export function registerBkHandlers(bot) {
             const m2 = await ctx.reply(tBK(lg, "review_hint"), reviewKb(lg, bkRv));
             return [m1, m2];
           });
+          markConsumed();
           return;
         }
 
@@ -1876,6 +1926,7 @@ export function registerBkHandlers(bot) {
           profile = await ensureProfile(client, uid);
           await sendWelcomeAfterLanguage(ctx, client, uid, profile, lg);
         }
+        markConsumed();
         return;
       }
 
@@ -1885,12 +1936,14 @@ export function registerBkHandlers(bot) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "err_city_need_text"), cityInline(lg))
           );
+          markConsumed();
           return;
         }
         if (!text) {
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "ask_city"), cityInline(lg))
           );
+          markConsumed();
           return;
         }
         const td = { ...(profile.session_data || {}) };
@@ -1915,6 +1968,7 @@ export function registerBkHandlers(bot) {
           tBK(lg, "ask_citizenship"),
           citizenshipInline(lg)
         );
+        markConsumed();
         return;
       }
 
@@ -1927,6 +1981,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "use_menu"), reviewKb(lg, bkRv))
         );
+        markConsumed();
         return;
       }
 
@@ -1935,6 +1990,7 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "faq_freedom_hint"), faqMenu(lg))
         );
+        markConsumed();
         return;
       }
 
@@ -1944,7 +2000,9 @@ export function registerBkHandlers(bot) {
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg))
         );
+        markConsumed();
       }
     });
+    if (deleteProcessedUserMessage) await tryBkDeleteUserMessage(ctx, msg);
   });
 }

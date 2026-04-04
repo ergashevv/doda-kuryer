@@ -10,6 +10,16 @@ export function bkCollectMessageIds(sent) {
   return [sent.message_id].filter((id) => id != null);
 }
 
+/** Shaxsiy chatda bot foydalanuvchi xabarini o‘chira oladi — chatda «yig‘ilib» qolmasin. */
+export async function tryBkDeleteUserMessage(ctx, msg) {
+  const chatId = ctx.chat?.id;
+  const mid = msg?.message_id;
+  if (chatId == null || mid == null) return;
+  try {
+    await ctx.telegram.deleteMessage(chatId, mid);
+  } catch (_) {}
+}
+
 /** Hujjat qabul → preview → «Продолжить» gacha user media chatda qoladi; keyingi qadamda o‘chadi. */
 async function flushBkPendingUserMessage(ctx, td, chatId) {
   const mid = td.bk_pending_user_message_id;
