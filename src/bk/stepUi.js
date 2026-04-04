@@ -10,9 +10,14 @@ export function bkCollectMessageIds(sent) {
   return [sent.message_id].filter((id) => id != null);
 }
 
+/** Doda hujjat oqimi: shu holatlarda avvalgi bot UI o‘chadi va `bk_ui_message_ids` yoziladi. */
+export function isBkDocWizardSessionState(sessionState) {
+  return typeof sessionState === "string" && /^bk_doc_/.test(sessionState);
+}
+
 /**
  * Shaxsiy chatda user xabarini o‘chirish (handlers faqat `bk_doc_*` qadamlarida chaqiradi).
- * Bot tomonda `bkSendStepMessage` avvalgi `bk_ui_message_ids` bo‘yicha bot xabarlarini almashtirish uchun o‘chiradi.
+ * Boshqa ro‘yxatdan o‘tish qadamlarida bot xabarlari ham chatda qoladi — faqat `bk_doc_*` da `bkSendStepMessage` eski bot UI ni o‘chiradi.
  */
 export async function tryBkDeleteUserMessage(ctx, msg) {
   const chatId = ctx.chat?.id;
@@ -33,13 +38,17 @@ async function flushBkPendingUserMessage(ctx, td, chatId) {
   delete td.bk_pending_user_message_id;
 }
 
-/** Ro‘yxatdan o‘tishda chatda faqat oxirgi bot savoli qolishi uchun eski qadam xabarlarini o‘chiradi. */
+/**
+ * `bk_doc_*`: avvalgi bot qadam xabarlari o‘chadi, yangi ID lar saqlanadi (hujjat oqimi).
+ * Boshqa holatlar: bot xabarlari chatda qoladi, `bk_ui_message_ids` bo‘sh (tarmoqdan keyin tozalash yo‘q).
+ */
 export async function bkSendStepMessage(ctx, client, uid, profile, send) {
   const chatId = ctx.chat?.id;
+  const docWizard = isBkDocWizardSessionState(profile.session_state);
   let td = { ...(profile.session_data || {}) };
   await flushBkPendingUserMessage(ctx, td, chatId);
   const prev = [...(td.bk_ui_message_ids || [])];
-  if (chatId && prev.length) {
+  if (docWizard && chatId && prev.length) {
     for (const mid of prev) {
       try {
         await ctx.telegram.deleteMessage(chatId, mid);
@@ -50,19 +59,21 @@ export async function bkSendStepMessage(ctx, client, uid, profile, send) {
   await updateProfile(client, uid, { session_data: td });
   profile = await ensureProfile(client, uid);
   const sent = await send();
-  const ids = bkCollectMessageIds(sent);
+  const ids = docWizard ? bkCollectMessageIds(sent) : [];
   td = { ...(profile.session_data || {}) };
   td.bk_ui_message_ids = ids;
   await updateProfile(client, uid, { session_data: td });
   return sent;
 }
 
+/** Faqat hujjat oqimida saqlangan ID lar bo‘lsa o‘chiradi; /start dan oldin tozalash. */
 export async function bkClearStepUi(ctx, client, uid, profile) {
   const chatId = ctx.chat?.id;
   const td = { ...(profile.session_data || {}) };
   await flushBkPendingUserMessage(ctx, td, chatId);
   const prev = [...(td.bk_ui_message_ids || [])];
-  if (chatId && prev.length) {
+  const docWizard = isBkDocWizardSessionState(profile.session_state);
+  if (docWizard && chatId && prev.length) {
     for (const mid of prev) {
       try {
         await ctx.telegram.deleteMessage(chatId, mid);

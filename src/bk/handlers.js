@@ -61,6 +61,7 @@ import {
   bkClearStepUi,
   bkReplyStep,
   bkSendStepMessage,
+  isBkDocWizardSessionState,
   replyBkAskPhoneNoPhoto,
   replyBkDocUploadedEcho,
   sendBkAskPhonePrompt,
@@ -83,11 +84,6 @@ function bkPayload(profile) {
 
 function langOf(profile) {
   return normalizeBKLang(profile?.language);
-}
-
-/** Faqat hujjat suraladigan qadam (`bk_doc_*`): user yuborgan xabar o‘chiriladi. Telefon, menyu, shahar, Yandex matn — chatda qoladi. */
-function isDocRequestSessionState(sessionState) {
-  return typeof sessionState === "string" && /^bk_doc_/.test(sessionState);
 }
 
 function clearTruckBkFields(bk) {
@@ -1465,7 +1461,7 @@ export function registerBkHandlers(bot) {
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
-      allowDeleteUserDocStepMsg = isDocRequestSessionState(profile.session_state);
+      allowDeleteUserDocStepMsg = isBkDocWizardSessionState(profile.session_state);
       const state = profile.session_state;
       const lg = langOf(profile);
       const bkMsg = profile.session_data?.bk || {};
