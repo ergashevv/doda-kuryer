@@ -333,7 +333,7 @@ function formatYandexDocCaption(index, total, docKey, profile) {
     title = tBK(lg, "group_caption_yx_generic");
   }
   title = String(title).replace(/\s+/g, " ").trim().replace(/[.]+$/, "");
-  return cap(`[${index}/${total}] ${docKey} — ${title}`);
+  return cap(`[${index}/${total}] ${title}`);
 }
 
 function formatYandexTextFieldsBlock(profile, lang) {
