@@ -28,9 +28,9 @@ const BK_STRINGS = {
     main_menu_after_faq: "Асосий меню:",
     faq_freedom_hint: "Саволни пастдаги тугма орқали танланг ёки /start",
 
-    btn_in_park: "😎 Мен аллақачон БК паркидаман",
-    btn_not_in_park: "🙏 БК паркида эмасман, улаш керак",
-    btn_support: "❓ Техник ёрдам",
+    btn_in_park: "😎 Men allaqachon BK parkidaman",
+    btn_not_in_park: "🙏 BK parkida emasman, ulash kerak",
+    btn_support: "❓ Texnik yordam",
     btn_therm_yes: "Ҳа",
     btn_therm_no: "Йўқ, сотиб олиш керак",
     cit_yes: "Ҳа",
@@ -92,13 +92,13 @@ const BK_STRINGS = {
     summary_vehicle_rf: "Россия — СТС",
     summary_vehicle_foreign: "Чет эл ТС — техпаспорт (олд/орқа)",
 
-    btn_continue: "Давом этиш 👉",
+    btn_continue: "Davom etish 👉",
 
     ask_license_front:
       "Ҳайдовчилик гувоҳномаси (ВУ) — олд томонидан битта фото юборинг.",
 
     confirm_license_uploaded:
-      "✅ ВУ фото қабул қилинди\n\nМайдонлар аниқ кўринишини текширинг ва «Давом этиш 👉»ни босинг\n\nёки алмаштириш учун бошқа фото юборинг.",
+      "✅ ВУ фото қабул қилинди\n\nМайдонлар аниқ кўринишини текширинг ва «Davom etish 👉»ни босинг\n\nёки алмаштириш учун бошқа фото юборинг.",
 
     ask_sts_front:
       "СТС — битта фото: барча ёзувлар аниқ кўринадиган қилиб юборинг (одатда жойланма ёки асосий бет).",
@@ -110,13 +110,13 @@ const BK_STRINGS = {
       "Чет эл ТС техпаспорти — ОРҚА томони (битта фото).",
 
     confirm_tech_passport_front:
-      "✅ Техпаспорт олд томони қабул қилинди\n\nЎқилишини текширинг, «Давом этиш 👉» ёки бошқа фото.",
+      "✅ Техпаспорт олд томони қабул қилинди\n\nЎқилишини текширинг, «Davom etish 👉» ёки бошқа фото.",
 
     confirm_tech_passport_back:
-      "✅ Техпаспорт орқа томони қабул қилинди\n\nЎқилишини текширинг, «Давом этиш 👉» ёки бошқа фото.",
+      "✅ Техпаспорт орқа томони қабул қилинди\n\nЎқилишини текширинг, «Davom etish 👉» ёки бошқа фото.",
 
     confirm_sts_uploaded:
-      "✅ СТС фото қабул қилинди\n\nМайдонлар аниқ кўринишини текширинг ва «Давом этиш 👉»ни босинг\n\nёки алмаштириш учун бошқа фото юборинг.",
+      "✅ СТС фото қабул қилинди\n\nМайдонлар аниқ кўринишини текширинг ва «Davom etish 👉»ни босинг\n\nёки алмаштириш учун бошқа фото юборинг.",
 
     ask_city:
       "Қайси шаҳарда ишлайсиз? Тугма ёки матн. Бир нечта бўлса — асосийини ёзинг.",
@@ -154,15 +154,15 @@ const BK_STRINGS = {
     confirm_thermal: (yes) =>
       `Термокороб: ${yes ? "Ҳа" : "Йўқ, сотиб олиш керак"}`,
 
-    edit_btn: "↩️ Ўзгартириш",
+    edit_btn: "↩️ O'zgartirish",
 
     review_hint:
-      "👆 Маълумотлар тайёр. «✅ Юбориш»ни босинг ёки майдонни таҳрирланг.",
+      "👆 Ma'lumotlar tayyor. «✅ Yuborish»ni bosing yoki maydonni tahrirlang.",
 
     review_callback_stale:
       "Бу тугмалар фақат «қисқача» экранида ишлайди. Рўйхатдан ўтишни давом эттиринг ёки /start",
 
-    submit_btn: "✅ Юбориш",
+    submit_btn: "✅ Yuborish",
 
     final_wait:
       "Зўр! Менежерлар акаунтни тайёрлаяпти — тахминан 20 дақиқа.\n\nЖамоа: https://t.me/+HCQG5WLhKNk3Y2My",
@@ -330,9 +330,9 @@ const BK_STRINGS = {
 
     yx_use_buttons: "Bu bosqichda variantni pastdagi tugma orqali tanlang.",
     yx_confirm_doc_preview:
-      "✅ Fayl qabul qilindi\n\nKo‘rinishni tekshiring va «Давом этиш 👉»ni bosing\n\nyoki «Ўзгартириш» — boshqa fayl yuborish.",
+      "✅ Fayl qabul qilindi\n\nKo‘rinishni tekshiring va «Davom etish 👉»ni bosing\n\nyoki «O'zgartirish» — boshqa fayl yuborish.",
     yx_press_continue_first:
-      "Avval «Давом этиш 👉»ni bosing yoki «Ўзгартириш» orqali qayta yuklang.",
+      "Avval «Davom etish 👉»ni bosing yoki «O'zgartirish» orqali qayta yuklang.",
     yx_need_text: "Matnni bitta xabar bilan yuboring (foto yoki faylsiz).",
     yx_bad_text: "Formatni tekshiring: karta uchun 16 raqam; telefon uchun RF raqami; maydon bo'sh bo'lmasin.",
     yx_file_ok: "Qabul qilindi. Keyingi bosqichga o'tamiz.",

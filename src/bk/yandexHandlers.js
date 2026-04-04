@@ -301,8 +301,6 @@ function buildYxReviewSummary(lg, profile) {
       lines.push(`${label}: ${v}`);
     }
   }
-  const comp = profile.session_data?.completed_yx || [];
-  lines.push(`${tBK(lg, "yx_rev_files")}: ${comp.length}`);
   return lines.join("\n");
 }
 
