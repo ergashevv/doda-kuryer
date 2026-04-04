@@ -5,18 +5,25 @@ import { ensureProfile, updateProfile } from "../services/users.js";
 import { isAllowedDocumentMime } from "./media.js";
 import { normalizeRussianPhone } from "./phone.js";
 import { categoryInline, editOnly, mainMenuReply } from "./keyboards.js";
-import { normalizeBKLang, tBK } from "./i18n.js";
+import { normalizeBKLang, tBK, tBkTmVisaLine } from "./i18n.js";
 import {
   YX_EATS,
   YX_LAVKA,
+  buildYxLine,
   getYandexUiState,
   initYandexSession,
   clearYandexCollected,
+  clearYandexStagingSessionFields,
   yxExtractFile,
   yxForbiddenMedia,
   validateYxText,
 } from "./yandexFlow.js";
-import { bkSendStepMessage, sendBkPlaceholderStep } from "./stepUi.js";
+import {
+  bkCollectMessageIds,
+  bkSendStepMessage,
+  flushBkPendingUserMessage,
+  sendBkPlaceholderStep,
+} from "./stepUi.js";
 
 function lgOf(profile) {
   return normalizeBKLang(profile?.language);
@@ -97,12 +104,23 @@ export function yxKzDocInline(lang) {
   ]);
 }
 
-/** Viza turi — TZ: pasportdan keyin (callback `tmkind`, `completed_yx` saqlanadi). */
-export function yxTmVisaKindInline(lang) {
+/** Viza turi — TZ: pasportdan keyin (callback `tmkind`, `completed_yx` saqlanadi). TM uchun matnlar turkmen tilida. */
+export function yxTmVisaKindInline(lang, isTmCitizen) {
   const lg = normalizeBKLang(lang);
+  const tm = !!isTmCitizen;
   return Markup.inlineKeyboard([
-    [Markup.button.callback(tBK(lg, "yx_tm_work"), "bk_YX:tmkind:work")],
-    [Markup.button.callback(tBK(lg, "yx_tm_study"), "bk_YX:tmkind:study")],
+    [
+      Markup.button.callback(
+        tBkTmVisaLine(tm, lg, "yx_tm_work"),
+        "bk_YX:tmkind:work"
+      ),
+    ],
+    [
+      Markup.button.callback(
+        tBkTmVisaLine(tm, lg, "yx_tm_tourism"),
+        "bk_YX:tmkind:tourism"
+      ),
+    ],
   ]);
 }
 
@@ -123,12 +141,62 @@ export async function deleteYxUploads(client, uid) {
   );
 }
 
+function yxStagedMarkup(lg) {
+  return Markup.inlineKeyboard([
+    [Markup.button.callback(tBK(lg, "btn_continue"), "bk_YX:cont")],
+    [Markup.button.callback(tBK(lg, "edit_btn"), "bk_E:yx")],
+  ]);
+}
+
+/** Faqat foto / video / PDF qadamlari: eski so‘rov va preview xabarlarini o‘chirib, yangi so‘rov yuboradi. */
+async function yxSendFileStepPrompt(ctx, client, uid, profile, caption, lg) {
+  const chatId = ctx.chat?.id;
+  let td = { ...(profile.session_data || {}) };
+  const toDel = [...(td.yx_prompt_msg_ids || []), ...(td.yx_preview_msg_ids || [])];
+  if (chatId && toDel.length) {
+    for (const mid of toDel) {
+      try {
+        await ctx.telegram.deleteMessage(chatId, mid);
+      } catch (_) {}
+    }
+  }
+  td.yx_prompt_msg_ids = [];
+  td.yx_preview_msg_ids = [];
+  await updateProfile(client, uid, { session_data: td });
+  profile = await ensureProfile(client, uid);
+  const sent = await ctx.reply(caption, yxReplyOptions(editOnly(lg, "bk_E:yx")));
+  const ids = bkCollectMessageIds(sent);
+  await updateProfile(client, uid, { session_data_patch: { yx_prompt_msg_ids: ids } });
+}
+
+async function replyYxStagedPreview(ctx, client, uid, profile, msg, step, lg) {
+  const caption = tBK(lg, "yx_confirm_doc_preview");
+  const extra = yxReplyOptions(yxStagedMarkup(lg));
+  let sent;
+  if (step.t === "video" && msg.video) {
+    sent = await ctx.replyWithVideo(msg.video.file_id, { caption, ...extra });
+  } else if (msg.photo?.length) {
+    const fileId = msg.photo[msg.photo.length - 1].file_id;
+    sent = await ctx.replyWithPhoto(fileId, { caption, ...extra });
+  } else if (msg.document) {
+    sent = await ctx.replyWithDocument(msg.document.file_id, { caption, ...extra });
+  } else {
+    sent = await ctx.reply(caption, extra);
+  }
+  const ids = bkCollectMessageIds(sent);
+  const td = { ...(profile.session_data || {}) };
+  td.yx_preview_msg_ids = ids;
+  if (msg?.message_id != null) td.bk_pending_user_message_id = msg.message_id;
+  await updateProfile(client, uid, { session_data: td });
+}
+
 export async function promptYandexStep(ctx, client, uid, profile) {
   const lg = lgOf(profile);
   const td = { ...(profile.session_data || {}) };
   const yx = td.yx || {};
   const done = (td.completed_yx || []).length;
-  const st = getYandexUiState(yx, done);
+  const st = getYandexUiState(yx, done, td);
+  if (st.ui === "staged") return;
 
   if (st.ui === "city") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
@@ -171,21 +239,31 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     return;
   }
   if (st.ui === "step" && st.step.t === "choice") {
+    const tmCit = yx.citizen === "tm";
+    const cap = tBkTmVisaLine(tmCit, lg, st.step.promptKey);
     const kb =
       st.step.choiceId === "visa_kind"
-        ? yxTmVisaKindInline(lg)
+        ? yxTmVisaKindInline(lg, tmCit)
         : yxRamInline(lg);
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, st.step.promptKey), yxReplyOptions(kb))
+      ctx.reply(cap, yxReplyOptions(kb))
     );
     return;
   }
   if (st.ui === "step") {
     const step = st.step;
-    const cap = tBK(lg, step.promptKey);
-    await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")))
-    );
+    const tmCit = yx.citizen === "tm";
+    const cap =
+      step.t === "photo" || step.t === "video" || step.t === "doc"
+        ? tBkTmVisaLine(tmCit, lg, step.promptKey)
+        : tBK(lg, step.promptKey);
+    if (step.t === "photo" || step.t === "video" || step.t === "doc") {
+      await yxSendFileStepPrompt(ctx, client, uid, profile, cap, lg);
+    } else {
+      await bkSendStepMessage(ctx, client, uid, profile, () =>
+        ctx.reply(cap, yxReplyOptions(editOnly(lg, "bk_E:yx")))
+      );
+    }
   }
 }
 
@@ -225,8 +303,9 @@ function buildYxReviewSummary(lg, profile) {
     );
   }
   if (yx.tmVisaKind) {
+    const workish = yx.tmVisaKind === "work" || yx.tmVisaKind === "study";
     lines.push(
-      `${tBK(lg, "yx_rev_tmvisa")}: ${tBK(lg, yx.tmVisaKind === "work" ? "yx_tm_work" : "yx_tm_study")}`
+      `${tBK(lg, "yx_rev_tmvisa")}: ${tBK(lg, workish ? "yx_tm_work" : "yx_tm_tourism")}`
     );
   }
   for (const [k, v] of Object.entries(coll)) {
@@ -248,7 +327,12 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   const td = { ...(profile.session_data || {}) };
   const yx = { ...(td.yx || {}) };
   let completed = [...(td.completed_yx || [])];
-  const st = getYandexUiState(yx, completed.length);
+  const st = getYandexUiState(yx, completed.length, td);
+
+  if (st.ui === "staged") {
+    await ctx.reply(tBK(lg, "yx_press_continue_first"), yxReplyOptionsTextOnly());
+    return true;
+  }
 
   if (st.ui !== "step" || st.step.t === "choice") {
     await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyOptionsTextOnly());
@@ -338,14 +422,26 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
      VALUES ($1, $2, $3, $4)`,
     [uid, step.docType, ex.fileId, path]
   );
-  completed.push(step.docType);
+
+  const chatId = ctx.chat?.id;
+  const promptIds = [...(td.yx_prompt_msg_ids || [])];
+  if (chatId && promptIds.length) {
+    for (const mid of promptIds) {
+      try {
+        await ctx.telegram.deleteMessage(chatId, mid);
+      } catch (_) {}
+    }
+  }
+
   const nextTd = { ...td, yx, completed_yx: completed };
+  nextTd.yx_prompt_msg_ids = [];
+  nextTd.yx_staged_doc = step.docType;
   if (msg?.message_id != null) nextTd.bk_pending_user_message_id = msg.message_id;
   else delete nextTd.bk_pending_user_message_id;
   await updateProfile(client, uid, { session_data: nextTd });
   await logChat(client, uid, "user", `yx:file:${step.docType}`);
   const p2 = await ensureProfile(client, uid);
-  await promptYandexStep(ctx, client, uid, p2);
+  await replyYxStagedPreview(ctx, client, uid, p2, msg, step, lg);
   return true;
 }
 
@@ -360,10 +456,11 @@ export async function handleYandexCallback(ctx, client, uid, data) {
     }
     if (svc === "doda") {
       await deleteYxUploads(client, uid);
-      const td = { ...(profile.session_data || {}) };
+      let td = { ...(profile.session_data || {}) };
       delete td.yx;
       td.completed_yx = [];
       td.collected = clearYandexCollected(td);
+      td = clearYandexStagingSessionFields(td);
       await updateProfile(client, uid, {
         session_data: { ...td, bk: td.bk || {} },
         session_state: "bk_category",
@@ -420,11 +517,46 @@ export async function handleYandexCallback(ctx, client, uid, data) {
   const yx = { ...(td.yx || {}) };
   const completed = [...(td.completed_yx || [])];
 
+  if (payload === "cont") {
+    const staged = td.yx_staged_doc;
+    if (!staged) {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
+    const line = buildYxLine(yx);
+    const expected = line[completed.length];
+    if (
+      !expected ||
+      expected.docType !== staged ||
+      (expected.t !== "photo" && expected.t !== "video" && expected.t !== "doc")
+    ) {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
+    const chatId = ctx.chat?.id;
+    await flushBkPendingUserMessage(ctx, td, chatId);
+    const prev = [...(td.yx_preview_msg_ids || [])];
+    if (chatId && prev.length) {
+      for (const mid of prev) {
+        try {
+          await ctx.telegram.deleteMessage(chatId, mid);
+        } catch (_) {}
+      }
+    }
+    const nextCompleted = [...completed, staged];
+    const nextTd = clearYandexStagingSessionFields({ ...td, yx, completed_yx: nextCompleted });
+    await updateProfile(client, uid, { session_data: nextTd });
+    await logChat(client, uid, "user", `yx:cont:${staged}`);
+    profile = await ensureProfile(client, uid);
+    await promptYandexStep(ctx, client, uid, profile);
+    return true;
+  }
+
   if (payload.startsWith("city:")) {
     yx.cityKey = payload.endsWith("msk") ? "msk" : "spb";
     yx.regAmina = null;
     await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: [] },
+      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
@@ -450,7 +582,7 @@ export async function handleYandexCallback(ctx, client, uid, data) {
     yx.tmVisaKind = null;
     yx.regAmina = null;
     await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: [] },
+      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
@@ -460,7 +592,7 @@ export async function handleYandexCallback(ctx, client, uid, data) {
     yx.uzDocKind = payload.slice(3);
     yx.regAmina = null;
     await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: [] },
+      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
@@ -470,21 +602,33 @@ export async function handleYandexCallback(ctx, client, uid, data) {
     yx.kzDocKind = payload.slice(3) === "pass" ? "pass" : "id";
     yx.regAmina = null;
     await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: [] },
+      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
   if (payload.startsWith("tmkind:")) {
-    yx.tmVisaKind = payload.slice(7) === "work" ? "work" : "study";
-    yx.regAmina = null;
-    await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: completed },
-    });
-    profile = await ensureProfile(client, uid);
-    await promptYandexStep(ctx, client, uid, profile);
-    return true;
+    const raw = payload.slice(7);
+    if (raw === "tourism") {
+      const tmCit = yx.citizen === "tm";
+      const blocked = tBkTmVisaLine(tmCit, lg, "yx_tm_tourism_blocked");
+      await bkSendStepMessage(ctx, client, uid, profile, () =>
+        ctx.reply(blocked, yxReplyOptions(yxTmVisaKindInline(lg, tmCit)))
+      );
+      return true;
+    }
+    if (raw === "work" || raw === "study") {
+      yx.tmVisaKind = "work";
+      yx.regAmina = null;
+      await updateProfile(client, uid, {
+        session_data: { ...td, yx, completed_yx: completed },
+      });
+      profile = await ensureProfile(client, uid);
+      await promptYandexStep(ctx, client, uid, profile);
+      return true;
+    }
+    return false;
   }
   if (payload === "ram:reg" || payload === "ram:amina") {
     yx.regAmina = payload === "ram:reg" ? "reg" : "amina";

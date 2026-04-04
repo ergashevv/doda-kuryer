@@ -9,6 +9,7 @@ import {
   YX_LAVKA,
   buildYxLine,
   clearYandexCollected,
+  clearYandexStagingSessionFields,
   getYandexUiState,
   initYandexSession,
   validateYxText,
@@ -123,15 +124,39 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.equal(st.ui, "step");
     assert.equal(st.step.t, "choice");
   });
+
+  test("yx_staged_doc: preview kutilmoqda — boshqa UI yo‘q", () => {
+    const yx = baseYx({ citizen: "rf" });
+    const td = { yx_staged_doc: "yx_rf_pass_face" };
+    assert.deepEqual(getYandexUiState(yx, 0, td), { ui: "staged" });
+  });
+});
+
+describe("clearYandexStagingSessionFields", () => {
+  test("staging kalitlari ochiladi", () => {
+    const o = clearYandexStagingSessionFields({
+      bk: {},
+      yx_staged_doc: "x",
+      yx_prompt_msg_ids: [1],
+      yx_preview_msg_ids: [2],
+      bk_pending_user_message_id: 9,
+      keep: 1,
+    });
+    assert.equal(o.keep, 1);
+    assert.equal(o.yx_staged_doc, undefined);
+    assert.equal(o.yx_prompt_msg_ids, undefined);
+    assert.equal(o.yx_preview_msg_ids, undefined);
+    assert.equal(o.bk_pending_user_message_id, undefined);
+  });
 });
 
 describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
-  test("RF: migratsiyadan keyin rekvizitlar text + karta + tel", () => {
+  test("RF: migratsiyadan keyin rekvizitlar text + karta", () => {
     const line = buildYxLine(baseYx({ citizen: "rf" }));
     const texts = line.filter((s) => s.t === "text");
     assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
     assert.ok(texts.some((s) => s.colKey === "yx_col_card16"));
-    assert.ok(texts.some((s) => s.colKey === "yx_col_phone_bank"));
+    assert.ok(!texts.some((s) => s.colKey === "yx_col_phone_bank"));
   });
 
   test("VNJ: qisqa yo'l — choice yoq", () => {
@@ -149,15 +174,20 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(line.some((s) => s.docType === "yx_kz_pass_face"));
   });
 
-  test("TM: viza + alohida contact phone maydoni", () => {
+  test("TM: ishchi viza — Amina/reg bitta fayl, keyin mig, telefon, rekvizit + 16", () => {
     const yx = baseYx({
       citizen: "tm",
       tmVisaKind: "work",
-      regAmina: "reg",
     });
     const line = buildYxLine(yx);
+    const visaIdx = line.findIndex((s) => s.docType === "yx_tm_visa");
+    assert.ok(visaIdx >= 0);
+    assert.equal(line[visaIdx + 1].t, "doc");
+    assert.equal(line[visaIdx + 1].docType, "yx_tm_amina_or_reg");
     const texts = line.filter((s) => s.t === "text");
     assert.ok(texts.some((s) => s.colKey === "yx_col_tm_contact"));
+    assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
+    assert.ok(texts.some((s) => s.colKey === "yx_col_card16"));
   });
 
   test("TM: tmVisaKind tanlanguncha viza foto qadami yoq", () => {
@@ -165,9 +195,14 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(!line.some((s) => s.docType === "yx_tm_visa"));
   });
 
+  test("TM: eski study sessiya work liniyasiga map qilinadi", () => {
+    const line = buildYxLine(baseYx({ citizen: "tm", tmVisaKind: "study" }));
+    assert.ok(line.some((s) => s.docType === "yx_tm_visa"));
+  });
+
   test("TM: tmkind tanlangach — viza surati qadami bor", () => {
     const line = buildYxLine(
-      baseYx({ citizen: "tm", tmVisaKind: "study" })
+      baseYx({ citizen: "tm", tmVisaKind: "work" })
     );
     const visaIdx = line.findIndex((s) => s.docType === "yx_tm_visa");
     assert.ok(visaIdx > 0);
@@ -202,9 +237,9 @@ describe("Callback data — handler bilan mos payload", () => {
     assert.equal(yxPayload(`${PREFIX_YX}kz:id`).slice(3) === "id", true);
   });
 
-  test("bk_YX:tmkind:work", () => {
-    const p = yxPayload(`${PREFIX_YX}tmkind:work`);
-    assert.equal(p.slice(7) === "work", true);
+  test("bk_YX:tmkind:work / tourism", () => {
+    assert.equal(yxPayload(`${PREFIX_YX}tmkind:work`).slice(7), "work");
+    assert.equal(yxPayload(`${PREFIX_YX}tmkind:tourism`).slice(7), "tourism");
   });
 
   test("bk_YX:ram:reg → reg", () => {
@@ -226,13 +261,20 @@ describe("Callback data — handler bilan mos payload", () => {
 describe("initYandexSession / clearYandexCollected", () => {
   test("init: yx va completed_yx nollanadi, bk saqlanadi", () => {
     const td = initYandexSession(
-      { bk: { foo: 1 }, collected: { bank: "x", yx_col_a: "1" } },
+      {
+        bk: { foo: 1 },
+        collected: { bank: "x", yx_col_a: "1" },
+        yx_staged_doc: "stale",
+        yx_prompt_msg_ids: [5],
+      },
       YX_LAVKA
     );
     assert.equal(td.bk.foo, 1);
     assert.equal(td.yx.service, YX_LAVKA);
     assert.deepEqual(td.completed_yx, []);
     assert.equal(td.yx.cityKey, null);
+    assert.equal(td.yx_staged_doc, undefined);
+    assert.equal(td.yx_prompt_msg_ids, undefined);
   });
 
   test("clearYandexCollected: faqat yx_col_* ochadi", () => {

@@ -7,7 +7,7 @@ export const YX_LAVKA = "yandex_lavka";
 export const YX_EATS = "yandex_eda";
 
 export function initYandexSession(td, serviceKey) {
-  return {
+  return clearYandexStagingSessionFields({
     ...td,
     yx: {
       service: serviceKey,
@@ -20,7 +20,7 @@ export function initYandexSession(td, serviceKey) {
     },
     completed_yx: [],
     collected: { ...(td.collected || {}) },
-  };
+  });
 }
 
 export function clearYandexCollected(td) {
@@ -29,6 +29,16 @@ export function clearYandexCollected(td) {
     if (k.startsWith("yx_col_")) delete coll[k];
   }
   return coll;
+}
+
+/** Shahar / fuqarolik / hujjat turi o‘zgarganda Yandex fayl staging kalitlarini tozalaydi. */
+export function clearYandexStagingSessionFields(td) {
+  const o = { ...(td || {}) };
+  delete o.yx_staged_doc;
+  delete o.yx_prompt_msg_ids;
+  delete o.yx_preview_msg_ids;
+  delete o.bk_pending_user_message_id;
+  return o;
 }
 
 function photo(docType, promptKey) {
@@ -47,24 +57,23 @@ function choice(choiceId, promptKey) {
   return { t: "choice", choiceId, promptKey };
 }
 
-function tailRekvizitCard16Phone() {
-  // Rekvizitlar: faqat matn + karta raqami + bank telefoni (selfie / video yo'q)
+function tailRekvizitCard16() {
+  // Rekvizitlar: matn + karta raqami (selfie / video yo'q)
   return [
     textField("yx_col_req_text", "yx_p_req_text", "plain"),
     textField("yx_col_card16", "yx_p_card16", "digits16"),
-    textField("yx_col_phone_bank", "yx_p_phone_bank", "phone"),
   ];
 }
 
 function tailRfAfterMig() {
   return [
     textField("yx_col_contact_phone", "yx_p_contact_phone", "phone"),
-    ...tailRekvizitCard16Phone(),
+    ...tailRekvizitCard16(),
   ];
 }
 
 function tailKzAfterMig() {
-  return tailRekvizitCard16Phone();
+  return tailRekvizitCard16();
 }
 
 function lineUzPatent(yx) {
@@ -89,7 +98,7 @@ function lineUzPatent(yx) {
     photo("yx_uz_pat_mig", "yx_p_mig"),
     photo("yx_uz_pat_pay_ph", "yx_p_pay_ph"),
     pdfOrPhoto("yx_uz_pat_pay_file", "yx_p_pay_file"),
-    ...tailRekvizitCard16Phone()
+    ...tailRekvizitCard16()
   );
   return L;
 }
@@ -118,7 +127,7 @@ function lineUzStudent(yx) {
   } else {
     L.push(photo("yx_uz_st_amina", "yx_p_amina"));
   }
-  L.push(photo("yx_uz_st_mig", "yx_p_mig"), ...tailRekvizitCard16Phone());
+  L.push(photo("yx_uz_st_mig", "yx_p_mig"), ...tailRekvizitCard16());
   return L;
 }
 
@@ -152,27 +161,21 @@ function lineRf(yx) {
   ];
 }
 
-/** TZ: pasport → tur viza (tugma) → foto viza → reg/Amina → mig → telefon → rekvizitlar. */
+/** TZ: pasport → viza turi → viza surati → Amina/reg (bitta fayl) → mig → telefon → rekvizit → 16 raqam. Faqat işçi wiza. */
 function lineTm(yx) {
+  const tmVisaKind =
+    yx.tmVisaKind === "study" ? "work" : yx.tmVisaKind;
   const L = [photo("yx_tm_pass", "yx_p_tm_pass")];
-  if (!yx.tmVisaKind) {
+  if (!tmVisaKind) {
     L.push(choice("visa_kind", "yx_ask_tm_visa"));
     return L;
   }
-  L.push(photo("yx_tm_visa", "yx_p_tm_visa"));
-  if (!yx.regAmina) {
-    L.push(choice("ram_tm", "yx_p_ram_choice"));
-    return L;
-  }
-  if (yx.regAmina === "reg") {
-    L.push(photo("yx_tm_reg_f", "yx_p_reg_f"), photo("yx_tm_reg_b", "yx_p_reg_b"));
-  } else {
-    L.push(photo("yx_tm_amina", "yx_p_amina"));
-  }
   L.push(
+    photo("yx_tm_visa", "yx_p_tm_visa"),
+    pdfOrPhoto("yx_tm_amina_or_reg", "yx_p_tm_amina_or_reg"),
     photo("yx_tm_mig", "yx_p_mig"),
     textField("yx_col_tm_contact", "yx_p_contact_phone", "phone"),
-    ...tailRekvizitCard16Phone()
+    ...tailRekvizitCard16()
   );
   return L;
 }
@@ -206,7 +209,8 @@ export function buildYxLine(yx) {
   return [];
 }
 
-export function getYandexUiState(yx, completedLen) {
+export function getYandexUiState(yx, completedLen, td) {
+  if (td?.yx_staged_doc) return { ui: "staged" };
   if (!yx?.service) return { ui: "none" };
   if (!yx.cityKey) return { ui: "city" };
   if (!yx.citizen) return { ui: "citizen" };

@@ -61,6 +61,7 @@ import {
   bkClearStepUi,
   bkReplyStep,
   bkSendStepMessage,
+  flushBkPendingUserMessage,
   isBkDocWizardSessionState,
   replyBkAskPhoneNoPhoto,
   replyBkDocUploadedEcho,
@@ -877,6 +878,27 @@ export function registerBkHandlers(bot) {
               ctx.reply(tBK(lg, "review_callback_stale"))
             );
             return;
+          }
+          const tdYx = { ...(profile.session_data || {}) };
+          if (tdYx.yx_staged_doc) {
+            await client.query(
+              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = $2`,
+              [uid, tdYx.yx_staged_doc]
+            );
+            const chatIdYx = ctx.chat?.id;
+            await flushBkPendingUserMessage(ctx, tdYx, chatIdYx);
+            const pv = [...(tdYx.yx_preview_msg_ids || [])];
+            if (chatIdYx && pv.length) {
+              for (const mid of pv) {
+                try {
+                  await ctx.telegram.deleteMessage(chatIdYx, mid);
+                } catch (_) {}
+              }
+            }
+            delete tdYx.yx_staged_doc;
+            tdYx.yx_preview_msg_ids = [];
+            await updateProfile(client, uid, { session_data: tdYx });
+            profile = await ensureProfile(client, uid);
           }
           await logChat(client, uid, "user", "edit:yx_reprompt");
           await promptYandexStep(ctx, client, uid, profile);

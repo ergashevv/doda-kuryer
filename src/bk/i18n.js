@@ -286,7 +286,7 @@ const BK_STRINGS = {
     yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
     yx_ask_kz_doc: "Hujjat turini tanlang.",
     yx_ask_tm_visa:
-      "Viza turini pastdagi tugma orqali tanlang (pasportdan keyingi bosqich).",
+      "Qaysi turdagi viza bilan? Pastdagi tugmalardan tanlang: turizm yoki ishchi viza.",
 
     yx_cit_uz: "O'zbekiston",
     yx_cit_tj: "Tojikiston",
@@ -306,7 +306,9 @@ const BK_STRINGS = {
     yx_kz_id: "Shaxsni tasdiqlovchi guvohnoma",
 
     yx_tm_work: "Ishchi viza",
-    yx_tm_study: "O'quv vizasi",
+    yx_tm_tourism: "Turizm viza",
+    yx_tm_tourism_blocked:
+      "Turizm vizasi bilan hozircha ulab bera olmaymiz. Faqat ishchi viza bilan to‘liq ro‘yxatdan o‘tish mumkin. «Ishchi viza»ni tanlang.",
 
     yx_ram_reg: "Registratsiya",
     yx_ram_amina: "Amina",
@@ -327,13 +329,16 @@ const BK_STRINGS = {
     yx_rev_files: "Yakunlangan bosqichlar (matnlar bilan birga)",
 
     yx_use_buttons: "Bu bosqichda variantni pastdagi tugma orqali tanlang.",
+    yx_confirm_doc_preview:
+      "✅ Fayl qabul qilindi\n\nKo‘rinishni tekshiring va «Давом этиш 👉»ni bosing\n\nyoki «Ўзгартириш» — boshqa fayl yuborish.",
+    yx_press_continue_first:
+      "Avval «Давом этиш 👉»ni bosing yoki «Ўзгартириш» orqali qayta yuklang.",
     yx_need_text: "Matnni bitta xabar bilan yuboring (foto yoki faylsiz).",
     yx_bad_text: "Formatni tekshiring: karta uchun 16 raqam; telefon uchun RF raqami; maydon bo'sh bo'lmasin.",
     yx_file_ok: "Qabul qilindi. Keyingi bosqichga o'tamiz.",
 
     yx_lbl_yx_col_req_text: "Rekvizitlar (matn)",
     yx_lbl_yx_col_card16: "Karta raqami",
-    yx_lbl_yx_col_phone_bank: "Bank uchun telefon",
     yx_lbl_yx_col_contact_phone: "Kontakt telefoni",
     yx_lbl_yx_col_tm_contact: "Kontakt telefoni",
 
@@ -344,8 +349,6 @@ const BK_STRINGS = {
     yx_p_req_text:
       "Bank rekvizitlarini bitta xabarda yuboring (servis yo'riqnomasiga ko'ra).",
     yx_p_card16: "Bank karta raqamini kiriting — ketma-ket 16 raqam (bo'shliq bilan ham mumkin).",
-    yx_p_phone_bank:
-      "Bankka ulangan telefon raqamini kiriting (RF formati: +7… yoki 8…).",
 
     yx_p_uz_pat_pass: "Pasport fotosi (rasmli sahifa).",
     yx_p_uz_pat_front: "Patent fotosi — old tomoni.",
@@ -374,6 +377,8 @@ const BK_STRINGS = {
     yx_p_tm_pass: "Pasport fotosi (rasmli sahifa).",
     yx_p_tm_visa:
       "Viza / ruxsatnoma fotosini yuboring (turi oldingi bosqichda tanlangan).",
+    yx_p_tm_amina_or_reg:
+      "«Amina» skrinshoti yoki qog‘oz registratsiya — bitta foto yoki PDF (ikkala tomonda bo‘lsa, bitta fayl yoki birinchi bet).",
 
     yx_p_contact_phone: "Kontakt telefon raqamini kiriting (RF).",
 
@@ -746,7 +751,7 @@ const BK_STRINGS = {
     yx_ask_uz_doc: "Навъи ҳуҷҷати тасдиқкунандаро интихоб кунед.",
     yx_ask_kz_doc: "Навъи ҳуҷҷатро интихоб кунед.",
     yx_ask_tm_visa:
-      "Навъи визаро бо тугмаи поён интихоб кунед (қадам пас аз боркунии паспорт).",
+      "Кадом навъи виза? Бо тугмаи поён интихоб кунед: корӣ ё сайёҳӣ.",
 
     yx_cit_uz: "Ӯзбекистон",
     yx_cit_tj: "Тоҷикистон",
@@ -766,7 +771,9 @@ const BK_STRINGS = {
     yx_kz_id: "Шаҳодатномаи шахсият",
 
     yx_tm_work: "Визаи корӣ",
-    yx_tm_study: "Визаи таҳсил",
+    yx_tm_tourism: "Визаи сайёҳӣ",
+    yx_tm_tourism_blocked:
+      "Бо визаи сайёҳӣ ҳозир пайваст карда наметавонем; танҳо бо визаи корӣ пурра анҷом дода мешавад. Лутфан «Визаи корӣ»-ро интихоб кунед.",
 
     yx_ram_reg: "Бақайдгирӣ",
     yx_ram_amina: "Амина",
@@ -787,13 +794,16 @@ const BK_STRINGS = {
     yx_rev_files: "Қадамҳои гузаронидашуда (бо матнӣ)",
 
     yx_use_buttons: "Дар ин қадам вариантро бо тугмаи поён интихоб кунед.",
+    yx_confirm_doc_preview:
+      "✅ Файл қабул шуд\n\nСанҷед ва «Идома 👉»-ро пахш кунед\n\nё «↩️ Тағйир додан» — файли дигар фиристед.",
+    yx_press_continue_first:
+      "Аввал «Идома 👉»-ро пахш кунед ё бо «↩️ Тағйир додан» дубора фиристед.",
     yx_need_text: "Матнро дар як паём фиристед (бе акс ва файл).",
     yx_bad_text: "Форматро санҷед: барои корт — 16 рақам; барои телефон — рақами ФР; майдон холӣ набошад.",
     yx_file_ok: "Қабул шуд. Ба қадами навбатӣ мегузарем.",
 
     yx_lbl_yx_col_req_text: "Реквизитҳо (матн)",
     yx_lbl_yx_col_card16: "Рақами корт",
-    yx_lbl_yx_col_phone_bank: "Телефон барои бонк",
     yx_lbl_yx_col_contact_phone: "Телефони тамос",
     yx_lbl_yx_col_tm_contact: "Телефони тамос",
 
@@ -804,8 +814,6 @@ const BK_STRINGS = {
     yx_p_req_text:
       "Реквизитҳои бонкиро дар як паём нависед (мувофиқи дастури сервис).",
     yx_p_card16: "Рақами корти бонкиро ворид кунед — 16 рақам пайдарпай (бо фосила ҳам мешавад).",
-    yx_p_phone_bank:
-      "Рақами телефони ба бонк пайвастро нишон диҳед (формати ФР: +7… ё 8…).",
 
     yx_p_uz_pat_pass: "Акс аз паспорт (саҳифаи суратдор).",
     yx_p_uz_pat_front: "Акс аз патент — тарафи рӯй.",
@@ -834,6 +842,8 @@ const BK_STRINGS = {
     yx_p_tm_pass: "Акс аз паспорт (саҳифаи суратдор).",
     yx_p_tm_visa:
       "Акс аз виза / иҷозатномаро фиристед (навъ дар қадами пеш интихоб шудааст).",
+    yx_p_tm_amina_or_reg:
+      "Скриншоти «Амина» ё скан/акси регистратсияи қоғозӣ — як акс ё PDF.",
 
     yx_p_contact_phone: "Рақами телефони тамосро нишон диҳед (ФР).",
 
@@ -1121,7 +1131,7 @@ const BK_STRINGS = {
     yx_ask_uz_doc: "Тастыктоочу документтин түрүн тандаңыз.",
     yx_ask_kz_doc: "Документтин түрүн тандаңыз.",
     yx_ask_tm_visa:
-      "Визанын түрүн төмөнкү баскыч менен тандаңыз (паспорт жүктөлгөндөн кийинки кадам).",
+      "Кайсы түрдөгү виза? Төмөнкү баскычтардан тандаңыз: туризм же иш визасы.",
 
     yx_cit_uz: "Өзбекстан",
     yx_cit_tj: "Тажикстан",
@@ -1141,7 +1151,9 @@ const BK_STRINGS = {
     yx_kz_id: "Жеке күбөлүк",
 
     yx_tm_work: "Жумушчу виза",
-    yx_tm_study: "Окуу визасы",
+    yx_tm_tourism: "Туризм визасы",
+    yx_tm_tourism_blocked:
+      "Туризм визасы менен азыр туташтыра албайбыз; толук каттоо үчүн гана жумуш визасы ылайыктуу. «Жумушчу виза»ны тандаңыз.",
 
     yx_ram_reg: "Каттоо",
     yx_ram_amina: "Амина",
@@ -1162,13 +1174,16 @@ const BK_STRINGS = {
     yx_rev_files: "Өтүлгөн кадамдар (текст менен кошо)",
 
     yx_use_buttons: "Бул кадамда вариантты төмөнкү баскыч менен тандаңыз.",
+    yx_confirm_doc_preview:
+      "✅ Файл кабыл алынды\n\nКөрүнүшүн текшериңиз жана «Улантуу 👉» баскычын басыңыз\n\nже «↩️ Өзгөртүү» — башка файл жөнөтүңүз.",
+    yx_press_continue_first:
+      "Алды менен «Улантуу 👉» баскычын басыңыз же «↩️ Өзгөртүү» менен кайра жүктөңүз.",
     yx_need_text: "Текстти бир билдирүү менен жөнөтүңүз (сүрөтсүз жана файлсыз).",
     yx_bad_text: "Форматты текшериңиз: карта үчүн — 16 сан; телефон үчүн — РФ номери; талаа бош болбосун.",
     yx_file_ok: "Кабыл алынды. Кийинки кадамга өтөбүз.",
 
     yx_lbl_yx_col_req_text: "Реквизиттер (текст)",
     yx_lbl_yx_col_card16: "Карта номери",
-    yx_lbl_yx_col_phone_bank: "Банк үчүн телефон",
     yx_lbl_yx_col_contact_phone: "Байланыш телефону",
     yx_lbl_yx_col_tm_contact: "Байланыш телефону",
 
@@ -1179,8 +1194,6 @@ const BK_STRINGS = {
     yx_p_req_text:
       "Банк реквизиттерин бир билдирүү менен жазыңыз (сервис нускамасына ылайык).",
     yx_p_card16: "Банк картасынын номерин киргизиңиз — 16 сан катары менен (боштук менен да болот).",
-    yx_p_phone_bank:
-      "Банкка байланган телефон номерин көрсөтүңүз (РФ форматы: +7… же 8…).",
 
     yx_p_uz_pat_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
     yx_p_uz_pat_front: "Патенттин сүрөтү — алдыңкы бет.",
@@ -1209,6 +1222,8 @@ const BK_STRINGS = {
     yx_p_tm_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
     yx_p_tm_visa:
       "Виза / уруксат кагазынын сүрөтүн жөнөтүңүз (түрү мурунку кадамда тандалган).",
+    yx_p_tm_amina_or_reg:
+      "«Амина» скриншоту же кагаз регистрация — бир сүрөт же PDF.",
 
     yx_p_contact_phone: "Байланыш телефон номерин көрсөтүңүз (РФ).",
 
@@ -1497,7 +1512,7 @@ const BK_STRINGS = {
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
     yx_ask_kz_doc: "Выберите тип документа.",
     yx_ask_tm_visa:
-      "Выберите тип визы кнопкой ниже (шаг после загрузки паспорта).",
+      "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
 
     yx_cit_uz: "Узбекистан",
     yx_cit_tj: "Таджикистан",
@@ -1517,7 +1532,9 @@ const BK_STRINGS = {
     yx_kz_id: "Удостоверение личности",
 
     yx_tm_work: "Рабочая виза",
-    yx_tm_study: "Учебная виза",
+    yx_tm_tourism: "Туристическая виза",
+    yx_tm_tourism_blocked:
+      "С туристической визой сейчас подключить не можем — полное оформление только с рабочей визой. Выберите «Рабочая виза».",
 
     yx_ram_reg: "Регистрация",
     yx_ram_amina: "Амина",
@@ -1538,13 +1555,16 @@ const BK_STRINGS = {
     yx_rev_files: "Шагов пройдено (включая текстовые)",
 
     yx_use_buttons: "На этом шаге выберите вариант кнопкой ниже.",
+    yx_confirm_doc_preview:
+      "✅ Файл принят\n\nПроверьте качество и нажмите «Продолжить 👉»\n\nили «↩️ Изменить выбор» — отправить другой файл.",
+    yx_press_continue_first:
+      "Сначала нажмите «Продолжить 👉» или «↩️ Изменить выбор», чтобы перезагрузить.",
     yx_need_text: "Отправьте текст одним сообщением (без фото и файлов).",
     yx_bad_text: "Проверьте формат: для карты — 16 цифр; для телефона — номер РФ; поле не должно быть пустым.",
     yx_file_ok: "Принято. Переходим к следующему шагу.",
 
     yx_lbl_yx_col_req_text: "Реквизиты (текст)",
     yx_lbl_yx_col_card16: "Номер карты",
-    yx_lbl_yx_col_phone_bank: "Телефон для банка",
     yx_lbl_yx_col_contact_phone: "Контактный телефон",
     yx_lbl_yx_col_tm_contact: "Контактный телефон",
 
@@ -1555,8 +1575,6 @@ const BK_STRINGS = {
     yx_p_req_text:
       "Одним сообщением укажите банковские реквизиты (как в инструкции сервиса).",
     yx_p_card16: "Введите номер банковской карты — 16 цифр подряд (можно с пробелами).",
-    yx_p_phone_bank:
-      "Укажите номер телефона, привязанный к банку (формат РФ: +7… или 8…).",
 
     yx_p_uz_pat_pass: "Фото паспорта (разворот с фото).",
     yx_p_uz_pat_front: "Фото патента — лицевая сторона.",
@@ -1585,6 +1603,8 @@ const BK_STRINGS = {
     yx_p_tm_pass: "Фото паспорта (разворот с фото).",
     yx_p_tm_visa:
       "Отправьте фото визы / разрешения (тип выбран на предыдущем шаге).",
+    yx_p_tm_amina_or_reg:
+      "Скриншот «Амина» или фото/скан бумажной регистрации — одно фото или PDF.",
 
     yx_p_contact_phone: "Укажите контактный номер телефона (РФ).",
 
@@ -1629,6 +1649,23 @@ export function tBK(lang, key, kwargs = {}) {
     return key;
   }
   return interpolate(String(val), kwargs);
+}
+
+/** Turkmaniston (YX) viza tanlovi: fuqarolik «tm» bo‘lsa — turkmen matn, aks holda `tBK`. */
+const BK_TM_VISA_TK = {
+  yx_ask_tm_visa:
+    "Haýsy wiza görnüşi bilen? Aşakdaky düwmelerden saýlaň: işçi wiza ýa-da turizm wizasy.",
+  yx_tm_work: "Işçi wiza",
+  yx_tm_tourism: "Turizm wizasy",
+  yx_tm_tourism_blocked:
+    "Häzirki wagtda bu wizanyň görnüşi bilen baglanyşyk hödürlemeýaris; diňe işçi wiza bilen doly görnüşde ýerine ýetirip bilersiňiz. «Işçi wiza»ny saýlaň.",
+  yx_p_tm_amina_or_reg:
+    "«Amina» skrinşoty ýa-da kagyz registrasiýa — bir surat ýa-da PDF.",
+};
+
+export function tBkTmVisaLine(isTmCitizen, lang, key) {
+  if (isTmCitizen && BK_TM_VISA_TK[key]) return BK_TM_VISA_TK[key];
+  return tBK(lang, key);
 }
 
 /** Функция-ключлар: confirm_phone, confirm_category, confirm_city, confirm_citizenship, confirm_thermal */

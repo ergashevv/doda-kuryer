@@ -278,7 +278,7 @@ function formatYandexAnketaBlock(profile) {
   }
   if (yx.tmVisaKind) {
     lines.push(
-      `${tBK(lg, "group_label_yandex_tmvisa")} ${tBK(lg, yx.tmVisaKind === "work" ? "yx_tm_work" : "yx_tm_study")}`
+      `${tBK(lg, "group_label_yandex_tmvisa")} ${tBK(lg, yx.tmVisaKind === "work" || yx.tmVisaKind === "study" ? "yx_tm_work" : "yx_tm_tourism")}`
     );
   }
   return lines.join("\n");
@@ -316,6 +316,7 @@ function yandexDocPromptKey(docType) {
     yx_rf_pass_prop: "yx_p_rf_pass_prop",
     yx_tm_pass: "yx_p_tm_pass",
     yx_tm_visa: "yx_p_tm_visa",
+    yx_tm_amina_or_reg: "yx_p_tm_amina_or_reg",
     yx_tm_reg_f: "yx_p_reg_f",
     yx_tm_reg_b: "yx_p_reg_b",
     yx_tm_amina: "yx_p_amina",

@@ -29,7 +29,7 @@ export async function tryBkDeleteUserMessage(ctx, msg) {
 }
 
 /** Hujjat qabul → preview → «Продолжить» gacha user media chatda qoladi; keyingi qadamda o‘chadi. */
-async function flushBkPendingUserMessage(ctx, td, chatId) {
+export async function flushBkPendingUserMessage(ctx, td, chatId) {
   const mid = td.bk_pending_user_message_id;
   if (mid == null || chatId == null) return;
   try {
