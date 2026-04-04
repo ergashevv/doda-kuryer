@@ -115,13 +115,29 @@ function lineUzPatent(yx) {
   return L;
 }
 
+/** UZ/TJ + VNJ/RVP: VNJ old/orqa → pasport → INN → SNILS → Amina/reg → mig → tel (agar kerak) → rekvizit → 16 raqam */
 function lineUzVnzh(yx) {
-  return [
+  const L = [
     photo("yx_uz_vnzh_f", "yx_p_vnzh_f"),
     photo("yx_uz_vnzh_b", "yx_p_vnzh_b"),
-    photo("yx_uz_vnzh_mig", "yx_p_mig"),
-    ...tailRfAfterMig(yx),
+    photo("yx_uz_vnzh_pass", "yx_p_vnzh_pass"),
+    textField("yx_col_inn", "yx_p_inn", "inn"),
+    textField("yx_col_snils", "yx_p_snils", "snils"),
   ];
+  if (!yx.regAmina) {
+    L.push(choice("ram_vnzh", "yx_p_ram_choice"));
+    return L;
+  }
+  if (yx.regAmina === "reg") {
+    L.push(
+      photo("yx_uz_vnzh_reg_f", "yx_p_reg_f"),
+      photo("yx_uz_vnzh_reg_b", "yx_p_reg_b")
+    );
+  } else {
+    L.push(photo("yx_uz_vnzh_amina", "yx_p_amina"));
+  }
+  L.push(photo("yx_uz_vnzh_mig", "yx_p_mig"), ...tailRfAfterMig(yx));
+  return L;
 }
 
 function lineUzStudent(yx) {
@@ -272,6 +288,16 @@ export function validateYxText(step, text) {
     const d = raw.replace(/\D/g, "");
     if (d.length < 10) return null;
     return raw;
+  }
+  if (step.mode === "inn") {
+    const d = raw.replace(/\D/g, "");
+    if (d.length !== 10 && d.length !== 12) return null;
+    return d;
+  }
+  if (step.mode === "snils") {
+    const d = raw.replace(/\D/g, "");
+    if (d.length !== 11) return null;
+    return d;
   }
   return raw;
 }

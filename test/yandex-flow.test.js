@@ -168,12 +168,21 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
   });
 
-  test("VNJ: qisqa yo'l — choice yoq", () => {
-    const line = buildYxLine(
+  test("VNJ (UZ/TJ): VNJ, pasport, INN, SNILS, Amina/reg tanlovi, mig, tail", () => {
+    const lineChoice = buildYxLine(
       baseYx({ citizen: "uz_tj", uzDocKind: "vnzh" })
     );
-    assert.ok(line.every((s) => s.t !== "choice"));
-    assert.ok(line.some((s) => s.docType === "yx_uz_vnzh_f"));
+    assert.ok(lineChoice.some((s) => s.docType === "yx_uz_vnzh_f"));
+    assert.ok(lineChoice.some((s) => s.docType === "yx_uz_vnzh_pass"));
+    assert.ok(lineChoice.some((s) => s.colKey === "yx_col_inn"));
+    assert.ok(lineChoice.some((s) => s.colKey === "yx_col_snils"));
+    assert.ok(lineChoice.some((s) => s.choiceId === "ram_vnzh"));
+    const lineReg = buildYxLine(
+      baseYx({ citizen: "uz", uzDocKind: "vnzh", regAmina: "reg" })
+    );
+    assert.ok(lineReg.some((s) => s.docType === "yx_uz_vnzh_reg_f"));
+    assert.ok(lineReg.some((s) => s.docType === "yx_uz_vnzh_mig"));
+    assert.equal(lineReg[lineReg.length - 1].colKey, "yx_col_card16");
   });
 
   test("KZ pass: kzDocKind=pass", () => {
@@ -331,6 +340,19 @@ describe("validateYxText", () => {
 
   test("plain", () => {
     assert.equal(validateYxText(stepPlain, "  hello "), "hello");
+  });
+
+  test("INN 10 yoki 12 raqam", () => {
+    const stepInn = { mode: "inn" };
+    assert.equal(validateYxText(stepInn, "1234567890"), "1234567890");
+    assert.equal(validateYxText(stepInn, "123456789012"), "123456789012");
+    assert.equal(validateYxText(stepInn, "123"), null);
+  });
+
+  test("SNILS 11 raqam", () => {
+    const stepSn = { mode: "snils" };
+    assert.equal(validateYxText(stepSn, "123-456-789 01"), "12345678901");
+    assert.equal(validateYxText(stepSn, "123"), null);
   });
 });
 

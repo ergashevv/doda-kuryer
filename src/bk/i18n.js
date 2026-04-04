@@ -334,13 +334,16 @@ const BK_STRINGS = {
     yx_press_continue_first:
       "Avval «Davom etish 👉»ni bosing yoki «O'zgartirish» orqali qayta yuklang.",
     yx_need_text: "Matnni bitta xabar bilan yuboring (foto yoki faylsiz).",
-    yx_bad_text: "Formatni tekshiring: karta uchun 16 raqam; telefon uchun RF raqami; maydon bo'sh bo'lmasin.",
+    yx_bad_text:
+      "Formatni tekshiring: karta — 16 raqam; telefon — RF; INN — 10 yoki 12 raqam; SNILS — 11 raqam; maydon bo'sh bo'lmasin.",
     yx_file_ok: "Qabul qilindi. Keyingi bosqichga o'tamiz.",
 
     yx_lbl_yx_col_req_text: "Rekvizitlar (matn)",
     yx_lbl_yx_col_card16: "Karta raqami",
     yx_lbl_yx_col_contact_phone: "Kontakt telefoni",
     yx_lbl_yx_col_tm_contact: "Kontakt telefoni",
+    yx_lbl_yx_col_inn: "INN",
+    yx_lbl_yx_col_snils: "SNILS",
 
     yx_p_req_video:
       "Bank kartasi rekvizitlari bilan qisqa video yuboring (yuz va pasportsiz).",
@@ -362,6 +365,9 @@ const BK_STRINGS = {
 
     yx_p_vnzh_f: "VNJ / RVP fotosi — old tomoni.",
     yx_p_vnzh_b: "VNJ / RVP fotosi — orqa tomoni.",
+    yx_p_vnzh_pass: "Pasport fotosi (rasmli sahifa).",
+    yx_p_inn: "INN ni kiriting — 10 yoki 12 raqam (faqat raqamlar).",
+    yx_p_snils: "SNILS ni kiriting — 11 raqam (defislar ixtiyoriy).",
 
     yx_p_st_bilet: "Talabalik guvohnomasi fotosi.",
     yx_p_st_spravka: "O'qish joyidan ma'lumotnoma fotosi.",
@@ -797,13 +803,16 @@ const BK_STRINGS = {
     yx_press_continue_first:
       "Аввал «Идома 👉»-ро пахш кунед ё бо «↩️ Тағйир додан» дубора фиристед.",
     yx_need_text: "Матнро дар як паём фиристед (бе акс ва файл).",
-    yx_bad_text: "Форматро санҷед: барои корт — 16 рақам; барои телефон — рақами ФР; майдон холӣ набошад.",
+    yx_bad_text:
+      "Форматро санҷед: корт — 16 рақам; телефон — ФР; ИНН — 10 ё 12 рақам; СНИЛС — 11 рақам; майдон холӣ набошад.",
     yx_file_ok: "Қабул шуд. Ба қадами навбатӣ мегузарем.",
 
     yx_lbl_yx_col_req_text: "Реквизитҳо (матн)",
     yx_lbl_yx_col_card16: "Рақами корт",
     yx_lbl_yx_col_contact_phone: "Телефони тамос",
     yx_lbl_yx_col_tm_contact: "Телефони тамос",
+    yx_lbl_yx_col_inn: "ИНН",
+    yx_lbl_yx_col_snils: "СНИЛС",
 
     yx_p_req_video:
       "Видеои кӯтоҳ бо реквизитҳои корти бонкиро фиристед (бе рӯй ва паспорт).",
@@ -825,6 +834,9 @@ const BK_STRINGS = {
 
     yx_p_vnzh_f: "Акс ВНЖ / РВП — тарафи рӯй.",
     yx_p_vnzh_b: "Акс ВНЖ / РВП — тарафи пушт.",
+    yx_p_vnzh_pass: "Акс аз паспорт (саҳифаи суратдор).",
+    yx_p_inn: "ИНН-ро ворид кунед — 10 ё 12 рақам.",
+    yx_p_snils: "СНИЛС-ро ворид кунед — 11 рақам (бо дефис ҳам мешавад).",
 
     yx_p_st_bilet: "Акс аз билети донишҷӯӣ.",
     yx_p_st_spravka: "Акс аз маълумотнома аз ҷои таҳсил.",
@@ -1177,13 +1189,16 @@ const BK_STRINGS = {
     yx_press_continue_first:
       "Алды менен «Улантуу 👉» баскычын басыңыз же «↩️ Өзгөртүү» менен кайра жүктөңүз.",
     yx_need_text: "Текстти бир билдирүү менен жөнөтүңүз (сүрөтсүз жана файлсыз).",
-    yx_bad_text: "Форматты текшериңиз: карта үчүн — 16 сан; телефон үчүн — РФ номери; талаа бош болбосун.",
+    yx_bad_text:
+      "Форматты текшериңиз: карта — 16 сан; телефон — РФ; ИНН — 10 же 12 сан; СНИЛС — 11 сан; талаа бош болбосун.",
     yx_file_ok: "Кабыл алынды. Кийинки кадамга өтөбүз.",
 
     yx_lbl_yx_col_req_text: "Реквизиттер (текст)",
     yx_lbl_yx_col_card16: "Карта номери",
     yx_lbl_yx_col_contact_phone: "Байланыш телефону",
     yx_lbl_yx_col_tm_contact: "Байланыш телефону",
+    yx_lbl_yx_col_inn: "ИНН",
+    yx_lbl_yx_col_snils: "СНИЛС",
 
     yx_p_req_video:
       "Банк картасынын реквизиттери менен кыска видео жөнөтүңүз (бет жана паспорт жок).",
@@ -1205,6 +1220,9 @@ const BK_STRINGS = {
 
     yx_p_vnzh_f: "ВНЖ / РВП сүрөтү — алдыңкы бет.",
     yx_p_vnzh_b: "ВНЖ / РВП сүрөтү — арткы бет.",
+    yx_p_vnzh_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
+    yx_p_inn: "ИНН киргизиңиз — 10 же 12 сан.",
+    yx_p_snils: "СНИЛС киргизиңиз — 11 сан (сызыкча менен да болот).",
 
     yx_p_st_bilet: "Студенттик билеттин сүрөтү.",
     yx_p_st_spravka: "Окуу жайдан маалымкаттын сүрөтү.",
@@ -1558,13 +1576,16 @@ const BK_STRINGS = {
     yx_press_continue_first:
       "Сначала нажмите «Продолжить 👉» или «↩️ Изменить выбор», чтобы перезагрузить.",
     yx_need_text: "Отправьте текст одним сообщением (без фото и файлов).",
-    yx_bad_text: "Проверьте формат: для карты — 16 цифр; для телефона — номер РФ; поле не должно быть пустым.",
+    yx_bad_text:
+      "Проверьте формат: карта — 16 цифр; телефон — РФ; ИНН — 10 или 12 цифр; СНИЛС — 11 цифр; поле не пустое.",
     yx_file_ok: "Принято. Переходим к следующему шагу.",
 
     yx_lbl_yx_col_req_text: "Реквизиты (текст)",
     yx_lbl_yx_col_card16: "Номер карты",
     yx_lbl_yx_col_contact_phone: "Контактный телефон",
     yx_lbl_yx_col_tm_contact: "Контактный телефон",
+    yx_lbl_yx_col_inn: "ИНН",
+    yx_lbl_yx_col_snils: "СНИЛС",
 
     yx_p_req_video:
       "Отправьте короткое видео с реквизитами банковской карты (без лица и паспорта).",
@@ -1586,6 +1607,9 @@ const BK_STRINGS = {
 
     yx_p_vnzh_f: "Фото ВНЖ / РВП — лицевая сторона.",
     yx_p_vnzh_b: "Фото ВНЖ / РВП — оборот.",
+    yx_p_vnzh_pass: "Фото паспорта (разворот с фото).",
+    yx_p_inn: "Введите ИНН — 10 или 12 цифр.",
+    yx_p_snils: "Введите СНИЛС — 11 цифр (можно с дефисами).",
 
     yx_p_st_bilet: "Фото студенческого билета.",
     yx_p_st_spravka: "Фото справки с места учёбы.",
