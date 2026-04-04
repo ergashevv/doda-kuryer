@@ -85,6 +85,11 @@ function langOf(profile) {
   return normalizeBKLang(profile?.language);
 }
 
+/** Ro‘yxatdan o‘tish: `bk_*` holatida chatni tozalash; `done` va tashqarida user xabari qoladi. */
+function isBkOnboardingSessionState(sessionState) {
+  return typeof sessionState === "string" && sessionState.startsWith("bk_");
+}
+
 function clearTruckBkFields(bk) {
   if (!bk || typeof bk !== "object") return;
   delete bk.truckDimensionCode;
@@ -416,7 +421,6 @@ export function registerBkHandlers(bot) {
       await logChat(client, uid, "assistant", arendaText);
       await sendBkPlaceholderStep(ctx, client, uid, p, "arenda", arendaText, mainMenuReply(lg));
     });
-    if (ctx.message) await tryBkDeleteUserMessage(ctx, ctx.message);
   });
 
   // Telegraf 4: callback query uchun `action`, `callbackQuery` metodi yo‘q
@@ -1454,6 +1458,7 @@ export function registerBkHandlers(bot) {
     const text = (msg.text || "").trim();
 
     let deleteProcessedUserMessage = false;
+    let allowDeleteUserOnboardingMsg = false;
     const markConsumed = () => {
       deleteProcessedUserMessage = true;
     };
@@ -1461,6 +1466,7 @@ export function registerBkHandlers(bot) {
     await withTransaction(async (client) => {
       await syncTelegramInfo(client, uid, ctx.from);
       let profile = await ensureProfile(client, uid);
+      allowDeleteUserOnboardingMsg = isBkOnboardingSessionState(profile.session_state);
       const state = profile.session_state;
       const lg = langOf(profile);
       const bkMsg = profile.session_data?.bk || {};
@@ -2008,6 +2014,8 @@ export function registerBkHandlers(bot) {
         markConsumed();
       }
     });
-    if (deleteProcessedUserMessage) await tryBkDeleteUserMessage(ctx, msg);
+    if (deleteProcessedUserMessage && allowDeleteUserOnboardingMsg) {
+      await tryBkDeleteUserMessage(ctx, msg);
+    }
   });
 }
