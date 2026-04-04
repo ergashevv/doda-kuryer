@@ -512,21 +512,26 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_L:")) {
       const code = data.slice(5);
       if (!["uz", "ru", "tg", "ky"].includes(code)) return;
-      await withTransaction(async (client) => {
+      const langNorm = normalizeBKLang(code);
+      /** Bir martalik o‘tish: qayta kelgan callback yoki ikki marta bosish ikkinchi telefon qadami yubormasin. */
+      const advanced = await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
-        await updateProfile(client, uid, {
-          language: code,
-          session_state: "bk_phone",
-        });
+        const r = await client.query(
+          `UPDATE user_profiles
+           SET language = $1::varchar, session_state = 'bk_phone', updated_at = NOW()
+           WHERE telegram_id = $2 AND session_state = 'bk_lang'
+           RETURNING *`,
+          [langNorm, uid]
+        );
+        if (!r.rows.length) return false;
         await logChat(client, uid, "user", `lang:${code}`);
-        const cbMsg = ctx.callbackQuery?.message;
-        if (cbMsg && "message_id" in cbMsg && ctx.chat?.id) {
-          try {
-            await ctx.telegram.deleteMessage(ctx.chat.id, cbMsg.message_id);
-          } catch (_) {}
-        }
+        return true;
+      });
+      if (!advanced) return;
+      await withTransaction(async (client) => {
         const profile = await ensureProfile(client, uid);
-        await sendBkAskPhonePrompt(ctx, client, uid, profile, code);
+        if (profile.session_state !== "bk_phone") return;
+        await sendBkAskPhonePrompt(ctx, client, uid, profile, langNorm);
       });
       return;
     }
