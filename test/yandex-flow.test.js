@@ -154,9 +154,18 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
   test("RF: migratsiyadan keyin rekvizitlar text + karta", () => {
     const line = buildYxLine(baseYx({ citizen: "rf" }));
     const texts = line.filter((s) => s.t === "text");
+    assert.ok(texts.some((s) => s.colKey === "yx_col_contact_phone"));
     assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
     assert.ok(texts.some((s) => s.colKey === "yx_col_card16"));
     assert.ok(!texts.some((s) => s.colKey === "yx_col_phone_bank"));
+  });
+
+  test("RF: useRegisteredPhone — kontakt telefon matn qadami yo'q", () => {
+    const texts = buildYxLine(
+      baseYx({ citizen: "rf", useRegisteredPhone: true })
+    ).filter((s) => s.t === "text");
+    assert.ok(!texts.some((s) => s.colKey === "yx_col_contact_phone"));
+    assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
   });
 
   test("VNJ: qisqa yo'l — choice yoq", () => {
@@ -188,6 +197,17 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(texts.some((s) => s.colKey === "yx_col_tm_contact"));
     assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
     assert.ok(texts.some((s) => s.colKey === "yx_col_card16"));
+  });
+
+  test("TM: ro'yxatdan o'tish telefoni bor — qo'shimcha kontakt tel qadami yo'q", () => {
+    const yx = baseYx({
+      citizen: "tm",
+      tmVisaKind: "work",
+      useRegisteredPhone: true,
+    });
+    const texts = buildYxLine(yx).filter((s) => s.t === "text");
+    assert.ok(!texts.some((s) => s.colKey === "yx_col_tm_contact"));
+    assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
   });
 
   test("TM: tmVisaKind tanlanguncha viza foto qadami yoq", () => {
@@ -275,6 +295,14 @@ describe("initYandexSession / clearYandexCollected", () => {
     assert.equal(td.yx.cityKey, null);
     assert.equal(td.yx_staged_doc, undefined);
     assert.equal(td.yx_prompt_msg_ids, undefined);
+    assert.equal(td.yx.useRegisteredPhone, false);
+  });
+
+  test("init: telefon berilsa — yx_col_contact_phone collected va useRegisteredPhone", () => {
+    const td = initYandexSession({ bk: {} }, YX_EATS, "+79991234567");
+    assert.equal(td.yx.useRegisteredPhone, true);
+    assert.equal(td.collected.yx_col_contact_phone, "+79991234567");
+    assert.equal(td.collected.yx_col_tm_contact, "+79991234567");
   });
 
   test("clearYandexCollected: faqat yx_col_* ochadi", () => {

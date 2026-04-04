@@ -6,7 +6,17 @@
 export const YX_LAVKA = "yandex_lavka";
 export const YX_EATS = "yandex_eda";
 
-export function initYandexSession(td, serviceKey) {
+export function initYandexSession(td, serviceKey, registeredPhone = null) {
+  const phone = (registeredPhone && String(registeredPhone).trim()) || "";
+  const useRegisteredPhone = phone.length > 0;
+  let collected = clearYandexCollected(td);
+  if (useRegisteredPhone) {
+    collected = {
+      ...collected,
+      yx_col_contact_phone: phone,
+      yx_col_tm_contact: phone,
+    };
+  }
   return clearYandexStagingSessionFields({
     ...td,
     yx: {
@@ -17,9 +27,10 @@ export function initYandexSession(td, serviceKey) {
       kzDocKind: null,
       tmVisaKind: null,
       regAmina: null,
+      useRegisteredPhone,
     },
     completed_yx: [],
-    collected: { ...(td.collected || {}) },
+    collected,
   });
 }
 
@@ -65,7 +76,8 @@ function tailRekvizitCard16() {
   ];
 }
 
-function tailRfAfterMig() {
+function tailRfAfterMig(yx) {
+  if (yx && yx.useRegisteredPhone) return tailRekvizitCard16();
   return [
     textField("yx_col_contact_phone", "yx_p_contact_phone", "phone"),
     ...tailRekvizitCard16(),
@@ -108,7 +120,7 @@ function lineUzVnzh(yx) {
     photo("yx_uz_vnzh_f", "yx_p_vnzh_f"),
     photo("yx_uz_vnzh_b", "yx_p_vnzh_b"),
     photo("yx_uz_vnzh_mig", "yx_p_mig"),
-    ...tailRfAfterMig(),
+    ...tailRfAfterMig(yx),
   ];
 }
 
@@ -157,7 +169,7 @@ function lineRf(yx) {
   return [
     photo("yx_rf_pass_face", "yx_p_rf_pass_face"),
     photo("yx_rf_pass_prop", "yx_p_rf_pass_prop"),
-    ...tailRfAfterMig(),
+    ...tailRfAfterMig(yx),
   ];
 }
 
@@ -170,11 +182,15 @@ function lineTm(yx) {
     L.push(choice("visa_kind", "yx_ask_tm_visa"));
     return L;
   }
+  const tmTail = [];
+  if (!yx || !yx.useRegisteredPhone) {
+    tmTail.push(textField("yx_col_tm_contact", "yx_p_contact_phone", "phone"));
+  }
   L.push(
     photo("yx_tm_visa", "yx_p_tm_visa"),
     pdfOrPhoto("yx_tm_amina_or_reg", "yx_p_tm_amina_or_reg"),
     photo("yx_tm_mig", "yx_p_mig"),
-    textField("yx_col_tm_contact", "yx_p_contact_phone", "phone"),
+    ...tmTail,
     ...tailRekvizitCard16()
   );
   return L;

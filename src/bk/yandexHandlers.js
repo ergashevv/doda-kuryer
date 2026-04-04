@@ -5,7 +5,7 @@ import { ensureProfile, updateProfile } from "../services/users.js";
 import { isAllowedDocumentMime } from "./media.js";
 import { normalizeRussianPhone } from "./phone.js";
 import { categoryInline, editOnly, mainMenuReply } from "./keyboards.js";
-import { normalizeBKLang, tBK, tBkTmVisaLine } from "./i18n.js";
+import { normalizeBKLang, tBK } from "./i18n.js";
 import {
   YX_EATS,
   YX_LAVKA,
@@ -104,23 +104,12 @@ export function yxKzDocInline(lang) {
   ]);
 }
 
-/** Viza turi — TZ: pasportdan keyin (callback `tmkind`, `completed_yx` saqlanadi). TM uchun matnlar turkmen tilida. */
-export function yxTmVisaKindInline(lang, isTmCitizen) {
+/** Viza turi — pasportdan keyin; matnlar foydalanuvchi tanlagan `language` bo‘yicha. */
+export function yxTmVisaKindInline(lang) {
   const lg = normalizeBKLang(lang);
-  const tm = !!isTmCitizen;
   return Markup.inlineKeyboard([
-    [
-      Markup.button.callback(
-        tBkTmVisaLine(tm, lg, "yx_tm_work"),
-        "bk_YX:tmkind:work"
-      ),
-    ],
-    [
-      Markup.button.callback(
-        tBkTmVisaLine(tm, lg, "yx_tm_tourism"),
-        "bk_YX:tmkind:tourism"
-      ),
-    ],
+    [Markup.button.callback(tBK(lg, "yx_tm_work"), "bk_YX:tmkind:work")],
+    [Markup.button.callback(tBK(lg, "yx_tm_tourism"), "bk_YX:tmkind:tourism")],
   ]);
 }
 
@@ -191,6 +180,7 @@ async function replyYxStagedPreview(ctx, client, uid, profile, msg, step, lg) {
 }
 
 export async function promptYandexStep(ctx, client, uid, profile) {
+  profile = await ensureProfile(client, uid);
   const lg = lgOf(profile);
   const td = { ...(profile.session_data || {}) };
   const yx = td.yx || {};
@@ -239,11 +229,10 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     return;
   }
   if (st.ui === "step" && st.step.t === "choice") {
-    const tmCit = yx.citizen === "tm";
-    const cap = tBkTmVisaLine(tmCit, lg, st.step.promptKey);
+    const cap = tBK(lg, st.step.promptKey);
     const kb =
       st.step.choiceId === "visa_kind"
-        ? yxTmVisaKindInline(lg, tmCit)
+        ? yxTmVisaKindInline(lg)
         : yxRamInline(lg);
     await bkSendStepMessage(ctx, client, uid, profile, () =>
       ctx.reply(cap, yxReplyOptions(kb))
@@ -252,11 +241,7 @@ export async function promptYandexStep(ctx, client, uid, profile) {
   }
   if (st.ui === "step") {
     const step = st.step;
-    const tmCit = yx.citizen === "tm";
-    const cap =
-      step.t === "photo" || step.t === "video" || step.t === "doc"
-        ? tBkTmVisaLine(tmCit, lg, step.promptKey)
-        : tBK(lg, step.promptKey);
+    const cap = tBK(lg, step.promptKey);
     if (step.t === "photo" || step.t === "video" || step.t === "doc") {
       await yxSendFileStepPrompt(ctx, client, uid, profile, cap, lg);
     } else {
@@ -323,6 +308,7 @@ function buildYxReviewSummary(lg, profile) {
 
 export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   if (profile.session_state !== "bk_yx") return false;
+  profile = await ensureProfile(client, uid);
   const lg = lgOf(profile);
   const td = { ...(profile.session_data || {}) };
   const yx = { ...(td.yx || {}) };
@@ -486,7 +472,7 @@ export async function handleYandexCallback(ctx, client, uid, data) {
         ...(profile.session_data || {}),
         bk: profile.session_data?.bk || {},
       };
-      const td = initYandexSession(base, sk);
+      const td = initYandexSession(base, sk, profile.phone);
       await updateProfile(client, uid, {
         session_data: td,
         session_state: "bk_yx",
@@ -611,10 +597,9 @@ export async function handleYandexCallback(ctx, client, uid, data) {
   if (payload.startsWith("tmkind:")) {
     const raw = payload.slice(7);
     if (raw === "tourism") {
-      const tmCit = yx.citizen === "tm";
-      const blocked = tBkTmVisaLine(tmCit, lg, "yx_tm_tourism_blocked");
+      const blocked = tBK(lg, "yx_tm_tourism_blocked");
       await bkSendStepMessage(ctx, client, uid, profile, () =>
-        ctx.reply(blocked, yxReplyOptions(yxTmVisaKindInline(lg, tmCit)))
+        ctx.reply(blocked, yxReplyOptions(yxTmVisaKindInline(lg)))
       );
       return true;
     }

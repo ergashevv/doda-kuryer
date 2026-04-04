@@ -1651,23 +1651,6 @@ export function tBK(lang, key, kwargs = {}) {
   return interpolate(String(val), kwargs);
 }
 
-/** Turkmaniston (YX) viza tanlovi: fuqarolik «tm» bo‘lsa — turkmen matn, aks holda `tBK`. */
-const BK_TM_VISA_TK = {
-  yx_ask_tm_visa:
-    "Haýsy wiza görnüşi bilen? Aşakdaky düwmelerden saýlaň: işçi wiza ýa-da turizm wizasy.",
-  yx_tm_work: "Işçi wiza",
-  yx_tm_tourism: "Turizm wizasy",
-  yx_tm_tourism_blocked:
-    "Häzirki wagtda bu wizanyň görnüşi bilen baglanyşyk hödürlemeýaris; diňe işçi wiza bilen doly görnüşde ýerine ýetirip bilersiňiz. «Işçi wiza»ny saýlaň.",
-  yx_p_tm_amina_or_reg:
-    "«Amina» skrinşoty ýa-da kagyz registrasiýa — bir surat ýa-da PDF.",
-};
-
-export function tBkTmVisaLine(isTmCitizen, lang, key) {
-  if (isTmCitizen && BK_TM_VISA_TK[key]) return BK_TM_VISA_TK[key];
-  return tBK(lang, key);
-}
-
 /** Функция-ключлар: confirm_phone, confirm_category, confirm_city, confirm_citizenship, confirm_thermal */
 export function tBKfn(lang, key, arg) {
   const lg = normalizeBKLang(lang);

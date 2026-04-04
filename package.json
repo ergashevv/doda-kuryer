@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "db:clear-users": "node scripts/clear-all-user-data.mjs"
   },
   "engines": {
     "node": ">=20"

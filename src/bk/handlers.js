@@ -1485,7 +1485,7 @@ export function registerBkHandlers(bot) {
       let profile = await ensureProfile(client, uid);
       allowDeleteUserDocStepMsg = isBkDocWizardSessionState(profile.session_state);
       const state = profile.session_state;
-      const lg = langOf(profile);
+      let lg = langOf(profile);
       const bkMsg = profile.session_data?.bk || {};
       if (
         bkMsg.categoryKey === "moto" &&
@@ -1534,6 +1534,8 @@ export function registerBkHandlers(bot) {
       }
 
       if (state === "bk_service") {
+        profile = await ensureProfile(client, uid);
+        lg = langOf(profile);
         await logChat(client, uid, "user", text || "[non-text at service]");
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
@@ -1565,11 +1567,13 @@ export function registerBkHandlers(bot) {
           });
           await logChat(client, uid, "assistant", "[ask_phone service]");
           profile = await ensureProfile(client, uid);
+          lg = langOf(profile);
           await sendBkAskPhonePrompt(ctx, client, uid, profile, lg);
         } else {
           await updateProfile(client, uid, { session_state: "bk_service" });
           await logChat(client, uid, "assistant", "[ask_service]");
           profile = await ensureProfile(client, uid);
+          lg = langOf(profile);
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
           );
@@ -1917,6 +1921,7 @@ export function registerBkHandlers(bot) {
             session_data: { ...td, bk },
           });
           profile = await ensureProfile(client, uid);
+          lg = langOf(profile);
           const cmsg = tBKfn(lg, "confirm_phone", phone);
           await logChat(client, uid, "user", phone);
           await logChat(client, uid, "assistant", cmsg);
@@ -1937,6 +1942,7 @@ export function registerBkHandlers(bot) {
           session_data: { ...td, bk },
         });
         profile = await ensureProfile(client, uid);
+        lg = langOf(profile);
         const cmsg = tBKfn(lg, "confirm_phone", phone);
         await logChat(client, uid, "user", phone);
         await logChat(client, uid, "assistant", cmsg);
@@ -1949,6 +1955,7 @@ export function registerBkHandlers(bot) {
         } else {
           await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:phone"));
           profile = await ensureProfile(client, uid);
+          lg = langOf(profile);
           await sendWelcomeAfterLanguage(ctx, client, uid, profile, lg);
         }
         markConsumed();
