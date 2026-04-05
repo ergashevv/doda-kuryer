@@ -245,8 +245,8 @@ function formatYandexAnketaBlock(profile) {
   const city =
     yx.cityKey === "msk"
       ? tBK(lg, "yx_city_msk")
-      : yx.cityKey === "spb"
-        ? tBK(lg, "yx_city_spb")
+      : yx.cityKey === "msk_obl"
+        ? tBK(lg, "yx_city_mo")
         : dash;
   const citMap = {
     uz: "yx_cit_uz",

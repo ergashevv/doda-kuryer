@@ -70,7 +70,7 @@ export function servicePickReply(lang) {
 
 export function yxCityReply(lang) {
   const lg = normalizeBKLang(lang);
-  return Markup.keyboard([[tBK(lg, "yx_city_msk"), tBK(lg, "yx_city_spb")]])
+  return Markup.keyboard([[tBK(lg, "yx_city_msk"), tBK(lg, "yx_city_mo")]])
     .resize()
     .oneTime();
 }
@@ -189,7 +189,7 @@ export function yxCityInline(lang) {
   return Markup.inlineKeyboard([
     [
       Markup.button.callback(tBK(lg, "yx_city_msk"), "bk_YX:city:msk"),
-      Markup.button.callback(tBK(lg, "yx_city_spb"), "bk_YX:city:spb"),
+      Markup.button.callback(tBK(lg, "yx_city_mo"), "bk_YX:city:msk_obl"),
     ],
   ]);
 }
@@ -314,7 +314,7 @@ export function mapYandexUserTextToPayload(profile, text) {
   }
   if (st.ui === "city") {
     if (t === tBK(lg, "yx_city_msk")) return "city:msk";
-    if (t === tBK(lg, "yx_city_spb")) return "city:spb";
+    if (t === tBK(lg, "yx_city_mo")) return "city:msk_obl";
     return null;
   }
   if (st.ui === "citizen") {
@@ -460,7 +460,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
   }
 
   if (payload.startsWith("city:")) {
-    yx.cityKey = payload.endsWith("msk") ? "msk" : "spb";
+    const ck = payload.slice(5);
+    if (ck !== "msk" && ck !== "msk_obl") return false;
+    yx.cityKey = ck;
     yx.regAmina = null;
     await updateProfile(client, uid, {
       session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
@@ -662,6 +664,12 @@ export async function promptYandexStep(ctx, client, uid, profile) {
   }
 }
 
+function yxCityLabelForSummary(lg, cityKey) {
+  if (cityKey === "msk") return tBK(lg, "yx_city_msk");
+  if (cityKey === "msk_obl") return tBK(lg, "yx_city_mo");
+  return "—";
+}
+
 function yxCitizenLabel(lg, code) {
   const m = {
     uz: "yx_cit_uz",
@@ -689,7 +697,7 @@ function buildYxReviewSummary(lg, profile) {
   const lines = [
     tBK(lg, "yx_rev_title"),
     `${tBK(lg, "yx_rev_service")}: ${yx.service === YX_LAVKA ? tBK(lg, "yx_btn_lavka") : tBK(lg, "yx_btn_eats")}`,
-    `${tBK(lg, "yx_rev_city")}: ${tBK(lg, yx.cityKey === "msk" ? "yx_city_msk" : "yx_city_spb")}`,
+    `${tBK(lg, "yx_rev_city")}: ${yxCityLabelForSummary(lg, yx.cityKey)}`,
     `${tBK(lg, "yx_rev_citizen")}: ${yxCitizenLabel(lg, yx.citizen)}`,
   ];
   if (yx.uzDocKind) {

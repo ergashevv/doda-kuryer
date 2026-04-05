@@ -338,12 +338,14 @@ const BK_STRINGS = {
     yx_btn_eats: "Yandex Eda",
 
     yx_city_msk: "Moskva",
-    yx_city_spb: "Sankt-Peterburg",
+    yx_city_mo: "Moskva viloyati",
 
-    yx_ask_city: "Ishlaydigan shaharingizni pastdagi tugma orqali tanlang.",
+    yx_ask_city:
+      "Moskva yoki Moskva viloyatini pastdagi tugma orqali tanlang.",
     yx_ask_citizen: "Status / fuqaroligingizni pastdagi tugma orqali tanlang.",
     yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
-    yx_ask_kz_doc: "Hujjat turini tanlang.",
+    yx_ask_kz_doc:
+      "Qozog‘iston yoki Qirg‘iziston fuqarolari: ariza uchun pasport yoki shaxsni tasdiqlovchi guvohnoma (ID). Turini pastdagi tugma orqali tanlang.",
     yx_ask_tm_visa:
       "Qaysi turdagi viza bilan? Pastdagi tugmalardan tanlang: turizm yoki ishchi viza.",
 
@@ -812,12 +814,14 @@ const BK_STRINGS = {
     yx_btn_eats: "Яндекс Еда",
 
     yx_city_msk: "Москва",
-    yx_city_spb: "Санкт-Петербург",
+    yx_city_mo: "Московская область",
 
-    yx_ask_city: "Укажите город работы кнопкой ниже.",
+    yx_ask_city:
+      "Укажите Москву или Московскую область кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc: "Выберите тип документа.",
+    yx_ask_kz_doc:
+      "Гражданам Казахстана и Кыргызстана: для заявки нужен паспорт или удостоверение личности (ID). Выберите тип кнопкой ниже.",
     yx_ask_tm_visa:
       "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
 
@@ -1203,12 +1207,14 @@ const BK_STRINGS = {
     yx_btn_eats: "Yandex Eda",
 
     yx_city_msk: "Москва",
-    yx_city_spb: "Санкт-Петербург",
+    yx_city_mo: "Вилояти Москва",
 
-    yx_ask_city: "Иштей турган шаарыңызды төмөнкү баскыч менен тандаңыз.",
+    yx_ask_city:
+      "Москва же Москванын областин төмөнкү баскыч менен тандаңыз.",
     yx_ask_citizen: "Статус / жарандыгыңызды төмөнкү баскыч менен тандаңыз.",
     yx_ask_uz_doc: "Тастыктоочу документтин түрүн тандаңыз.",
-    yx_ask_kz_doc: "Документтин түрүн тандаңыз.",
+    yx_ask_kz_doc:
+      "Казакстан жана Кыргызстан жарандары үчүн: арыз үчүн паспорт же жеке күбөлүк (ID). Түрүн төмөнкү баскыч менен тандаңыз.",
     yx_ask_tm_visa:
       "Кайсы түрдөгү виза? Төмөнкү баскычтардан тандаңыз: туризм же иш визасы.",
 
@@ -1595,12 +1601,14 @@ const BK_STRINGS = {
     yx_btn_eats: "Яндекс Еда",
 
     yx_city_msk: "Москва",
-    yx_city_spb: "Санкт-Петербург",
+    yx_city_mo: "Москва облысы",
 
-    yx_ask_city: "Укажите город работы кнопкой ниже.",
+    yx_ask_city:
+      "Укажите Москву или Московскую область кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc: "Выберите тип документа.",
+    yx_ask_kz_doc:
+      "Гражданам Казахстана и Кыргызстана: для заявки нужен паспорт или удостоверение личности (ID). Выберите тип кнопкой ниже.",
     yx_ask_tm_visa:
       "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
 

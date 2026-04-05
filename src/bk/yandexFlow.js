@@ -89,7 +89,6 @@ function tailKzAfterMig() {
 
 function lineUzPatent(yx) {
   const L = [
-    photo("yx_uz_pat_pass", "yx_p_uz_pat_pass"),
     photo("yx_uz_pat_front", "yx_p_uz_pat_front"),
     photo("yx_uz_pat_back", "yx_p_uz_pat_back"),
   ];
@@ -114,36 +113,22 @@ function lineUzPatent(yx) {
   return L;
 }
 
-/** UZ/TJ + VNJ/RVP: VNJ old/orqa → pasport → INN → SNILS → Amina/reg → mig → tel (agar kerak) → rekvizit → 16 raqam */
+/** UZ/TJ + VNJ/RVP: VNJ old/orqa → INN → SNILS → migratsiya → tel (agar kerak) → rekvizit → 16 raqam (регистрация / Амина yo‘q). */
 function lineUzVnzh(yx) {
-  const L = [
+  return [
     photo("yx_uz_vnzh_f", "yx_p_vnzh_f"),
     photo("yx_uz_vnzh_b", "yx_p_vnzh_b"),
-    photo("yx_uz_vnzh_pass", "yx_p_vnzh_pass"),
     textField("yx_col_inn", "yx_p_inn", "inn"),
     textField("yx_col_snils", "yx_p_snils", "snils"),
+    photo("yx_uz_vnzh_mig", "yx_p_mig"),
+    ...tailRfAfterMig(yx),
   ];
-  if (!yx.regAmina) {
-    L.push(choice("ram_vnzh", "yx_p_ram_choice"));
-    return L;
-  }
-  if (yx.regAmina === "reg") {
-    L.push(
-      photo("yx_uz_vnzh_reg_f", "yx_p_reg_f"),
-      photo("yx_uz_vnzh_reg_b", "yx_p_reg_b")
-    );
-  } else {
-    L.push(photo("yx_uz_vnzh_amina", "yx_p_amina"));
-  }
-  L.push(photo("yx_uz_vnzh_mig", "yx_p_mig"), ...tailRfAfterMig(yx));
-  return L;
 }
 
 function lineUzStudent(yx) {
   const L = [
     photo("yx_uz_st_bilet", "yx_p_st_bilet"),
     photo("yx_uz_st_spravka", "yx_p_st_spravka"),
-    photo("yx_uz_st_pass", "yx_p_st_pass"),
   ];
   if (!yx.regAmina) {
     L.push(choice("ram_st", "yx_p_ram_choice"));
@@ -161,9 +146,7 @@ function lineUzStudent(yx) {
 function lineKzKg(yx) {
   const L = [];
   if (!yx.kzDocKind) return L;
-  if (yx.kzDocKind === "pass") {
-    L.push(photo("yx_kz_pass_face", "yx_p_kz_pass_face"));
-  } else {
+  if (yx.kzDocKind !== "pass") {
     L.push(photo("yx_kz_id_f", "yx_p_kz_id_f"), photo("yx_kz_id_b", "yx_p_kz_id_b"));
   }
   L.push(photo("yx_kz_mig", "yx_p_mig"));
@@ -192,23 +175,20 @@ function lineRf(yx) {
 function lineTm(yx) {
   const tmVisaKind =
     yx.tmVisaKind === "study" ? "work" : yx.tmVisaKind;
-  const L = [photo("yx_tm_pass", "yx_p_tm_pass")];
   if (!tmVisaKind) {
-    L.push(choice("visa_kind", "yx_ask_tm_visa"));
-    return L;
+    return [choice("visa_kind", "yx_ask_tm_visa")];
   }
   const tmTail = [];
   if (!yx || !yx.useRegisteredPhone) {
     tmTail.push(textField("yx_col_tm_contact", "yx_p_contact_phone", "phone"));
   }
-  L.push(
+  return [
     photo("yx_tm_visa", "yx_p_tm_visa"),
     pdfOrPhoto("yx_tm_amina_or_reg", "yx_p_tm_amina_or_reg"),
     photo("yx_tm_mig", "yx_p_mig"),
     ...tmTail,
-    ...tailRekvizitCard16()
-  );
-  return L;
+    ...tailRekvizitCard16(),
+  ];
 }
 
 /** UZ/TJ guruh (alohida tugmalar: uz, tj; eski: uz_tj) */

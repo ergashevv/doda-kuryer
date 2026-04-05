@@ -52,7 +52,7 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
   });
 
   test("fuqarolik yoq → citizen", () => {
-    const yx = { service: YX_EATS, cityKey: "spb", citizen: null };
+    const yx = { service: YX_EATS, cityKey: "msk_obl", citizen: null };
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "citizen" });
   });
 
@@ -81,19 +81,19 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "kz_doc" });
   });
 
-  test("TM: birinchi qadam — pasport (viza turi keyinroq, TZ)", () => {
+  test("TM: birinchi qadam — viza turi tanlovi (choice)", () => {
     const yx = baseYx({ citizen: "tm", tmVisaKind: null });
     const st = getYandexUiState(yx, 0);
     assert.equal(st.ui, "step");
-    assert.equal(st.step.docType, "yx_tm_pass");
-  });
-
-  test("TM: pasportdan keyin — viza turi tanlovi (choice)", () => {
-    const yx = baseYx({ citizen: "tm", tmVisaKind: null });
-    const st = getYandexUiState(yx, 1);
-    assert.equal(st.ui, "step");
     assert.equal(st.step.t, "choice");
     assert.equal(st.step.choiceId, "visa_kind");
+  });
+
+  test("TM: viza turi tanlangach — birinchi fayl viza surati", () => {
+    const yx = baseYx({ citizen: "tm", tmVisaKind: "work" });
+    const st = getYandexUiState(yx, 0);
+    assert.equal(st.ui, "step");
+    assert.equal(st.step.docType, "yx_tm_visa");
   });
 
   test("RF liniyasi: birinchi qadam — pasport beti", () => {
@@ -127,7 +127,7 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
       regAmina: null,
     });
     const line = buildYxLine(yx);
-    const idx = 3;
+    const idx = 2;
     assert.equal(line[idx].t, "choice");
     const st = getYandexUiState(yx, idx);
     assert.equal(st.ui, "step");
@@ -177,28 +177,31 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(texts.some((s) => s.colKey === "yx_col_req_text"));
   });
 
-  test("VNJ (UZ/TJ): VNJ, pasport, INN, SNILS, Amina/reg tanlovi, mig, tail", () => {
-    const lineChoice = buildYxLine(
+  test("VNJ (UZ/TJ): VNJ ikkala tomoni, INN, SNILS, migratsiya, tail — reg/amina yo‘q", () => {
+    const line = buildYxLine(
       baseYx({ citizen: "uz_tj", uzDocKind: "vnzh" })
     );
-    assert.ok(lineChoice.some((s) => s.docType === "yx_uz_vnzh_f"));
-    assert.ok(lineChoice.some((s) => s.docType === "yx_uz_vnzh_pass"));
-    assert.ok(lineChoice.some((s) => s.colKey === "yx_col_inn"));
-    assert.ok(lineChoice.some((s) => s.colKey === "yx_col_snils"));
-    assert.ok(lineChoice.some((s) => s.choiceId === "ram_vnzh"));
-    const lineReg = buildYxLine(
-      baseYx({ citizen: "uz", uzDocKind: "vnzh", regAmina: "reg" })
-    );
-    assert.ok(lineReg.some((s) => s.docType === "yx_uz_vnzh_reg_f"));
-    assert.ok(lineReg.some((s) => s.docType === "yx_uz_vnzh_mig"));
-    assert.equal(lineReg[lineReg.length - 1].colKey, "yx_col_card16");
+    assert.ok(line.some((s) => s.docType === "yx_uz_vnzh_f"));
+    assert.ok(line.some((s) => s.docType === "yx_uz_vnzh_b"));
+    assert.ok(!line.some((s) => s.docType === "yx_uz_vnzh_pass"));
+    assert.ok(line.some((s) => s.colKey === "yx_col_inn"));
+    assert.ok(line.some((s) => s.colKey === "yx_col_snils"));
+    assert.ok(!line.some((s) => s.t === "choice" && s.choiceId === "ram_vnzh"));
+    assert.ok(!line.some((s) => s.docType === "yx_uz_vnzh_reg_f"));
+    assert.ok(!line.some((s) => s.docType === "yx_uz_vnzh_amina"));
+    const migIdx = line.findIndex((s) => s.docType === "yx_uz_vnzh_mig");
+    const innIdx = line.findIndex((s) => s.colKey === "yx_col_inn");
+    const snilsIdx = line.findIndex((s) => s.colKey === "yx_col_snils");
+    assert.ok(migIdx > snilsIdx && snilsIdx > innIdx);
+    assert.equal(line[line.length - 1].colKey, "yx_col_card16");
   });
 
-  test("KZ pass: kzDocKind=pass", () => {
+  test("KZ pass: kzDocKind=pass — pasport suratisiz, migratsiyadan boshlanadi", () => {
     const line = buildYxLine(
       baseYx({ citizen: "kz_kg", kzDocKind: "pass" })
     );
-    assert.ok(line.some((s) => s.docType === "yx_kz_pass_face"));
+    assert.ok(!line.some((s) => s.docType === "yx_kz_pass_face"));
+    assert.equal(line[0].docType, "yx_kz_mig");
   });
 
   test("TM: ishchi viza — Amina/reg bitta fayl, keyin mig, telefon, rekvizit + 16", () => {
@@ -238,13 +241,13 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(line.some((s) => s.docType === "yx_tm_visa"));
   });
 
-  test("TM: tmkind tanlangach — viza surati qadami bor", () => {
+  test("TM: tmkind tanlangach — birinchi qadam viza surati", () => {
     const line = buildYxLine(
       baseYx({ citizen: "tm", tmVisaKind: "work" })
     );
+    assert.equal(line[0].docType, "yx_tm_visa");
     const visaIdx = line.findIndex((s) => s.docType === "yx_tm_visa");
-    assert.ok(visaIdx > 0);
-    assert.equal(line[0].docType, "yx_tm_pass");
+    assert.equal(visaIdx, 0);
   });
 });
 
@@ -252,7 +255,12 @@ describe("Callback data — handler bilan mos payload", () => {
   test("bk_YX:city:msk → msk", () => {
     const p = yxPayload(`${PREFIX_YX}city:msk`);
     assert.ok(p.startsWith("city:"));
-    assert.ok(p.endsWith("msk"));
+    assert.equal(p.slice(5), "msk");
+  });
+
+  test("bk_YX:city:msk_obl → msk_obl", () => {
+    const p = yxPayload(`${PREFIX_YX}city:msk_obl`);
+    assert.equal(p.slice(5), "msk_obl");
   });
 
   test("bk_YX:cit:uz_tj → fuqarolik kodi", () => {
