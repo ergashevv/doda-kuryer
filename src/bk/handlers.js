@@ -441,6 +441,8 @@ export function registerBkHandlers(bot) {
     if (!uid || !ctx.message) return;
     console.log(new Date().toISOString(), "[bk] /start received", uid);
     try {
+      const pick = tBK("ru", "pick_language");
+      const kb = languagePickKb();
       await withTransaction(async (client) => {
         await resetRegistration(client, uid);
         await client.query(
@@ -458,10 +460,6 @@ export function registerBkHandlers(bot) {
           city: null,
           phone: null,
         });
-      });
-      const pick = tBK("ru", "pick_language");
-      const kb = languagePickKb();
-      await withTransaction(async (client) => {
         let profile = await ensureProfile(client, uid);
         await bkClearStepUi(ctx, client, uid, profile);
         profile = await ensureProfile(client, uid);

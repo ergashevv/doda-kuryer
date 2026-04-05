@@ -64,7 +64,8 @@ async function main() {
   }
 
   const max409 = Math.max(0, Number(process.env.POLLING_409_RETRIES || "12"));
-  const delayMs = Math.max(3000, Number(process.env.POLLING_409_DELAY_MS || "15000"));
+  /** 409 paytida eski jarayon to‘xtaguncha kutish; 15s sezilarli /start kechikish berardi. */
+  const delayMs = Math.max(2000, Number(process.env.POLLING_409_DELAY_MS || "5000"));
   let attempt = 0;
   for (;;) {
     try {
