@@ -316,8 +316,7 @@ const BK_STRINGS = {
     group_truck_loader_word_2: "ikkita",
     group_value_dash: "—",
 
-    ask_service:
-      "Ulanish servisini pastdagi tugma orqali tanlang.",
+    ask_service: "Qaysi servisni tanlamoqchisiz?",
 
     yx_final_thanks:
       "Ma'lumotlarni yuborganingiz uchun rahmat. Ariza qabul qilindi, tez orada siz bilan bog'lanamiz.",
@@ -813,8 +812,7 @@ const BK_STRINGS = {
     group_truck_loader_word_2: "два",
     group_value_dash: "—",
 
-    ask_service:
-      "Выберите сервис подключения кнопкой ниже.",
+    ask_service: "К какому сервису вы хотите подключиться?",
 
     yx_final_thanks:
       "Благодарим за предоставленные сведения. Заявка принята; мы свяжемся с вами в ближайшее время.",
@@ -1213,8 +1211,7 @@ const BK_STRINGS = {
     group_truck_loader_word_2: "ду",
     group_value_dash: "—",
 
-    ask_service:
-      "Туташуу сервисин төмөнкү баскыч менен тандаңыз.",
+    ask_service: "Ба кадом сервис пайваст шудан мехоҳед?",
 
     yx_final_thanks:
       "Ташаккур барои маълумоти пешниҳодшуда. Дархост қабул шуд; ба наздикӣ бо шумо тамос мегирем.",
@@ -1615,8 +1612,7 @@ const BK_STRINGS = {
     group_truck_loader_word_2: "эки",
     group_value_dash: "—",
 
-    ask_service:
-      "Выберите сервис подключения кнопкой ниже.",
+    ask_service: "Кайсы сервиске туташууну каалайсыз?",
 
     yx_final_thanks:
       "Маалымат үчүн рахмат. Арыз кабыл алынды; жакыныраак убакытта сиз менен байланышабыз.",

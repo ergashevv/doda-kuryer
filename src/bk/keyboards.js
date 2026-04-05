@@ -239,7 +239,7 @@ export function reviewKb(lang, bk = {}) {
       Markup.button.callback(`🚗 ${summaryTitle(lg, "category")}`, "bk_R:e:cat"),
     ],
   ];
-  if (bk.categoryKey === "car") {
+  if (bk.categoryKey === "car" || bk.categoryKey === "truck") {
     rows.push([
       Markup.button.callback(`🚙 ${summaryTitle(lg, "vehicle")}`, "bk_R:e:veh"),
     ]);

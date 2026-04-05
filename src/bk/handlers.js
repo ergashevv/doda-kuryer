@@ -775,11 +775,11 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_V:")) {
       const rf = data.endsWith(":1");
       await withTransaction(async (client) => {
-        let profile = await syncTelegramInfo(client, uid, ctx.from);
+        let profile = await ensureProfile(client, uid);
         const lg = langOf(profile);
         const td = { ...(profile.session_data || {}) };
         const bk = { ...(td.bk || {}) };
-        if (bk.categoryKey !== "car") return;
+        if (bk.categoryKey !== "car" && bk.categoryKey !== "truck") return;
         bk.vehicleRf = rf;
         td.bk = bk;
         if (rf) {
