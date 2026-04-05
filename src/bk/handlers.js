@@ -15,7 +15,7 @@ import {
 } from "./i18n.js";
 import { normalizeLang, t } from "../i18n.js";
 import { communityLinkForCategory } from "./community.js";
-import { logChat } from "../services/chatLog.js";
+import { logChat, logChatDeferred } from "../services/chatLog.js";
 import {
   notifyGroupFullSubmission,
   notifyGroupYandexSubmission,
@@ -205,7 +205,7 @@ async function finalizeYandexReviewSubmit(ctx, uid) {
     await withTransaction(async (client) => {
       const p = await ensureProfile(client, uid);
       await bkSendStepMessage(ctx, client, uid, p, () =>
-        ctx.reply(tail, replyRemoveWithInline(mainMenuInline(lg)))
+        ctx.reply(tail, replyRemoveWithInline())
       );
       await logChat(client, uid, "assistant", tail);
     });
@@ -516,21 +516,9 @@ export function registerBkHandlers(bot) {
         );
         await syncTelegramInfo(client, uid, ctx.from);
         await logChat(client, uid, "user", "/start");
-        await updateProfile(client, uid, {
-          language: "ru",
-          session_state: "bk_lang",
-          session_data: { bk: {} },
-          service: null,
-          tariff: null,
-          city: null,
-          phone: null,
-        });
-        let profile = await ensureProfile(client, uid);
-        await bkClearStepUi(ctx, client, uid, profile);
-        profile = await ensureProfile(client, uid);
-        await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(pick, kb));
-        await logChat(client, uid, "assistant", pick);
       });
+      await ctx.reply(pick, kb);
+      logChatDeferred(uid, "assistant", pick);
     } catch (e) {
       console.error("[bk] /start failed:", e?.stack || e?.message || e);
       try {

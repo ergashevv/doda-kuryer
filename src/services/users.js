@@ -21,12 +21,13 @@ export async function ensureProfile(client, telegramId) {
   return r.rows[0];
 }
 
+/** /start: profilni noldan til tanlash qadamiga (`bk_lang`) qaytaradi. */
 export async function resetRegistration(client, telegramId) {
   await ensureProfile(client, telegramId);
   const r = await client.query(
     `UPDATE user_profiles
      SET language = 'ru', service = NULL, tariff = NULL, city = NULL, phone = NULL,
-         session_state = 'bk_main', session_data = '{"bk":{}}'::jsonb, updated_at = NOW()
+         session_state = 'bk_lang', session_data = '{"bk":{}}'::jsonb, updated_at = NOW()
      WHERE telegram_id = $1
      RETURNING *`,
     [telegramId]
