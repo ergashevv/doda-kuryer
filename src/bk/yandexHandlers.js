@@ -71,7 +71,10 @@ export function servicePickReply(lang) {
 
 export function yxCityReply(lang) {
   const lg = normalizeBKLang(lang);
-  return Markup.keyboard([[tBK(lg, "yx_city_msk"), tBK(lg, "yx_city_mo")]])
+  return Markup.keyboard([
+    [tBK(lg, "yx_city_msk"), tBK(lg, "yx_city_mo")],
+    [tBK(lg, "yx_city_other")],
+  ])
     .resize()
     .oneTime();
 }
@@ -192,6 +195,7 @@ export function yxCityInline(lang) {
       Markup.button.callback(tBK(lg, "yx_city_msk"), "bk_YX:city:msk"),
       Markup.button.callback(tBK(lg, "yx_city_mo"), "bk_YX:city:msk_obl"),
     ],
+    [Markup.button.callback(tBK(lg, "yx_city_other"), "bk_YX:city:other")],
   ]);
 }
 
@@ -316,6 +320,7 @@ export function mapYandexUserTextToPayload(profile, text) {
   if (st.ui === "city") {
     if (t === tBK(lg, "yx_city_msk")) return "city:msk";
     if (t === tBK(lg, "yx_city_mo")) return "city:msk_obl";
+    if (t === tBK(lg, "yx_city_other")) return "city:other";
     return null;
   }
   if (st.ui === "citizen") {
@@ -462,6 +467,13 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
 
   if (payload.startsWith("city:")) {
     const ck = payload.slice(5);
+    if (ck === "other") {
+      const blockedMsg = tBK(lg, "yx_city_other_blocked");
+      await bkSendStepMessage(ctx, client, uid, profile, () =>
+        ctx.reply(blockedMsg, yxReplyOptions(yxCityInline(lg)))
+      );
+      return true;
+    }
     if (ck !== "msk" && ck !== "msk_obl") return false;
     yx.cityKey = ck;
     yx.regAmina = null;

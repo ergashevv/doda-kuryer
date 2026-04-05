@@ -28,8 +28,8 @@ const BK_STRINGS = {
     main_menu_after_faq: "Asosiy menyu:",
     faq_freedom_hint: "Savolni pastdagi tugma orqali tanlang yoki /start",
 
-    btn_in_park: "😎 Men allaqachon DODA parkidaman",
-    btn_not_in_park: "🙏 DODA parkida emasman, ulash kerak",
+    btn_in_park: "😎 Doda kuryerda ro'yhatdan o'tganman",
+    btn_not_in_park: "🙏 Doda kuryerda emasman, ulash kerak",
     btn_support: "❓ Texnik yordam",
     btn_phone_from_telegram:
       "Telegramga biriktirilgan telefon raqamidan foydalanish",
@@ -38,8 +38,13 @@ const BK_STRINGS = {
       "Raqamni bitta xabarda yozing: +7… (7 dan keyin 10 raqam), yoki 8…, yoki kodisiz 10 raqam. Faqat RF raqami.",
     btn_therm_yes: "Ha",
     btn_therm_no: "Yo'q, sotib olish kerak",
-    cit_yes: "Ha",
-    cit_no: "Yo'q",
+    cit_uz: "O'zbekiston",
+    cit_tj: "Tojikiston",
+    cit_kg: "Qirg'iziston",
+    cit_kz: "Qozog'iston",
+    cit_rf: "RF (Rossiya)",
+    cit_tm: "Turkmaniston",
+
     city_other_btn: "✏️ Boshqa shahar (matn)",
 
     welcome_video_missing:
@@ -76,7 +81,7 @@ const BK_STRINGS = {
 
     confirm_phone: (phone) => `Telefon: ${phone}`,
 
-    ask_category: "Qaysi kategoriyada ishlashni xohlaysiz? Ijara kerak bo'lsa — /ARENDA",
+    ask_category: "Qaysi kategoriyada ishlashni xohlaysiz?",
 
     cat_car: "🚗 Yengil avtomobil",
     cat_truck: "🚚 Yuk mashinasi",
@@ -136,13 +141,27 @@ const BK_STRINGS = {
 
     confirm_city: (city) => `Tanlangan shahar: ${city}`,
 
-    ask_citizenship: "RF fuqarosimisiz?",
+    ask_citizenship: (cat) =>
+      cat === "car"
+        ? "Haydovchi fuqaroligini tanlang:"
+        : "Fuqaroligingizni tanlang:",
 
-    confirm_citizenship: (yes) => `RF fuqaroligi: ${yes ? "Ha" : "Yo'q"}`,
+    confirm_citizenship: (label) => `Fuqarolik: ${label}`,
 
-    ask_self_employed: "O'z-o'zini band qilganmisiz?",
+    ask_self_employed: (cat) =>
+      cat === "car"
+        ? "O'z-o'zini band qilish (СМЗ) bilanmi yoki usiz?"
+        : "O'z-o'zini band qilganmisiz?",
+
     confirm_self_employed: (yes) =>
-      `O'z-o'zini band qilish: ${yes ? "Ha" : "Yo'q"}`,
+      `O'z-o'zini band qilish: ${yes ? "Ha (bilan)" : "Yo'q (u siz)"}`,
+
+    ask_reg_amina: "Registratsiya yoki Amina rasmini yuboring:",
+    confirm_reg_amina_uploaded: "✅ Hujjat qabul qilindi.",
+
+    ask_moy_nalog_phone:
+      "Moy nalog programmasi qaysi raqamga registratsiya qilingan? (RF raqami)",
+    confirm_moy_nalog_phone: (ph) => `Moy nalog telefoni: ${ph}`,
 
     ask_inn: "INN ni yozing (10–13 raqam).",
     err_inn_invalid: "INN 10–13 raqamdan iborat bo'lishi kerak.",
@@ -246,7 +265,7 @@ const BK_STRINGS = {
       phone: "Telefon (avtorizatsiya)",
       category: "Yetkazib berish turi",
       city: "Shahar",
-      citizenship: "RF fuqaroligi",
+      citizenship: "Fuqarolik",
       thermal: "Termokorob",
       passport_foreign: "Chet el pasporti",
       passport_rf: "Pasport",
@@ -256,12 +275,14 @@ const BK_STRINGS = {
       truck_payload: "Yuk ko'tarish",
       truck_loaders: "Yuk ko'taruvchilar",
       truck_wrap: "Brending / yopish",
-      self_employed: "O'z-o'zini band qilish",
+      self_employed: "SMZ (O'z-o'zini band)",
       inn: "INN",
       bike_smz_phone: "«Moy nalog» telefoni",
       bike_smz_address: "Yashash manzili (SMZ)",
       bike_thermal: "Velo termokorob",
       bike_passport: "Pasport",
+      car_smz_phone: "Moy nalog telefoni",
+      car_reg_amina: "Reg/Amina photo",
     },
 
     summary_passport_media: "Media (1 dona)",
@@ -279,7 +300,7 @@ const BK_STRINGS = {
     group_label_category: "🚗 Yetkazib berish turi:",
     group_label_vehicle: "🚙 TS hisobi:",
     group_label_city: "🏙 Shahar:",
-    group_label_citizenship: "🪪 RF fuqaroligi:",
+    group_label_citizenship: "🪪 Fuqarolik:",
     group_label_truck_dims: "📐 O'lchamlar:",
     group_label_truck_payload: "⚖️ Yuk ko'tarish:",
     group_label_truck_loaders: "👷 Yuk ko'taruvchilar:",
@@ -333,12 +354,14 @@ const BK_STRINGS = {
     group_yandex_text_heading: "📝 MATN MAYDONLARI",
     group_caption_yx_generic: "Ariza ilovasi (Yandex)",
 
-    yx_btn_doda: "Ru Park Doda kuryer",
+    yx_btn_doda: "Doda kuryer",
     yx_btn_lavka: "Yandex Lavka",
     yx_btn_eats: "Yandex Eda",
 
     yx_city_msk: "Moskva",
     yx_city_mo: "Moskva viloyati",
+    yx_city_other: "Boshqa",
+    yx_city_other_blocked: "Uzr, biz shu Moscow va oblastdan boshqalariga hozircha boglab hizmat korsatolmaymiz.",
 
     yx_ask_city:
       "Moskva yoki Moskva viloyatini pastdagi tugma orqali tanlang.",
@@ -498,8 +521,13 @@ const BK_STRINGS = {
       "Напиши номер одним сообщением: +7… (10 цифр после 7), или 8…, или 10 цифр без кода. Только номер РФ.",
     btn_therm_yes: "Да",
     btn_therm_no: "Нет, необходимо приобрести",
-    cit_yes: "Да",
-    cit_no: "Нет",
+    cit_uz: "Узбекистан",
+    cit_tj: "Таджикистан",
+    cit_kg: "Киргизия",
+    cit_kz: "Казахстан",
+    cit_rf: "РФ (Россия)",
+    cit_tm: "Туркменистан",
+
     city_other_btn: "✏️ Другой город (напиши текстом)",
 
     welcome_video_missing:
@@ -545,8 +573,7 @@ const BK_STRINGS = {
 
     confirm_phone: (phone) => `Ты использовал номер телефона: ${phone}`,
 
-    ask_category:
-      "В какой категории планируешь выполнять заказы? Если нужна аренда транспорта — /ARENDA",
+    ask_category: "В какой категории планируешь выполнять заказы?",
 
     cat_car: "🚗 Легковое авто",
     cat_truck: "🚚 Грузовое авто",
@@ -576,15 +603,27 @@ const BK_STRINGS = {
 
     confirm_city: (city) => `Ты выбрал выполнять заказы в городе ${city}`,
 
-    ask_citizenship: "Являешься ли ты гражданином РФ?",
+    ask_citizenship: (cat) =>
+      cat === "car"
+        ? "Выберите гражданство водителя:"
+        : "Выберите ваше гражданство:",
 
-    confirm_citizenship: (yes) =>
-      `Ты указал наличие гражданства РФ: ${yes ? "Да" : "Нет"}`,
+    confirm_citizenship: (label) => `Гражданство: ${label}`,
 
-    ask_self_employed: "Являешься ли ты самозанятым?",
+    ask_self_employed: (cat) =>
+      cat === "car"
+        ? "С самозанятостью (СМЗ) или без?"
+        : "Являетесь ли вы самозанятым?",
 
     confirm_self_employed: (yes) =>
-      `Наличие самозанятости: ${yes ? "Да" : "Нет"}`,
+      `Самозанятость: ${yes ? "Да (с СМЗ)" : "Нет (без СМЗ)"}`,
+
+    ask_reg_amina: "Отправьте фото регистрации или Амины:",
+    confirm_reg_amina_uploaded: "✅ Документ принят.",
+
+    ask_moy_nalog_phone:
+      "На какой номер зарегистрирована программа Мой налог? (номер РФ)",
+    confirm_moy_nalog_phone: (ph) => `Телефон Мой налог: ${ph}`,
 
     ask_inn: "Напиши ИНН (10–13 цифр).",
 
@@ -729,7 +768,7 @@ const BK_STRINGS = {
       phone: "Телефон для авторизации",
       category: "Класс доставки",
       city: "Город",
-      citizenship: "Гражданство РФ",
+      citizenship: "Гражданство",
       thermal: "Термокороб",
       passport_foreign: "Иностранцы паспорт",
       passport_rf: "Паспорт",
@@ -745,6 +784,8 @@ const BK_STRINGS = {
       bike_smz_address: "Адрес (СМЗ)",
       bike_thermal: "Вело термокороб",
       bike_passport: "Вело паспорт",
+      car_smz_phone: "Тел. Мой налог",
+      car_reg_amina: "Рег/Амина фото",
     },
 
     summary_yes: "Да",
@@ -762,7 +803,7 @@ const BK_STRINGS = {
     group_label_category: "🚗 Класс доставки:",
     group_label_vehicle: "🚙 Учёт ТС:",
     group_label_city: "🏙 Город:",
-    group_label_citizenship: "🪪 Гражданство РФ:",
+    group_label_citizenship: "🪪 Гражданство:",
     group_label_truck_dims: "📐 Габариты:",
     group_label_truck_payload: "⚖️ Грузоподъемность:",
     group_label_truck_loaders: "👷 Грузчики:",
@@ -816,12 +857,14 @@ const BK_STRINGS = {
     group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
     group_caption_yx_generic: "Вложение заявки (Яндекс)",
 
-    yx_btn_doda: "Ru Park Doda курьер",
-    yx_btn_lavka: "Яндекс Лавка",
-    yx_btn_eats: "Яндекс Еда",
+    yx_btn_doda: "Doda курьер",
+    yx_btn_lavka: "Yandex Lavka",
+    yx_btn_eats: "Yandex Eda",
 
     yx_city_msk: "Москва",
     yx_city_mo: "Московская область",
+    yx_city_other: "Другой",
+    yx_city_other_blocked: "Извините, мы пока не можем подключить к сервису в других регионах, кроме Москвы и области.",
 
     yx_ask_city:
       "Укажите Москву или Московскую область кнопкой ниже.",
@@ -974,8 +1017,13 @@ const BK_STRINGS = {
     btn_support: "❓ Кӯмаки техникӣ",
     btn_therm_yes: "Ҳа",
     btn_therm_no: "Не, харидан лозим",
-    cit_yes: "Ҳа",
-    cit_no: "Не",
+    cit_uz: "Ӯзбекистон",
+    cit_tj: "Тоҷикистон",
+    cit_kg: "Қирғизистон",
+    cit_kz: "Қазоқистон",
+    cit_rf: "РФ (Русия)",
+    cit_tm: "Туркманистон",
+
     city_other_btn: "✏️ Шаҳри дигар (матн)",
 
     welcome_video_missing:
@@ -1012,7 +1060,7 @@ const BK_STRINGS = {
 
     confirm_phone: (phone) => `Рақам: ${phone}`,
 
-    ask_category: "Дар кадом категория кор мекунед? Иҷора — /ARENDA",
+    ask_category: "Дар кадом категория кор мекунед?",
 
     cat_car: "🚗 Мошини сабук",
     cat_truck: "🚚 Боркаш",
@@ -1214,7 +1262,7 @@ const BK_STRINGS = {
     group_yandex_text_heading: "📝 ТЕКСТ ТАЛААЛАРЫ",
     group_caption_yx_generic: "Арыз тиркемеси (Yandex)",
 
-    yx_btn_doda: "Ru Park Doda курьер",
+    yx_btn_doda: "Doda курьер",
     yx_btn_lavka: "Yandex Lavka",
     yx_btn_eats: "Yandex Eda",
 
@@ -1372,8 +1420,13 @@ const BK_STRINGS = {
     btn_support: "❓ Техникалык жардам",
     btn_therm_yes: "Ооба",
     btn_therm_no: "Жок, сатып алуу керек",
-    cit_yes: "Ооба",
-    cit_no: "Жок",
+    cit_uz: "Өзбекстан",
+    cit_tj: "Тажикстан",
+    cit_kg: "Кыргызстан",
+    cit_kz: "Казакстан",
+    cit_rf: "РФ (Россия)",
+    cit_tm: "Түркмөнстан",
+
     city_other_btn: "✏️ Башка шаар (текст)",
 
     welcome_video_missing:
@@ -1410,7 +1463,7 @@ const BK_STRINGS = {
 
     confirm_phone: (phone) => `Телефон: ${phone}`,
 
-    ask_category: "Кайсы категорияда иштейсиз? Аренда — /ARENDA",
+    ask_category: "Кайсы категорияда иштейсиз?",
 
     cat_car: "🚗 Жеңил унаа",
     cat_truck: "🚚 Жүк ташуучу",
@@ -1613,7 +1666,7 @@ const BK_STRINGS = {
     group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
     group_caption_yx_generic: "Вложение заявки (Яндекс)",
 
-    yx_btn_doda: "Ru Park Doda курьер",
+    yx_btn_doda: "Doda курьер",
     yx_btn_lavka: "Яндекс Лавка",
     yx_btn_eats: "Яндекс Еда",
 

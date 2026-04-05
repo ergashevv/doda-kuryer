@@ -144,8 +144,16 @@ export function citizenshipInline(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback(tBK(lg, "cit_yes"), "bk_Z:1"),
-      Markup.button.callback(tBK(lg, "cit_no"), "bk_Z:0"),
+      Markup.button.callback(tBK(lg, "cit_uz"), "bk_Z:uz"),
+      Markup.button.callback(tBK(lg, "cit_tj"), "bk_Z:tj"),
+    ],
+    [
+      Markup.button.callback(tBK(lg, "cit_kg"), "bk_Z:kg"),
+      Markup.button.callback(tBK(lg, "cit_kz"), "bk_Z:kz"),
+    ],
+    [
+      Markup.button.callback(tBK(lg, "cit_rf"), "bk_Z:rf"),
+      Markup.button.callback(tBK(lg, "cit_tm"), "bk_Z:tm"),
     ],
   ]);
 }
@@ -266,12 +274,10 @@ export function reviewKb(lang, bk = {}) {
       ]);
     }
   }
-  if (bk.categoryKey !== "moto") {
-    rows.push([
-      Markup.button.callback(`🏙 ${summaryTitle(lg, "city")}`, "bk_R:e:city"),
-      Markup.button.callback(`🪪 ${summaryTitle(lg, "citizenship")}`, "bk_R:e:cit"),
-    ]);
-  }
+  rows.push([
+    Markup.button.callback(`🏙 ${summaryTitle(lg, "city")}`, "bk_R:e:city"),
+    Markup.button.callback(`🪪 ${summaryTitle(lg, "citizenship")}`, "bk_R:e:cit"),
+  ]);
   rows.push([
     Markup.button.callback(`🛂 ${summaryTitle(lg, "passport")}`, "bk_R:e:passport"),
   ]);

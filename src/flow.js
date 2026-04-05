@@ -47,6 +47,7 @@ export const DODA_UPLOAD_DOC_KEYS = new Set([
   "sts",
   "tech_passport_front",
   "tech_passport_back",
+  "reg_amina",
   "passport",
 ]);
 
@@ -62,38 +63,68 @@ export function isDodaUploadDocKey(key) {
  * Piyoda: VU → СТС → паспорт.
  */
 export function dodaDocSequence(categoryKey, bk = {}) {
-  if (categoryKey === "truck") {
-    return [
-      "license",
-      "sts",
-      "truck_dimensions",
-      "truck_payload",
-      "truck_branding",
-      "passport",
-    ];
+  // Car va Truck: bir xil citizenship/SMZ oqimi. Truck oxirida dimensions+payload+branding qo'shiladi.
+  if (categoryKey === "car" || categoryKey === "truck") {
+    const seq = [];
+    const smzGroup = ["rf", "kg", "kz"];
+    if (smzGroup.includes(bk.citizenship)) {
+      seq.push("self_employed");
+      if (bk.selfEmployed === true) {
+        seq.push("reg_amina", "moy_nalog_phone");
+      }
+    }
+    seq.push("vehicle_rf_pick");
+    if (bk.vehicleRf === false) {
+      seq.push("license", "tech_passport_front", "tech_passport_back");
+    } else {
+      seq.push("license", "sts");
+    }
+    if (categoryKey === "truck") {
+      seq.push("truck_dimensions", "truck_payload", "truck_branding");
+    }
+    seq.push("passport");
+    return seq;
   }
+
+  // Moto: citizenship + SMZ branch + prava (license) + pasport. STS va mashina qayerda ro'yxat YO'Q.
+  if (categoryKey === "moto") {
+    const seq = [];
+    const smzGroup = ["rf", "kg", "kz"];
+    if (smzGroup.includes(bk.citizenship)) {
+      seq.push("self_employed");
+      if (bk.selfEmployed === true) {
+        seq.push("reg_amina", "moy_nalog_phone");
+      }
+    }
+    seq.push("license", "passport");
+    return seq;
+  }
+
+  // Bike (velo): citizenship + SMZ branch + pasport. Prava, STS, mashina doc YO'Q.
   if (categoryKey === "bike") {
-    const seq = ["self_employed"];
-    if (bk.selfEmployed === true) {
-      if (bk.rfCitizen === true) {
-        seq.push("bike_smz_phone", "bike_smz_address");
-      } else {
-        seq.push("inn");
+    const seq = [];
+    const smzGroup = ["rf", "kg", "kz"];
+    if (smzGroup.includes(bk.citizenship)) {
+      seq.push("self_employed");
+      if (bk.selfEmployed === true) {
+        seq.push("reg_amina", "moy_nalog_phone");
       }
     }
     seq.push("passport");
     return seq;
   }
-  if (categoryKey === "moto") {
-    return ["license", "passport"];
+
+  // Peshkom (foot): bike bilan bir xil — mashina, prava, STS YO'Q.
+  const seq = [];
+  const smzGroupFoot = ["rf", "kg", "kz"];
+  if (smzGroupFoot.includes(bk.citizenship)) {
+    seq.push("self_employed");
+    if (bk.selfEmployed === true) {
+      seq.push("reg_amina", "moy_nalog_phone");
+    }
   }
-  if (categoryKey !== "car") {
-    return ["license", "sts", "passport"];
-  }
-  if (bk.vehicleRf === false) {
-    return ["license", "tech_passport_front", "tech_passport_back", "passport"];
-  }
-  return ["license", "sts", "passport"];
+  seq.push("passport");
+  return seq;
 }
 
 /**
@@ -108,8 +139,17 @@ export function getFirstMissingDodaStepSync(bk, uploaded) {
       if (typeof bk.selfEmployed !== "boolean") return key;
       continue;
     }
+    if (key === "vehicle_rf_pick") {
+      if (typeof bk.vehicleRf !== "boolean") return key;
+      continue;
+    }
     if (key === "inn") {
       if (!bk.inn || String(bk.inn).trim() === "") return key;
+      continue;
+    }
+    if (key === "moy_nalog_phone") {
+      if (!bk.moyNalogPhone || String(bk.moyNalogPhone).trim() === "")
+        return key;
       continue;
     }
     if (key === "bike_smz_phone") {
