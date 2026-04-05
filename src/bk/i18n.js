@@ -42,6 +42,8 @@ const BK_STRINGS = {
     cit_kz: "Qozog'iston",
     cit_rf: "Rossiya",
     cit_tm: "Turkmaniston",
+    cit_yes: "Ha",
+    cit_no: "Yo'q",
 
     city_other_btn: "✏️ Boshqa shahar (matn)",
 
@@ -502,6 +504,8 @@ const BK_STRINGS = {
     cit_kz: "Казахстан",
     cit_rf: "РФ (Россия)",
     cit_tm: "Туркменистан",
+    cit_yes: "Да",
+    cit_no: "Нет",
 
     city_other_btn: "✏️ Другой город (напиши текстом)",
 
@@ -997,6 +1001,8 @@ const BK_STRINGS = {
     cit_kz: "Қазоқистон",
     cit_rf: "РФ (Русия)",
     cit_tm: "Туркманистон",
+    cit_yes: "Ҳа",
+    cit_no: "Не",
 
     city_other_btn: "✏️ Шаҳри дигар (матн)",
 
@@ -1394,6 +1400,8 @@ const BK_STRINGS = {
     cit_kz: "Казакстан",
     cit_rf: "РФ (Россия)",
     cit_tm: "Түркмөнстан",
+    cit_yes: "Ооба",
+    cit_no: "Жок",
 
     city_other_btn: "✏️ Башка шаар (текст)",
 
