@@ -56,19 +56,36 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.deepEqual(getYandexUiState(yx, 0), { ui: "citizen" });
   });
 
-  test("UZ/TJ + hujjat turi yoq → uz_doc", () => {
+  test("UZ/TJ: hujjat turidan oldin — pasport (1-qadam)", () => {
     const yx = baseYx({ citizen: "uz_tj", uzDocKind: null });
-    assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
+    const st = getYandexUiState(yx, 0, { completed_yx: [] });
+    assert.equal(st.ui, "step");
+    assert.equal(st.step.docType, "yx_uz_pre_pass_f");
   });
 
-  test("UZ (alohida) + hujjat turi yoq → uz_doc", () => {
+  test("UZ: pasport 2-qadam, keyin uz_doc", () => {
     const yx = baseYx({ citizen: "uz", uzDocKind: null });
-    assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
+    const st1 = getYandexUiState(yx, 0, { completed_yx: ["yx_uz_pre_pass_f"] });
+    assert.equal(st1.step.docType, "yx_uz_pre_pass_b");
+    assert.deepEqual(
+      getYandexUiState(yx, 0, {
+        completed_yx: ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"],
+      }),
+      { ui: "uz_doc" }
+    );
   });
 
-  test("UZ: noto'g'ri uzDocKind → bo'sh line done emas, qayta uz_doc", () => {
+  test("UZ: noto'g'ri uzDocKind — avval pasport, prefix tugagach uz_doc", () => {
     const yx = baseYx({ citizen: "uz", uzDocKind: "bogus" });
-    assert.deepEqual(getYandexUiState(yx, 0), { ui: "uz_doc" });
+    const st0 = getYandexUiState(yx, 0, { completed_yx: [] });
+    assert.equal(st0.ui, "step");
+    assert.equal(st0.step.docType, "yx_uz_pre_pass_f");
+    assert.equal(
+      getYandexUiState(yx, 0, {
+        completed_yx: ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"],
+      }).ui,
+      "uz_doc"
+    );
   });
 
   test("KZ/KG + doc tur yoq → kz_doc", () => {
@@ -120,14 +137,15 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.equal(st.ui, "done");
   });
 
-  test("UZ patent: regAmina yoq → choice qadam", () => {
+  test("UZ patent: regAmina yoq → choice qadam (prefix + patent old/orqa)", () => {
     const yx = baseYx({
       citizen: "uz_tj",
       uzDocKind: "patent",
       regAmina: null,
     });
-    const line = buildYxLine(yx);
-    const idx = 2;
+    const prefixOk = ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"];
+    const line = buildYxLine(yx, prefixOk);
+    const idx = 4;
     assert.equal(line[idx].t, "choice");
     const st = getYandexUiState(yx, idx);
     assert.equal(st.ui, "step");
@@ -178,8 +196,10 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
   });
 
   test("VNJ (UZ/TJ): VNJ ikkala tomoni, INN, SNILS, migratsiya, tail — reg/amina yo‘q", () => {
+    const prefixOk = ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"];
     const line = buildYxLine(
-      baseYx({ citizen: "uz_tj", uzDocKind: "vnzh" })
+      baseYx({ citizen: "uz_tj", uzDocKind: "vnzh" }),
+      prefixOk
     );
     assert.ok(line.some((s) => s.docType === "yx_uz_vnzh_f"));
     assert.ok(line.some((s) => s.docType === "yx_uz_vnzh_b"));

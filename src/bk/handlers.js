@@ -13,6 +13,7 @@ import {
   tBK,
   tBKfn,
 } from "./i18n.js";
+import { allowStartCommand } from "./inboundDedupe.js";
 import { buildBkStartLanguagePrompt } from "./telegramLocalTime.js";
 import { normalizeLang, t } from "../i18n.js";
 import { logChat, logChatDeferred } from "../services/chatLog.js";
@@ -504,6 +505,7 @@ export function registerBkHandlers(bot) {
   bot.command("start", async (ctx) => {
     const uid = ctx.from?.id;
     if (!uid || !ctx.message) return;
+    if (!allowStartCommand(uid)) return;
     console.log(new Date().toISOString(), "[bk] /start received", uid);
     try {
       const pick = buildBkStartLanguagePrompt(ctx.from);

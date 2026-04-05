@@ -87,6 +87,28 @@ function tailKzAfterMig() {
   return tailRekvizitCard16();
 }
 
+/** UZ/TJ: fuqarolikdan keyin, hujjat turidan oldin — pasport (old → orqa). */
+export const UZ_TJ_PASSPORT_PREFIX = [
+  photo("yx_uz_pre_pass_f", "yx_p_uz_pre_pass_f"),
+  photo("yx_uz_pre_pass_b", "yx_p_uz_pre_pass_b"),
+];
+
+export function uzTjPassportPrefixComplete(completed) {
+  const c = completed || [];
+  return (
+    c.length >= 2 &&
+    c[0] === "yx_uz_pre_pass_f" &&
+    c[1] === "yx_uz_pre_pass_b"
+  );
+}
+
+/** Eski oqim: prefixsiz boshlangan sessiyalar (completed birinchi elementi patent/VNJ/talaba). */
+function uzTjLegacyBodyFirst(completed, yx) {
+  if (!yx?.uzDocKind || !completed?.length) return false;
+  if (completed[0] === "yx_uz_pre_pass_f") return false;
+  return true;
+}
+
 function lineUzPatent(yx) {
   const L = [
     photo("yx_uz_pat_front", "yx_p_uz_pat_front"),
@@ -206,13 +228,17 @@ export function isYxCitizenOther(c) {
   return c === "other";
 }
 
-export function buildYxLine(yx) {
+export function buildYxLine(yx, completed = []) {
   if (!yx?.citizen) return [];
   if (isYxCitizenUzTjGroup(yx.citizen)) {
-    if (yx.uzDocKind === "patent") return lineUzPatent(yx);
-    if (yx.uzDocKind === "vnzh") return lineUzVnzh(yx);
-    if (yx.uzDocKind === "student") return lineUzStudent(yx);
-    return [];
+    const skipPrefix = uzTjLegacyBodyFirst(completed, yx);
+    const prefix = skipPrefix ? [] : UZ_TJ_PASSPORT_PREFIX;
+    if (!yx.uzDocKind) return prefix;
+    let body = [];
+    if (yx.uzDocKind === "patent") body = lineUzPatent(yx);
+    else if (yx.uzDocKind === "vnzh") body = lineUzVnzh(yx);
+    else if (yx.uzDocKind === "student") body = lineUzStudent(yx);
+    return prefix.concat(body);
   }
   if (isYxCitizenKzKgGroup(yx.citizen)) return lineKzKg(yx);
   if (yx.citizen === "rf" || isYxCitizenOther(yx.citizen)) return lineRf(yx);
@@ -225,15 +251,34 @@ export function getYandexUiState(yx, completedLen, td) {
   if (!yx?.service) return { ui: "none" };
   if (!yx.cityKey) return { ui: "city" };
   if (!yx.citizen) return { ui: "citizen" };
-  if (isYxCitizenUzTjGroup(yx.citizen) && !yx.uzDocKind) return { ui: "uz_doc" };
+
+  const hasTd = td !== undefined && td !== null;
+  const completed = hasTd ? (td.completed_yx || []) : [];
+  const doneCount = hasTd ? completed.length : completedLen;
+
+  const uzDocKindValid =
+    yx.uzDocKind === "patent" ||
+    yx.uzDocKind === "vnzh" ||
+    yx.uzDocKind === "student";
+
+  if (isYxCitizenUzTjGroup(yx.citizen) && !uzDocKindValid) {
+    if (completed.length < UZ_TJ_PASSPORT_PREFIX.length) {
+      return {
+        ui: "step",
+        step: UZ_TJ_PASSPORT_PREFIX[completed.length],
+      };
+    }
+    return { ui: "uz_doc" };
+  }
+
   if (isYxCitizenKzKgGroup(yx.citizen) && !yx.kzDocKind) return { ui: "kz_doc" };
-  const line = buildYxLine(yx);
+  const line = buildYxLine(yx, completed);
   if (line.length === 0) {
     if (isYxCitizenUzTjGroup(yx.citizen)) return { ui: "uz_doc" };
     return { ui: "none" };
   }
-  if (completedLen >= line.length) return { ui: "done" };
-  return { ui: "step", step: line[completedLen] };
+  if (doneCount >= line.length) return { ui: "done" };
+  return { ui: "step", step: line[doneCount] };
 }
 
 export function yxForbiddenMedia(msg, step) {

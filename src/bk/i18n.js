@@ -343,6 +343,8 @@ const BK_STRINGS = {
     yx_ask_city:
       "Moskva yoki Moskva viloyatini pastdagi tugma orqali tanlang.",
     yx_ask_citizen: "Status / fuqaroligingizni pastdagi tugma orqali tanlang.",
+    yx_p_uz_pre_pass_f: "Pasport fotosi — rasmli sahifa (old tomon).",
+    yx_p_uz_pre_pass_b: "Pasport fotosi — keyingi sahifa (propiska yoki orqa tomon).",
     yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
     yx_ask_kz_doc_kz:
       "Qozog‘iston fuqarosi — keyingi qadamni pastdagi tugmalar bilan tanlang.",
@@ -824,6 +826,8 @@ const BK_STRINGS = {
     yx_ask_city:
       "Укажите Москву или Московскую область кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
+    yx_p_uz_pre_pass_f: "Фото паспорта (разворот с фото).",
+    yx_p_uz_pre_pass_b: "Фото паспорта — страница с пропиской или следующий разворот.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
     yx_ask_kz_doc_kz:
       "Гражданину Казахстана: выберите вариант кнопкой ниже.",
@@ -1220,6 +1224,8 @@ const BK_STRINGS = {
     yx_ask_city:
       "Москва же Москванын областин төмөнкү баскыч менен тандаңыз.",
     yx_ask_citizen: "Статус / жарандыгыңызды төмөнкү баскыч менен тандаңыз.",
+    yx_p_uz_pre_pass_f: "Паспорттун сүрөтү — сүрөтү бар бет (алдыңкы).",
+    yx_p_uz_pre_pass_b: "Паспорттун сүрөтү — кийинки бет (прописка же арткы).",
     yx_ask_uz_doc: "Тастыктоочу документтин түрүн тандаңыз.",
     yx_ask_kz_doc_kz:
       "Казакстан жараны үчүн: төмөнкү баскыч менен тандаңыз.",
@@ -1617,6 +1623,8 @@ const BK_STRINGS = {
     yx_ask_city:
       "Укажите Москву или Московскую область кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
+    yx_p_uz_pre_pass_f: "Фото паспорта (разворот с фото).",
+    yx_p_uz_pre_pass_b: "Фото паспорта — страница с пропиской или следующий разворот.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
     yx_ask_kz_doc_kz:
       "Гражданину Казахстана: выберите вариант кнопкой ниже.",

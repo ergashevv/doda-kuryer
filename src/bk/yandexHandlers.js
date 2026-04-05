@@ -15,6 +15,7 @@ import {
   YX_LAVKA,
   buildYxLine,
   getYandexUiState,
+  uzTjPassportPrefixComplete,
   initYandexSession,
   clearYandexCollected,
   clearYandexStagingSessionFields,
@@ -429,7 +430,7 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
       await ctx.reply(tBK(lg, "review_callback_stale"));
       return true;
     }
-    const line = buildYxLine(yx);
+    const line = buildYxLine(yx, completed);
     const expected = line[completed.length];
     if (
       !expected ||
@@ -500,8 +501,14 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
   if (payload.startsWith("uz:")) {
     yx.uzDocKind = payload.slice(3);
     yx.regAmina = null;
+    const cur = [...(td.completed_yx || [])];
+    const keep = uzTjPassportPrefixComplete(cur) ? cur.slice(0, 2) : [];
     await updateProfile(client, uid, {
-      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
+      session_data: clearYandexStagingSessionFields({
+        ...td,
+        yx,
+        completed_yx: keep,
+      }),
     });
     profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);

@@ -291,6 +291,8 @@ function formatYandexAnketaBlock(profile) {
 
 function yandexDocPromptKey(docType) {
   const map = {
+    yx_uz_pre_pass_f: "yx_p_uz_pre_pass_f",
+    yx_uz_pre_pass_b: "yx_p_uz_pre_pass_b",
     yx_uz_pat_pass: "yx_p_uz_pat_pass",
     yx_uz_pat_front: "yx_p_uz_pat_front",
     yx_uz_pat_back: "yx_p_uz_pat_back",
