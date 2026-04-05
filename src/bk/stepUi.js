@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { ensureProfile, updateProfile } from "../services/users.js";
 import { buildAskPhoneHtml, buildBkSummaryI18n, normalizeBKLang, tBK } from "./i18n.js";
-import { phoneStepInline, replyRemoveWithInline, reviewKb } from "./keyboards.js";
+import { phoneStepInline, phoneStepReply, replyRemoveWithInline, reviewKb } from "./keyboards.js";
 import { resolvePlaceholderPath } from "./placeholders.js";
 
 export function bkCollectMessageIds(sent) {
@@ -101,16 +101,14 @@ export async function bkReplyStep(ctx, client, uid, profile, text, extra = {}) {
 export async function sendBkAskPhonePrompt(ctx, client, uid, profile, lg) {
   return bkSendStepMessage(ctx, client, uid, profile, async () => {
     const { text, parse_mode } = buildAskPhoneHtml(lg);
-    const kb = replyRemoveWithInline(phoneStepInline(lg));
+    const kb = phoneStepReply(lg);
     const p = resolvePlaceholderPath("phone");
     const hasPhoto = p && fs.existsSync(p);
     if (hasPhoto) {
-      const m1 = await ctx.replyWithPhoto(
+      return await ctx.replyWithPhoto(
         { source: p },
-        { caption: text, parse_mode: parse_mode || undefined }
+        { caption: text, parse_mode: parse_mode || undefined, ...kb }
       );
-      const m2 = await ctx.reply(tBK(lg, "ask_phone_keyboard_nudge"), kb);
-      return [m1, m2];
     }
     const ex = { ...kb };
     if (parse_mode) ex.parse_mode = parse_mode;
@@ -121,7 +119,8 @@ export async function sendBkAskPhonePrompt(ctx, client, uid, profile, lg) {
 export async function replyBkAskPhoneNoPhoto(ctx, client, uid, profile, lg) {
   return bkSendStepMessage(ctx, client, uid, profile, async () => {
     const { text, parse_mode } = buildAskPhoneHtml(lg);
-    const extra = { ...replyRemoveWithInline(phoneStepInline(lg)) };
+    const kb = phoneStepReply(lg);
+    const extra = { ...kb };
     if (parse_mode) extra.parse_mode = parse_mode;
     return await ctx.reply(text, extra);
   });
