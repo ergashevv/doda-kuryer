@@ -344,8 +344,9 @@ async function promptFirstMissingDodaDoc(ctx, client, uid, profile) {
   }
   const td = { ...(profile.session_data || {}) };
   const bk = profile.session_data?.bk || {};
+  const uploaded = await getUploadedDocTypes(client, uid);
   const seq = dodaDocSequence(bk.categoryKey || "foot", bk);
-  td.completed_docs = seq.filter((k) => isDodaUploadDocKey(k));
+  td.completed_docs = seq.filter((k) => isDodaUploadDocKey(k) && uploaded.has(k));
   await updateProfile(client, uid, {
     session_data: td,
     session_state: "bk_review",
@@ -533,7 +534,7 @@ export function registerBkHandlers(bot) {
       await withTransaction(async (client) => {
         await resetRegistration(client, uid);
         await client.query(
-          `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type LIKE 'yx_%'`,
+          `DELETE FROM uploaded_files WHERE telegram_user_id = $1`,
           [uid]
         );
         await syncTelegramInfo(client, uid, ctx.from);

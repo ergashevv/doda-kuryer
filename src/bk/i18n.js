@@ -88,11 +88,10 @@ const BK_STRINGS = {
 
     confirm_category: (label) => `Tanlangan kategoriya: ${label}`,
 
-    ask_vehicle_rf:
-      "🚗 Yengil авто: transport qayerda ro'yxatdan o'tgan?",
+    ask_vehicle_rf: "Transport qayerda ro'yxatdan o'tgan?",
 
-    btn_vehicle_rf_sts: "🇷🇺 Rossiyada ro'yxat — STS",
-    btn_vehicle_foreign_tech: "🌍 Chet el TS — texpasport (old + orqa)",
+    btn_vehicle_rf_sts: "Rossiyada ro'yxatdan o'tgan",
+    btn_vehicle_foreign_tech: "Chet eldan ro'yxatdan o'tgan",
 
     confirm_vehicle_rf: (rf) =>
       rf
@@ -128,8 +127,7 @@ const BK_STRINGS = {
     confirm_sts_uploaded:
       "✅ STS foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
 
-    ask_city:
-      "Qaysi shaharda ishlaysiz? Tugma yoki matn. Bir nechta bo'lsa — asosiyini yozing.",
+    ask_city: "Qaysi shaharda ishlaysiz?",
 
     err_city_need_text:
       "Shahar nomini matn bilan yozing; rasm yubormang.",
@@ -278,6 +276,10 @@ const BK_STRINGS = {
       bike_passport: "Pasport",
       car_smz_phone: "Moy nalog telefoni",
       car_reg_amina: "Reg/Amina",
+      license: "Haydovchilik guvohnomasi",
+      sts: "STS",
+      tech_passport_front: "Texpasport (old)",
+      tech_passport_back: "Texpasport (orqa)",
     },
 
     summary_passport_media: "Media (1 dona)",
@@ -573,13 +575,10 @@ const BK_STRINGS = {
 
     confirm_category: (label) => `Ты выбрал выполнять заказы в категории ${label}`,
 
-    ask_vehicle_rf:
-      "🚗 Легковое авто: где зарегистрирован транспорт?\n\n" +
-      "• Россия (🇷🇺) — СТС: обычно одно фото, все поля должны быть читаемы.\n" +
-      "• Иностранное ТС (🌍) — техпаспорт: два отдельных шага — сначала лицевая сторона, затем оборот (два фото).",
+    ask_vehicle_rf: "Где зарегистрирован транспорт?",
 
-    btn_vehicle_rf_sts: "🇷🇺 Учёт в РФ — СТС",
-    btn_vehicle_foreign_tech: "🌍 Иностранное ТС — техпаспорт (лицо + оборот)",
+    btn_vehicle_rf_sts: "Россия",
+    btn_vehicle_foreign_tech: "Иностранное",
 
     confirm_vehicle_rf: (rf) =>
       rf
@@ -775,6 +774,10 @@ const BK_STRINGS = {
       bike_passport: "Вело паспорт",
       car_smz_phone: "Тел. Мой налог",
       car_reg_amina: "Рег/Амина",
+      license: "Водительское удостоверение",
+      sts: "СТС",
+      tech_passport_front: "Техпаспорт (лицевая)",
+      tech_passport_back: "Техпаспорт (оборот)",
     },
 
     summary_yes: "Да",
@@ -1926,6 +1929,19 @@ export function buildBkSummaryI18n(lang, profile) {
     }
   }
 
+  const docKeys = [
+    "license",
+    "sts",
+    "tech_passport_front",
+    "tech_passport_back",
+    "reg_amina",
+  ];
+  for (const dk of docKeys) {
+    if (completed.includes(dk)) {
+      lines.push(`${n++}. ${summaryTitle(lg, dk)}: ${tBK(lg, "summary_passport_media")}`);
+    }
+  }
+
   if (completed.includes("passport")) {
     const passportTitle =
       bk.categoryKey === "bike"
@@ -1933,9 +1949,7 @@ export function buildBkSummaryI18n(lang, profile) {
         : bk.rfCitizen === false
           ? summaryTitle(lg, "passport_foreign")
           : summaryTitle(lg, "passport_rf");
-    lines.push(
-      `${n++}. ${passportTitle}: ${tBK(lg, "summary_passport_media")}`
-    );
+    lines.push(`${n++}. ${passportTitle}: ${tBK(lg, "summary_passport_media")}`);
   }
   return lines.join("\n");
 }
