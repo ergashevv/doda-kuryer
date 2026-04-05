@@ -10,6 +10,14 @@ export function bkCollectMessageIds(sent) {
   return [sent.message_id].filter((id) => id != null);
 }
 
+/** Bir nechta xabarni parallel o‘chirish — ketma-ket `deleteMessage` qadamini sekinlashtirardi. */
+export async function telegramDeleteMany(ctx, chatId, messageIds) {
+  if (chatId == null || !messageIds?.length) return;
+  await Promise.all(
+    messageIds.map((mid) => ctx.telegram.deleteMessage(chatId, mid).catch(() => {}))
+  );
+}
+
 /** Doda hujjat oqimi: shu holatlarda avvalgi bot UI o‘chadi va `bk_ui_message_ids` yoziladi. */
 export function isBkDocWizardSessionState(sessionState) {
   return typeof sessionState === "string" && /^bk_doc_/.test(sessionState);
@@ -49,11 +57,7 @@ export async function bkSendStepMessage(ctx, client, uid, profile, send) {
   await flushBkPendingUserMessage(ctx, td, chatId);
   const prev = [...(td.bk_ui_message_ids || [])];
   if (docWizard && chatId && prev.length) {
-    for (const mid of prev) {
-      try {
-        await ctx.telegram.deleteMessage(chatId, mid);
-      } catch (_) {}
-    }
+    await telegramDeleteMany(ctx, chatId, prev);
   }
   td.bk_ui_message_ids = [];
   await updateProfile(client, uid, { session_data: td });
@@ -74,11 +78,7 @@ export async function bkClearStepUi(ctx, client, uid, profile) {
   const prev = [...(td.bk_ui_message_ids || [])];
   const docWizard = isBkDocWizardSessionState(profile.session_state);
   if (docWizard && chatId && prev.length) {
-    for (const mid of prev) {
-      try {
-        await ctx.telegram.deleteMessage(chatId, mid);
-      } catch (_) {}
-    }
+    await telegramDeleteMany(ctx, chatId, prev);
   }
   td.bk_ui_message_ids = [];
   await updateProfile(client, uid, { session_data: td });

@@ -4,7 +4,11 @@
  */
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { bkCollectMessageIds, isBkDocWizardSessionState } from "../src/bk/stepUi.js";
+import {
+  bkCollectMessageIds,
+  isBkDocWizardSessionState,
+  telegramDeleteMany,
+} from "../src/bk/stepUi.js";
 
 /** `bkSendStepMessage` mantiqining mocki (`bk_doc_*` da eski bot UI o‘chadi). */
 async function simulateBkSendStepMessage(profile, send) {
@@ -58,5 +62,19 @@ describe("BK step UI (Telegramsiz simulyatsiya — qo‘lda ssenariylar)", () =>
     assert.deepEqual(bkCollectMessageIds([{ message_id: 1 }, { message_id: 2 }]), [1, 2]);
     assert.deepEqual(bkCollectMessageIds({ message_id: 7 }), [7]);
     assert.deepEqual(bkCollectMessageIds(null), []);
+  });
+
+  test("telegramDeleteMany: barcha ID lar chaqiriladi", async () => {
+    const calls = [];
+    const ctx = {
+      telegram: {
+        deleteMessage: (_cid, mid) => {
+          calls.push(mid);
+          return Promise.resolve();
+        },
+      },
+    };
+    await telegramDeleteMany(ctx, 1, [10, 20, 30]);
+    assert.deepEqual(calls.sort((a, b) => a - b), [10, 20, 30]);
   });
 });

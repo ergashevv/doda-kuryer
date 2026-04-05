@@ -23,6 +23,7 @@ import {
   bkSendStepMessage,
   flushBkPendingUserMessage,
   sendBkPlaceholderStep,
+  telegramDeleteMany,
 } from "./stepUi.js";
 
 function lgOf(profile) {
@@ -285,11 +286,7 @@ export async function applyYandexEditCallback(ctx, client, uid) {
     await flushBkPendingUserMessage(ctx, tdYx, chatIdYx);
     const pv = [...(tdYx.yx_preview_msg_ids || [])];
     if (chatIdYx && pv.length) {
-      for (const mid of pv) {
-        try {
-          await ctx.telegram.deleteMessage(chatIdYx, mid);
-        } catch (_) {}
-      }
+      await telegramDeleteMany(ctx, chatIdYx, pv);
     }
     delete tdYx.yx_staged_doc;
     tdYx.yx_preview_msg_ids = [];
@@ -446,11 +443,7 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     await flushBkPendingUserMessage(ctx, td, chatId);
     const prev = [...(td.yx_preview_msg_ids || [])];
     if (chatId && prev.length) {
-      for (const mid of prev) {
-        try {
-          await ctx.telegram.deleteMessage(chatId, mid);
-        } catch (_) {}
-      }
+      await telegramDeleteMany(ctx, chatId, prev);
     }
     const nextCompleted = [...completed, staged];
     const nextTd = clearYandexStagingSessionFields({ ...td, yx, completed_yx: nextCompleted });
@@ -562,11 +555,7 @@ async function yxSendFileStepPrompt(ctx, client, uid, profile, caption, lg) {
   let td = { ...(profile.session_data || {}) };
   const toDel = [...(td.yx_prompt_msg_ids || []), ...(td.yx_preview_msg_ids || [])];
   if (chatId && toDel.length) {
-    for (const mid of toDel) {
-      try {
-        await ctx.telegram.deleteMessage(chatId, mid);
-      } catch (_) {}
-    }
+    await telegramDeleteMany(ctx, chatId, toDel);
   }
   td.yx_prompt_msg_ids = [];
   td.yx_preview_msg_ids = [];
@@ -877,11 +866,7 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   const chatId = ctx.chat?.id;
   const promptIds = [...(td.yx_prompt_msg_ids || [])];
   if (chatId && promptIds.length) {
-    for (const mid of promptIds) {
-      try {
-        await ctx.telegram.deleteMessage(chatId, mid);
-      } catch (_) {}
-    }
+    await telegramDeleteMany(ctx, chatId, promptIds);
   }
 
   const nextTd = { ...td, yx, completed_yx: completed };
