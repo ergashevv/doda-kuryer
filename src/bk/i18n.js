@@ -344,8 +344,11 @@ const BK_STRINGS = {
       "Moskva yoki Moskva viloyatini pastdagi tugma orqali tanlang.",
     yx_ask_citizen: "Status / fuqaroligingizni pastdagi tugma orqali tanlang.",
     yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
-    yx_ask_kz_doc:
-      "Qozog‘iston yoki Qirg‘iziston fuqarolari: ariza uchun pasport yoki shaxsni tasdiqlovchi guvohnoma (ID). Turini pastdagi tugma orqali tanlang.",
+    yx_ask_kz_doc_kz:
+      "Qozog‘iston fuqarosi — keyingi qadamni pastdagi tugmalar bilan tanlang.",
+    yx_ask_kz_doc_kg:
+      "Qirg‘iziston fuqarosi — keyingi qadamni pastdagi tugmalar bilan tanlang.",
+    yx_ask_kz_doc_neutral: "Keyingi qadamni pastdagi tugmalar bilan tanlang.",
     yx_ask_tm_visa:
       "Qaysi turdagi viza bilan? Pastdagi tugmalardan tanlang: turizm yoki ishchi viza.",
 
@@ -364,7 +367,7 @@ const BK_STRINGS = {
     yx_doc_student: "Talaba",
 
     yx_kz_pass: "Pasport",
-    yx_kz_id: "Shaxsni tasdiqlovchi guvohnoma",
+    yx_kz_id: "ID (shaxs guvohnomasi)",
 
     yx_tm_work: "Ishchi viza",
     yx_tm_tourism: "Turizm viza",
@@ -474,6 +477,8 @@ const BK_STRINGS = {
   },
 
   ru: {
+    start_thanks_courier: "Благодарим за обращение в Дода Курьер 👑",
+    start_pick_language: "Выберите язык 👇",
     pick_language: "Выберите язык:",
     err_pick_lang: "Пожалуйста, выбери язык кнопкой ниже.",
 
@@ -820,8 +825,11 @@ const BK_STRINGS = {
       "Укажите Москву или Московскую область кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc:
-      "Гражданам Казахстана и Кыргызстана: для заявки нужен паспорт или удостоверение личности (ID). Выберите тип кнопкой ниже.",
+    yx_ask_kz_doc_kz:
+      "Гражданину Казахстана: выберите вариант кнопкой ниже.",
+    yx_ask_kz_doc_kg:
+      "Гражданину Кыргызстана: выберите вариант кнопкой ниже.",
+    yx_ask_kz_doc_neutral: "Выберите вариант кнопкой ниже.",
     yx_ask_tm_visa:
       "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
 
@@ -840,7 +848,7 @@ const BK_STRINGS = {
     yx_doc_student: "Студент",
 
     yx_kz_pass: "Паспорт",
-    yx_kz_id: "Удостоверение личности",
+    yx_kz_id: "Удостоверение личности (ID)",
 
     yx_tm_work: "Рабочая виза",
     yx_tm_tourism: "Туристическая виза",
@@ -1213,8 +1221,11 @@ const BK_STRINGS = {
       "Москва же Москванын областин төмөнкү баскыч менен тандаңыз.",
     yx_ask_citizen: "Статус / жарандыгыңызды төмөнкү баскыч менен тандаңыз.",
     yx_ask_uz_doc: "Тастыктоочу документтин түрүн тандаңыз.",
-    yx_ask_kz_doc:
-      "Казакстан жана Кыргызстан жарандары үчүн: арыз үчүн паспорт же жеке күбөлүк (ID). Түрүн төмөнкү баскыч менен тандаңыз.",
+    yx_ask_kz_doc_kz:
+      "Казакстан жараны үчүн: төмөнкү баскыч менен тандаңыз.",
+    yx_ask_kz_doc_kg:
+      "Кыргызстан жараны үчүн: төмөнкү баскыч менен тандаңыз.",
+    yx_ask_kz_doc_neutral: "Төмөнкү баскыч менен тандаңыз.",
     yx_ask_tm_visa:
       "Кайсы түрдөгү виза? Төмөнкү баскычтардан тандаңыз: туризм же иш визасы.",
 
@@ -1233,7 +1244,7 @@ const BK_STRINGS = {
     yx_doc_student: "Студент",
 
     yx_kz_pass: "Паспорт",
-    yx_kz_id: "Жеке күбөлүк",
+    yx_kz_id: "ID (жеке күбөлүк)",
 
     yx_tm_work: "Жумушчу виза",
     yx_tm_tourism: "Туризм визасы",
@@ -1607,8 +1618,11 @@ const BK_STRINGS = {
       "Укажите Москву или Московскую область кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_ask_uz_doc: "Выберите тип подтверждающего документа.",
-    yx_ask_kz_doc:
-      "Гражданам Казахстана и Кыргызстана: для заявки нужен паспорт или удостоверение личности (ID). Выберите тип кнопкой ниже.",
+    yx_ask_kz_doc_kz:
+      "Гражданину Казахстана: выберите вариант кнопкой ниже.",
+    yx_ask_kz_doc_kg:
+      "Гражданину Кыргызстана: выберите вариант кнопкой ниже.",
+    yx_ask_kz_doc_neutral: "Выберите вариант кнопкой ниже.",
     yx_ask_tm_visa:
       "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
 
@@ -1627,7 +1641,7 @@ const BK_STRINGS = {
     yx_doc_student: "Студент",
 
     yx_kz_pass: "Паспорт",
-    yx_kz_id: "Удостоверение личности",
+    yx_kz_id: "Удостоверение личности (ID)",
 
     yx_tm_work: "Рабочая виза",
     yx_tm_tourism: "Туристическая виза",
@@ -1753,6 +1767,18 @@ export function tBK(lang, key, kwargs = {}) {
     return key;
   }
   return interpolate(String(val), kwargs);
+}
+
+/** KZ/KG hujjat turi qadami: faqat tanlangan davlat; pasport/ID farqi tugmalarda. */
+export function yxAskKzDocPrompt(lang, citizen) {
+  const lg = normalizeBKLang(lang);
+  const subKey =
+    citizen === "kz"
+      ? "yx_ask_kz_doc_kz"
+      : citizen === "kg"
+        ? "yx_ask_kz_doc_kg"
+        : "yx_ask_kz_doc_neutral";
+  return tBK(lg, subKey);
 }
 
 /** Функция-ключлар: confirm_phone, confirm_category, confirm_city, confirm_citizenship, confirm_thermal */

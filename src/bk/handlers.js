@@ -13,6 +13,7 @@ import {
   tBK,
   tBKfn,
 } from "./i18n.js";
+import { buildBkStartLanguagePrompt } from "./telegramLocalTime.js";
 import { normalizeLang, t } from "../i18n.js";
 import { logChat, logChatDeferred } from "../services/chatLog.js";
 import {
@@ -505,7 +506,7 @@ export function registerBkHandlers(bot) {
     if (!uid || !ctx.message) return;
     console.log(new Date().toISOString(), "[bk] /start received", uid);
     try {
-      const pick = tBK("ru", "pick_language");
+      const pick = buildBkStartLanguagePrompt(ctx.from);
       const kb = languagePickKb();
       await withTransaction(async (client) => {
         await resetRegistration(client, uid);

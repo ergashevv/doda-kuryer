@@ -9,7 +9,7 @@ import {
   mainMenuInline,
   replyRemoveWithInline,
 } from "./keyboards.js";
-import { normalizeBKLang, tBK } from "./i18n.js";
+import { normalizeBKLang, tBK, yxAskKzDocPrompt } from "./i18n.js";
 import {
   YX_EATS,
   YX_LAVKA,
@@ -618,7 +618,10 @@ export async function promptYandexStep(ctx, client, uid, profile) {
   }
   if (st.ui === "kz_doc") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxReplyOptions(yxKzDocInline(lg)))
+      ctx.reply(
+        yxAskKzDocPrompt(lg, yx.citizen),
+        yxReplyOptions(yxKzDocInline(lg))
+      )
     );
     return;
   }
