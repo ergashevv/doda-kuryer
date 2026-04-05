@@ -94,9 +94,7 @@ const BK_STRINGS = {
     btn_vehicle_foreign_tech: "Chet eldan ro'yxatdan o'tgan",
 
     confirm_vehicle_rf: (rf) =>
-      rf
-        ? "Rossiyada hisob — keyingi qadamda STS rasmi."
-        : "Chet el TS — avval texpasport old tomoni, keyin orqa tomoni rasmlari.",
+      rf ? "Rossiyada ro'yxatdan o'tgan" : "Chet eldan ro'yxatdan o'tgan",
 
     summary_vehicle_rf: "Rossiya — STS",
     summary_vehicle_foreign: "Chet el TS — texpasport (old/orqa)",
@@ -573,7 +571,7 @@ const BK_STRINGS = {
     cat_bike: "🚲 Велосипед",
     cat_foot: "🚶 Пешая доставка",
 
-    confirm_category: (label) => `Ты выбрал выполнять заказы в категории ${label}`,
+    confirm_category: (label) => `Категория: ${label}`,
 
     ask_vehicle_rf: "Где зарегистрирован транспорт?",
 
@@ -581,16 +579,14 @@ const BK_STRINGS = {
     btn_vehicle_foreign_tech: "Иностранное",
 
     confirm_vehicle_rf: (rf) =>
-      rf
-        ? "Учёт в РФ — далее загрузим фото СТС."
-        : "Иностранное ТС — далее два фото техпаспорта: лицевая сторона, затем оборот.",
+      rf ? "Учёт в РФ" : "Иностранное ТС",
 
     ask_city:
-      "В каком городе будешь выполнять заказы? Можешь нажать кнопку или написать город текстом. Если городов несколько — укажи основной.",
+      "В каком городе будешь выполнять заказы?",
 
     err_city_need_text: "Напиши название города текстом, без фото.",
 
-    confirm_city: (city) => `Ты выбрал выполнять заказы в городе ${city}`,
+    confirm_city: (city) => `Город: ${city}`,
 
     ask_citizenship: (cat) =>
       cat === "car"
@@ -1066,9 +1062,7 @@ const BK_STRINGS = {
     btn_vehicle_foreign_tech: "🌍 ТС хориҷӣ — техпаспорт (рӯй + пушт)",
 
     confirm_vehicle_rf: (rf) =>
-      rf
-        ? "Ба қайд дар РФ — баъд акси СТС."
-        : "ТС хориҷӣ — аввал рӯи техпаспорт, баъд пушт.",
+      rf ? "Ба қайд дар РФ" : "ТС хориҷӣ",
 
     summary_vehicle_rf: "РФ — СТС",
     summary_vehicle_foreign: "ТС хориҷӣ — техпаспорт",
@@ -1464,9 +1458,7 @@ const BK_STRINGS = {
     btn_vehicle_foreign_tech: "🌍 Чет өлкө ТС — техпаспорт (алд + арт)",
 
     confirm_vehicle_rf: (rf) =>
-      rf
-        ? "Россияда эсеп — кийинки кадамда СТС сүрөтү."
-        : "Чет өлкө ТС — алды менен техпаспорттун алдыңкы бети, андан кийин арткы бет.",
+      rf ? "Россияда каттоо" : "Чет өлкө ТС",
 
     summary_vehicle_rf: "Россия — СТС",
     summary_vehicle_foreign: "Чет өлкө ТС — техпаспорт",
