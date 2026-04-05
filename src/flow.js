@@ -48,7 +48,8 @@ export const DODA_UPLOAD_DOC_KEYS = new Set([
   "tech_passport_front",
   "tech_passport_back",
   "reg_amina",
-  "passport",
+  "passport_front",
+  "passport_back",
 ]);
 
 export function isDodaUploadDocKey(key) {
@@ -82,7 +83,7 @@ export function dodaDocSequence(categoryKey, bk = {}) {
     if (categoryKey === "truck") {
       seq.push("truck_dimensions", "truck_payload", "truck_branding");
     }
-    seq.push("passport");
+    seq.push("passport_front", "passport_back");
     return seq;
   }
 
@@ -96,7 +97,7 @@ export function dodaDocSequence(categoryKey, bk = {}) {
         seq.push("reg_amina", "moy_nalog_phone");
       }
     }
-    seq.push("license", "passport");
+    seq.push("license", "passport_front", "passport_back");
     return seq;
   }
 
@@ -110,7 +111,7 @@ export function dodaDocSequence(categoryKey, bk = {}) {
         seq.push("reg_amina", "moy_nalog_phone");
       }
     }
-    seq.push("passport");
+    seq.push("passport_front", "passport_back");
     return seq;
   }
 
@@ -123,7 +124,7 @@ export function dodaDocSequence(categoryKey, bk = {}) {
       seq.push("reg_amina", "moy_nalog_phone");
     }
   }
-  seq.push("passport");
+  seq.push("passport_front", "passport_back");
   return seq;
 }
 

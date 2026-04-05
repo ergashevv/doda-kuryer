@@ -456,21 +456,35 @@ async function promptDodaDocStep(ctx, client, uid, profile, docKey, errPrefix = 
     await bkReplyStep(ctx, client, uid, profile, c(tBK(lg, "ask_vehicle_rf")), vehicleRfInline(lg));
     return;
   }
-  if (docKey === "passport") {
-    await updateProfile(client, uid, { session_state: "bk_doc_passport" });
+  if (docKey === "passport_front") {
+    await updateProfile(client, uid, { session_state: "bk_doc_passport_front" });
     profile = await ensureProfile(client, uid);
     const bk = profile.session_data?.bk || {};
-    const legal =
+    const label =
       bk.categoryKey === "bike" || bk.categoryKey === "foot"
-        ? tBK(lg, "passport_legal_block_bike")
-        : tBK(lg, "passport_legal_block");
-    const legalCap = c(legal);
-    const p = resolvePlaceholderPath("passport");
+        ? tBK(lg, "ask_passport_front_bike")
+        : tBK(lg, "ask_passport_front");
+    const labelCap = c(label);
+    const p = resolvePlaceholderPath("passport_front");
     await bkSendStepMessage(ctx, client, uid, profile, async () => {
       if (p && fs.existsSync(p)) {
-        return await ctx.replyWithPhoto({ source: p }, { caption: legalCap });
+        return await ctx.replyWithPhoto({ source: p }, { caption: labelCap });
       }
-      return await ctx.reply(legalCap);
+      return await ctx.reply(labelCap);
+    });
+    return;
+  }
+  if (docKey === "passport_back") {
+    await updateProfile(client, uid, { session_state: "bk_doc_passport_back" });
+    profile = await ensureProfile(client, uid);
+    const label = tBK(lg, "ask_passport_back");
+    const labelCap = c(label);
+    const p = resolvePlaceholderPath("passport_back");
+    await bkSendStepMessage(ctx, client, uid, profile, async () => {
+      if (p && fs.existsSync(p)) {
+        return await ctx.replyWithPhoto({ source: p }, { caption: labelCap });
+      }
+      return await ctx.reply(labelCap);
     });
   }
 }
@@ -481,7 +495,8 @@ const DOC_PENDING_STATE = {
   bk_doc_tech_passport_front: "tech_passport_front",
   bk_doc_tech_passport_back: "tech_passport_back",
   bk_doc_reg_amina: "reg_amina",
-  bk_doc_passport: "passport",
+  bk_doc_passport_front: "passport_front",
+  bk_doc_passport_back: "passport_back",
 };
 
 const DOC_OK_STATE = {
@@ -490,7 +505,8 @@ const DOC_OK_STATE = {
   bk_doc_tech_passport_front_ok: "tech_passport_front",
   bk_doc_tech_passport_back_ok: "tech_passport_back",
   bk_doc_reg_amina_ok: "reg_amina",
-  bk_doc_passport_ok: "passport",
+  bk_doc_passport_front_ok: "passport_front",
+  bk_doc_passport_back_ok: "passport_back",
 };
 
 /** Ketma-ketlik: til → asosiy menyu → (FAQ | ro‘yxatdan o‘tish) → telefon → kategoriya → shahar → fuqarolik → termokorob → hujjatlar → ko‘rib chiqish → yuborish */
@@ -1966,6 +1982,12 @@ export function registerBkHandlers(bot) {
           cap = tBK(lg, "confirm_tech_passport_back");
         } else if (docKeyFromState === "reg_amina") {
           cap = tBK(lg, "confirm_reg_amina_uploaded");
+        } else if (docKeyFromState === "passport_front") {
+          cap = tBK(lg, "confirm_passport_front_uploaded");
+          markup = passportConfirmKb(lg);
+        } else if (docKeyFromState === "passport_back") {
+          cap = tBK(lg, "confirm_passport_back_uploaded");
+          markup = passportConfirmKb(lg);
         } else {
           cap = `${tBK(lg, "confirm_passport_uploaded")}\n\n${tBK(lg, "doc_line_passport_spread")}`;
           markup = passportConfirmKb(lg);

@@ -97,24 +97,24 @@ const BK_STRINGS = {
       rf ? "Rossiyada ro'yxatdan o'tgan" : "Chet eldan ro'yxatdan o'tgan",
 
     summary_vehicle_rf: "Rossiya — STS",
-    summary_vehicle_foreign: "Chet el TS — texpasport (old/orqa)",
+    summary_vehicle_foreign: "Chet el transporti — texpasport",
 
     btn_continue: "Davom etish 👉",
 
     ask_license_front:
-      "Haydovchilik guvohnomasi (VU) — old tomonidan bitta foto yuboring.",
+      "Haydovchilik guvohnomasi  — old tomonidan bitta foto yuboring.",
 
     confirm_license_uploaded:
       "✅ VU foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
 
     ask_sts_front:
-      "Transport vositasi ro'yxatdan o'tkazilganligi to'g'risidagi guvohnoma (STS) — bitta foto: barcha yozuvlar aniq ko'rinadigan qilib yuboring (odatda yoyma yoki asosiy bet).",
+      "Transport vositasi ro'yxatdan o'tkazilganligi to'g'risidagi guvohnoma (STS) — bitta foto: barcha yozuvlar aniq ko'rinadigan qilib yuboring (odatda asosiy bet).",
 
     ask_tech_passport_front:
-      "Chet el TS texpasporti — OLD tomoni (bitta foto).",
+      "Chet elda ro'yxatdan o'tgan transport texpasporti — OLD tomoni (bitta foto).",
 
     ask_tech_passport_back:
-      "Chet el TS texpasporti — ORQA tomoni (bitta foto).",
+      "Chet elda ro'yxatdan o'tgan transport texpasporti — ORQA tomoni (bitta foto).",
 
     confirm_tech_passport_front:
       "✅ Texpasport old tomoni qabul qilindi\n\nO'qilishini tekshiring, «Davom etish 👉» yoki boshqa foto.",
@@ -243,14 +243,17 @@ const BK_STRINGS = {
     },
 
     ask_truck_branding: "Avtomobilda brending (yopish) bormi?",
-    confirm_truck_branding: (yes) =>
-      `Brending: ${yes ? "Ha" : "Yo'q"}`,
+    ask_passport_front: "Pasportning rasm bor varag'ini (old tomoni) yuboring",
+    ask_passport_front_bike: "Pasportning rasm bor varag'ini (old tomoni) yuboring",
+    ask_passport_back: "Pasportning propiska (registratsiya) varag'ini yuboring",
 
-    passport_legal_block: "Pasport varag'ini (yoyma) foto yuboring",
-    passport_legal_block_bike: "Pasport varag'ini (yoyma) foto yuboring",
-    confirm_passport_uploaded:
-      "✅ Foto qabul qilindi\n\n«Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
-    doc_line_passport_spread: "✅ Pasport yoymasi Media (1 dona)",
+    confirm_passport_front_uploaded:
+      "✅ Pasportning rasm bor varianti qabul qilindi\n\n«Davom etish 👉»ni bosing yoki boshqasini yuboring.",
+    confirm_passport_back_uploaded:
+      "✅ Pasportning propiska varianti qabul qilindi\n\n«Davom etish 👉»ni bosing yoki boshqasini yuboring.",
+
+    doc_line_passport_front: "✅ Pasport (foto)",
+    doc_line_passport_back: "✅ Pasport (propiska)",
 
     summary_titles: {
       phone: "Telefon",
@@ -258,6 +261,8 @@ const BK_STRINGS = {
       city: "Shahar",
       citizenship: "Fuqarolik",
       thermal: "Termokorob",
+      passport_front: "Pasport (foto)",
+      passport_back: "Pasport (propiska)",
       passport_foreign: "Chet el pasporti",
       passport_rf: "Pasport",
       passport: "Pasport",
@@ -713,14 +718,17 @@ const BK_STRINGS = {
     confirm_truck_branding: (yes) =>
       `Вы указали наличие оклейки: ${yes ? "Да" : "Нет"}`,
 
-    passport_legal_block: "Отправь фото разворота паспорта",
+    ask_passport_front: "Отправь фото разворота паспорта (страница с фото)",
+    ask_passport_front_bike: "Отправь фото разворота паспорта (страница с фото)",
+    ask_passport_back: "Отправь фото паспорта (страница с регистрацией)",
 
-    passport_legal_block_bike: "Отправь фото разворота паспорта",
+    confirm_passport_front_uploaded:
+      "✅ Фото паспорта (разворот) получено\n\nнажми «Продолжить 👉» или отправь другое фото",
+    confirm_passport_back_uploaded:
+      "✅ Фото регистрации получено\n\nнажmi «Продолжить 👉» или отправь другое фото",
 
-    confirm_passport_uploaded:
-      "✅ Фото загружено\n\nнажми кнопку «Продолжить 👉»\n\nлибо отправь другое фото, если хочешь заменить",
-
-    doc_line_passport_spread: "✅ Фото разворота паспорта Медиа (1 шт.)",
+    doc_line_passport_front: "✅ Паспорт (фото)",
+    doc_line_passport_back: "✅ Паспорт (регистрация)",
 
     final_wait_intro:
       "Отлично!\n\nМенеджеры уже готовят твой аккаунт – 20 минут и все будет в лучшем виде 👌\nПо завершении регистрации ты получишь здесь сообщение с дальнейшей инструкцией",
@@ -774,6 +782,8 @@ const BK_STRINGS = {
       sts: "СТС",
       tech_passport_front: "Техпаспорт (лицевая)",
       tech_passport_back: "Техпаспорт (оборот)",
+      passport_front: "Паспорт (фото)",
+      passport_back: "Паспорт (регистрация)",
     },
 
     summary_yes: "Да",
@@ -816,6 +826,8 @@ const BK_STRINGS = {
     group_caption_tech_passport_back:
       "Техпаспорт — оборот",
     group_caption_passport: "Паспорт",
+    group_caption_passport_front: "Паспорт — фото",
+    group_caption_passport_back: "Паспорт — регистрация",
     group_caption_bank: "Банковские реквизиты",
     group_truck_kg: "{value} кг",
     group_truck_loader_word_0: "ни одного",
@@ -1160,6 +1172,8 @@ const BK_STRINGS = {
       city: "Шаҳр",
       citizenship: "Шаҳрвандии РФ",
       thermal: "Термокороб",
+      passport_front: "Паспорт (акс)",
+      passport_back: "Паспорт (регистратсия)",
       passport_foreign: "Паспорти хориҷӣ",
       passport_rf: "Паспорт",
       passport: "Паспорт",
@@ -1560,6 +1574,8 @@ const BK_STRINGS = {
       city: "Шаар",
       citizenship: "РФ жарандыгы",
       thermal: "Термокороб",
+      passport_front: "Паспорт (сүрөт)",
+      passport_back: "Паспорт (каттоо)",
       passport_foreign: "Чет өлкө паспорту",
       passport_rf: "Паспорт",
       passport: "Паспорт",
@@ -1934,14 +1950,11 @@ export function buildBkSummaryI18n(lang, profile) {
     }
   }
 
-  if (completed.includes("passport")) {
-    const passportTitle =
-      bk.categoryKey === "bike"
-        ? summaryTitle(lg, "bike_passport")
-        : bk.rfCitizen === false
-          ? summaryTitle(lg, "passport_foreign")
-          : summaryTitle(lg, "passport_rf");
-    lines.push(`${n++}. ${passportTitle}: ${tBK(lg, "summary_passport_media")}`);
+  if (completed.includes("passport_front")) {
+    lines.push(`${n++}. ${summaryTitle(lg, "passport_front")}: ${tBK(lg, "summary_passport_media")}`);
+  }
+  if (completed.includes("passport_back")) {
+    lines.push(`${n++}. ${summaryTitle(lg, "passport_back")}: ${tBK(lg, "summary_passport_media")}`);
   }
   return lines.join("\n");
 }
