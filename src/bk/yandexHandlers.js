@@ -4,7 +4,11 @@ import { downloadTelegramFile } from "../services/storage.js";
 import { ensureProfile, updateProfile } from "../services/users.js";
 import { isAllowedDocumentMime } from "./media.js";
 import { normalizeRussianPhone } from "./phone.js";
-import { categoryInline, mainMenuReply } from "./keyboards.js";
+import {
+  categoryInline,
+  mainMenuInline,
+  replyRemoveWithInline,
+} from "./keyboards.js";
 import { normalizeBKLang, tBK } from "./i18n.js";
 import {
   YX_EATS,
@@ -35,13 +39,7 @@ function lgOf(profile) {
  * Logda ko‘rinadigan 409 Conflict ko‘pincha ikki+ polling instance; UI ham yordam beradi.
  */
 export function yxReplyOptions(markupFromTelegraf) {
-  const ik = markupFromTelegraf?.reply_markup?.inline_keyboard;
-  return {
-    reply_markup: {
-      remove_keyboard: true,
-      ...(ik ? { inline_keyboard: ik } : {}),
-    },
-  };
+  return replyRemoveWithInline(markupFromTelegraf);
 }
 
 export function yxReplyOptionsTextOnly() {
@@ -131,8 +129,10 @@ function yxStagedInline(lg) {
   ]);
 }
 
-function yxEditOnlyReply(lg) {
-  return Markup.keyboard([[tBK(lg, "edit_btn")]]).resize().oneTime();
+function yxEditOnlyInline(lg) {
+  return Markup.inlineKeyboard([
+    [Markup.button.callback(tBK(lg, "edit_btn"), "bk_YX:yxedit")],
+  ]);
 }
 
 export function yxSubmitReply(lang) {
@@ -256,11 +256,11 @@ export async function deleteYxUploads(client, uid) {
   );
 }
 
-function yxWizardReplyForUi(lg, ui) {
-  if (ui === "city") return yxCityReply(lg);
-  if (ui === "citizen") return yxCitizenReply(lg);
-  if (ui === "uz_doc") return yxUzDocReply(lg);
-  if (ui === "kz_doc") return yxKzDocReply(lg);
+function yxWizardInlineForUi(lg, ui) {
+  if (ui === "city") return yxCityInline(lg);
+  if (ui === "citizen") return yxCitizenInline(lg);
+  if (ui === "uz_doc") return yxUzDocInline(lg);
+  if (ui === "kz_doc") return yxKzDocInline(lg);
   return null;
 }
 
@@ -520,7 +520,7 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     if (raw === "tourism") {
       const blocked = tBK(lg, "yx_tm_tourism_blocked");
       await bkSendStepMessage(ctx, client, uid, profile, () =>
-        ctx.reply(blocked, yxReplyKeyboardOpts(yxTmVisaKindReply(lg)))
+        ctx.reply(blocked, yxReplyOptions(yxTmVisaKindInline(lg)))
       );
       return true;
     }
@@ -561,7 +561,7 @@ async function yxSendFileStepPrompt(ctx, client, uid, profile, caption, lg) {
   td.yx_preview_msg_ids = [];
   await updateProfile(client, uid, { session_data: td });
   profile = await ensureProfile(client, uid);
-  const sent = await ctx.reply(caption, yxReplyKeyboardOpts(yxEditOnlyReply(lg)));
+  const sent = await ctx.reply(caption, yxReplyOptions(yxEditOnlyInline(lg)));
   const ids = bkCollectMessageIds(sent);
   await updateProfile(client, uid, { session_data_patch: { yx_prompt_msg_ids: ids } });
 }
@@ -598,31 +598,31 @@ export async function promptYandexStep(ctx, client, uid, profile) {
 
   if (st.ui === "city") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, "yx_ask_city"), yxReplyKeyboardOpts(yxCityReply(lg)))
+      ctx.reply(tBK(lg, "yx_ask_city"), yxReplyOptions(yxCityInline(lg)))
     );
     return;
   }
   if (st.ui === "citizen") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, "yx_ask_citizen"), yxReplyKeyboardOpts(yxCitizenReply(lg)))
+      ctx.reply(tBK(lg, "yx_ask_citizen"), yxReplyOptions(yxCitizenInline(lg)))
     );
     return;
   }
   if (st.ui === "uz_doc") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, "yx_ask_uz_doc"), yxReplyKeyboardOpts(yxUzDocReply(lg)))
+      ctx.reply(tBK(lg, "yx_ask_uz_doc"), yxReplyOptions(yxUzDocInline(lg)))
     );
     return;
   }
   if (st.ui === "kz_doc") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxReplyKeyboardOpts(yxKzDocReply(lg)))
+      ctx.reply(tBK(lg, "yx_ask_kz_doc"), yxReplyOptions(yxKzDocInline(lg)))
     );
     return;
   }
   if (st.ui === "none") {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg))
+      ctx.reply(tBK(lg, "use_menu"), yxReplyOptions(mainMenuInline(lg)))
     );
     return;
   }
@@ -642,10 +642,10 @@ export async function promptYandexStep(ctx, client, uid, profile) {
     const cap = tBK(lg, st.step.promptKey);
     const kb =
       st.step.choiceId === "visa_kind"
-        ? yxTmVisaKindReply(lg)
-        : yxRamReply(lg);
+        ? yxTmVisaKindInline(lg)
+        : yxRamInline(lg);
     await bkSendStepMessage(ctx, client, uid, profile, () =>
-      ctx.reply(cap, yxReplyKeyboardOpts(kb))
+      ctx.reply(cap, yxReplyOptions(kb))
     );
     return;
   }
@@ -656,7 +656,7 @@ export async function promptYandexStep(ctx, client, uid, profile) {
       await yxSendFileStepPrompt(ctx, client, uid, profile, cap, lg);
     } else {
       await bkSendStepMessage(ctx, client, uid, profile, () =>
-        ctx.reply(cap, yxReplyKeyboardOpts(yxEditOnlyReply(lg)))
+        ctx.reply(cap, yxReplyOptions(yxEditOnlyInline(lg)))
       );
     }
   }
@@ -748,9 +748,9 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   }
 
   if (st.ui === "city" || st.ui === "citizen" || st.ui === "uz_doc" || st.ui === "kz_doc") {
-    const kb = yxWizardReplyForUi(lg, st.ui);
+    const kb = yxWizardInlineForUi(lg, st.ui);
     if (kb) {
-      await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyKeyboardOpts(kb));
+      await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyOptions(kb));
     } else {
       await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyOptionsTextOnly());
     }
@@ -758,8 +758,10 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   }
   if (st.ui === "step" && st.step.t === "choice") {
     const kb =
-      st.step.choiceId === "visa_kind" ? yxTmVisaKindReply(lg) : yxRamReply(lg);
-    await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyKeyboardOpts(kb));
+      st.step.choiceId === "visa_kind"
+        ? yxTmVisaKindInline(lg)
+        : yxRamInline(lg);
+    await ctx.reply(tBK(lg, "yx_use_buttons"), yxReplyOptions(kb));
     return true;
   }
 
@@ -769,7 +771,7 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   }
   if (st.ui !== "step" || !st.step) {
     if (st.ui === "none") {
-      await ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg));
+      await ctx.reply(tBK(lg, "use_menu"), yxReplyOptions(mainMenuInline(lg)));
     }
     return true;
   }
@@ -777,9 +779,9 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   const step = st.step;
   const fileStepKb =
     step.t === "photo" || step.t === "video" || step.t === "doc"
-      ? yxReplyKeyboardOpts(yxEditOnlyReply(lg))
+      ? yxReplyOptions(yxEditOnlyInline(lg))
       : yxReplyOptionsTextOnly();
-  const textStepKb = yxReplyKeyboardOpts(yxEditOnlyReply(lg));
+  const textStepKb = yxReplyOptions(yxEditOnlyInline(lg));
 
   if (
     step.t !== "text" &&

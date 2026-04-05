@@ -41,9 +41,10 @@ import {
   editOnly,
   faqMenu,
   languagePickKb,
-  mainMenuReply,
+  mainMenuInline,
   passportConfirmKb,
-  phoneStepReply,
+  phoneStepInline,
+  replyRemoveWithInline,
   reviewKb,
   selfEmployedInline,
   truckBrandingInline,
@@ -58,7 +59,8 @@ import {
   isYandexSubmitButtonText,
   matchBkServiceText,
   promptYandexStep,
-  servicePickReply,
+  servicePickInline,
+  yxReplyOptions,
   yxReviewSendOptions,
 } from "./yandexHandlers.js";
 import {
@@ -89,6 +91,65 @@ function bkPayload(profile) {
 
 function langOf(profile) {
   return normalizeBKLang(profile?.language);
+}
+
+const BK_MAIN_MENU_PARK_STATES = new Set(["bk_main", "bk_yx", "bk_yx_review"]);
+
+/**
+ * Asosiy menyu: `in` | `out` | `support` (matn yoki `bk_M:*` callback).
+ * @param {'in'|'out'|'support'} intent
+ */
+async function executeBkMainMenuIntent(ctx, client, uid, profile, intent, userLogLine) {
+  const lg = langOf(profile);
+  const state = profile.session_state;
+
+  if (intent === "support") {
+    await logChat(client, uid, "user", userLogLine);
+    await logChat(client, uid, "assistant", tBK(lg, "support"));
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "support"), replyRemoveWithInline(mainMenuInline(lg)))
+    );
+    return true;
+  }
+
+  if (!BK_MAIN_MENU_PARK_STATES.has(state)) return false;
+
+  if (intent === "in") {
+    await updateProfile(client, uid, { session_state: "bk_faq" });
+    await logChat(client, uid, "user", userLogLine);
+    await logChat(client, uid, "assistant", tBK(lg, "faq_intro"));
+    const p2 = await ensureProfile(client, uid);
+    await sendBkPlaceholderStep(ctx, client, uid, p2, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
+    return true;
+  }
+
+  if (intent === "out") {
+    await logChat(client, uid, "user", userLogLine);
+    if (!profile.phone) {
+      const td0 = { ...(profile.session_data || {}) };
+      const bk0 = { ...(td0.bk || {}) };
+      bk0.afterPhone = "service";
+      td0.bk = bk0;
+      await updateProfile(client, uid, {
+        session_state: "bk_phone",
+        session_data: td0,
+      });
+      await logChat(client, uid, "assistant", "[ask_phone service]");
+      const p2 = await ensureProfile(client, uid);
+      await sendBkAskPhonePrompt(ctx, client, uid, p2, langOf(p2));
+    } else {
+      await updateProfile(client, uid, { session_state: "bk_service" });
+      await logChat(client, uid, "assistant", "[ask_service]");
+      const p2 = await ensureProfile(client, uid);
+      const lg2 = langOf(p2);
+      await bkSendStepMessage(ctx, client, uid, p2, () =>
+        ctx.reply(tBK(lg2, "ask_service"), yxReplyOptions(servicePickInline(lg2)))
+      );
+    }
+    return true;
+  }
+
+  return false;
 }
 
 /** Yandex ariza tekshiruvidan yuborish (inline callback yoki reply «Yuborish»). */
@@ -143,7 +204,9 @@ async function finalizeYandexReviewSubmit(ctx, uid) {
   try {
     await withTransaction(async (client) => {
       const p = await ensureProfile(client, uid);
-      await bkSendStepMessage(ctx, client, uid, p, () => ctx.reply(tail, mainMenuReply(lg)));
+      await bkSendStepMessage(ctx, client, uid, p, () =>
+        ctx.reply(tail, replyRemoveWithInline(mainMenuInline(lg)))
+      );
       await logChat(client, uid, "assistant", tail);
     });
   } catch (e) {
@@ -426,9 +489,11 @@ async function sendWelcomeAfterLanguage(ctx, client, uid, profile, lang) {
     const cap = capForLog;
     const p = resolvePlaceholderPath("welcome");
     if (p && fs.existsSync(p)) {
-      parts.push(await ctx.replyWithPhoto({ source: p }, { caption: cap, ...mainMenuReply(lg) }));
+      parts.push(
+        await ctx.replyWithPhoto({ source: p }, { caption: cap, ...replyRemoveWithInline(mainMenuInline(lg)) })
+      );
     } else {
-      parts.push(await ctx.reply(cap, mainMenuReply(lg)));
+      parts.push(await ctx.reply(cap, replyRemoveWithInline(mainMenuInline(lg))));
     }
     return parts;
   });
@@ -490,7 +555,15 @@ export function registerBkHandlers(bot) {
       });
       await logChat(client, uid, "user", "/ARENDA");
       await logChat(client, uid, "assistant", arendaText);
-      await sendBkPlaceholderStep(ctx, client, uid, p, "arenda", arendaText, mainMenuReply(lg));
+      await sendBkPlaceholderStep(
+        ctx,
+        client,
+        uid,
+        p,
+        "arenda",
+        arendaText,
+        replyRemoveWithInline(mainMenuInline(lg))
+      );
     });
   });
 
@@ -499,6 +572,45 @@ export function registerBkHandlers(bot) {
     const data = ctx.callbackQuery?.data;
     const uid = ctx.from?.id;
     if (!data || !uid) return;
+
+    if (data.startsWith("bk_P:")) {
+      const sub = data.slice(5);
+      let cbText = null;
+      let cbAlert = false;
+      try {
+        await withTransaction(async (client) => {
+          await syncTelegramInfo(client, uid, ctx.from);
+          const profile = await ensureProfile(client, uid);
+          const lg = langOf(profile);
+          if (profile.session_state !== "bk_phone") {
+            cbText = tBK(lg, "review_callback_stale");
+            cbAlert = true;
+            return;
+          }
+          if (sub === "contact_hint") {
+            cbText = tBK(lg, "phone_contact_via_attachment");
+            cbAlert = true;
+          } else if (sub === "manual") {
+            cbText = tBK(lg, "phone_type_number_cb");
+            cbAlert = false;
+          }
+        });
+      } catch (e) {
+        console.error("[bk] bk_P:", e?.message || e);
+        cbText = "Error";
+        cbAlert = true;
+      }
+      try {
+        const t = cbText != null ? String(cbText).slice(0, 200) : undefined;
+        await ctx.answerCbQuery(
+          t != null ? { text: t, show_alert: cbAlert } : undefined
+        );
+      } catch (e2) {
+        console.warn("[bk] answerCbQuery bk_P:", e2?.message || e2);
+      }
+      return;
+    }
+
     try {
       await ctx.answerCbQuery();
     } catch (e) {
@@ -507,6 +619,21 @@ export function registerBkHandlers(bot) {
 
     if (data === "bk_YR:send") {
       await finalizeYandexReviewSubmit(ctx, uid);
+      return;
+    }
+
+    if (data.startsWith("bk_M:")) {
+      const sub = data.slice(5);
+      if (!["in", "out", "support"].includes(sub)) return;
+      try {
+        await withTransaction(async (client) => {
+          await syncTelegramInfo(client, uid, ctx.from);
+          const profile = await ensureProfile(client, uid);
+          await executeBkMainMenuIntent(ctx, client, uid, profile, sub, `cb:menu_${sub}`);
+        });
+      } catch (e) {
+        console.error("[bk] bk_M:", e?.stack || e?.message || e);
+      }
       return;
     }
 
@@ -566,7 +693,7 @@ export function registerBkHandlers(bot) {
           await logChat(client, uid, "user", "faq:back");
           profile = await ensureProfile(client, uid);
           await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "main_menu_after_faq"), mainMenuReply(lg))
+            ctx.reply(tBK(lg, "main_menu_after_faq"), replyRemoveWithInline(mainMenuInline(lg)))
           );
           return;
         }
@@ -1193,7 +1320,9 @@ export function registerBkHandlers(bot) {
           const tail = buildBkFinalWait(lg, link);
           await logChat(client, uid, "assistant", tail);
           profile = await ensureProfile(client, uid);
-          await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(tail, mainMenuReply(lg)));
+          await bkSendStepMessage(ctx, client, uid, profile, () =>
+            ctx.reply(tail, replyRemoveWithInline(mainMenuInline(lg)))
+          );
           return;
         }
         if (rest.startsWith("e:")) {
@@ -1492,54 +1621,19 @@ export function registerBkHandlers(bot) {
       const menuSupport = tBK(lg, "btn_support");
 
       if (text === menuSupport) {
-        await logChat(client, uid, "user", text);
-        await logChat(client, uid, "assistant", tBK(lg, "support"));
-        await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "support"), mainMenuReply(lg))
-        );
+        await executeBkMainMenuIntent(ctx, client, uid, profile, "support", text);
         markConsumed();
         return;
       }
 
-      const mainMenuParkStates = new Set([
-        "bk_main",
-        "bk_yx",
-        "bk_yx_review",
-      ]);
-      if (mainMenuParkStates.has(state) && text === menuIn) {
-        await updateProfile(client, uid, { session_state: "bk_faq" });
-        await logChat(client, uid, "user", text);
-        await logChat(client, uid, "assistant", tBK(lg, "faq_intro"));
-        profile = await ensureProfile(client, uid);
-        await sendBkPlaceholderStep(ctx, client, uid, profile, "faq", tBK(lg, "faq_intro"), faqMenu(lg));
+      if (BK_MAIN_MENU_PARK_STATES.has(state) && text === menuIn) {
+        await executeBkMainMenuIntent(ctx, client, uid, profile, "in", text);
         markConsumed();
         return;
       }
 
-      if (mainMenuParkStates.has(state) && text === menuOut) {
-        await logChat(client, uid, "user", text);
-        if (!profile.phone) {
-          const td0 = { ...(profile.session_data || {}) };
-          const bk0 = { ...(td0.bk || {}) };
-          bk0.afterPhone = "service";
-          td0.bk = bk0;
-          await updateProfile(client, uid, {
-            session_state: "bk_phone",
-            session_data: td0,
-          });
-          await logChat(client, uid, "assistant", "[ask_phone service]");
-          profile = await ensureProfile(client, uid);
-          lg = langOf(profile);
-          await sendBkAskPhonePrompt(ctx, client, uid, profile, lg);
-        } else {
-          await updateProfile(client, uid, { session_state: "bk_service" });
-          await logChat(client, uid, "assistant", "[ask_service]");
-          profile = await ensureProfile(client, uid);
-          lg = langOf(profile);
-          await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
-          );
-        }
+      if (BK_MAIN_MENU_PARK_STATES.has(state) && text === menuOut) {
+        await executeBkMainMenuIntent(ctx, client, uid, profile, "out", text);
         markConsumed();
         return;
       }
@@ -1583,7 +1677,7 @@ export function registerBkHandlers(bot) {
           return;
         }
         await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "ask_service"), yxReplyKeyboardOpts(servicePickReply(lg)))
+          ctx.reply(tBK(lg, "ask_service"), yxReplyOptions(servicePickInline(lg)))
         );
         markConsumed();
         return;
@@ -1891,7 +1985,7 @@ export function registerBkHandlers(bot) {
           await logChat(client, uid, "user", text);
           await logChat(client, uid, "assistant", tBK(lg, "ask_phone_manual_hint"));
           await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "ask_phone_manual_hint"), phoneStepReply(lg))
+            ctx.reply(tBK(lg, "ask_phone_manual_hint"), replyRemoveWithInline(phoneStepInline(lg)))
           );
           markConsumed();
           return;
@@ -1899,7 +1993,7 @@ export function registerBkHandlers(bot) {
         if (msg.photo || msg.document) {
           await logChat(client, uid, "user", "[media at phone step]");
           await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "err_phone_no_media"), phoneStepReply(lg))
+            ctx.reply(tBK(lg, "err_phone_no_media"), replyRemoveWithInline(phoneStepInline(lg)))
           );
           markConsumed();
           return;
@@ -1909,7 +2003,7 @@ export function registerBkHandlers(bot) {
           await logChat(client, uid, "user", text || "[bad phone]");
           await logChat(client, uid, "assistant", tBK(lg, "err_phone_invalid"));
           await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "err_phone_invalid"), phoneStepReply(lg))
+            ctx.reply(tBK(lg, "err_phone_invalid"), replyRemoveWithInline(phoneStepInline(lg)))
           );
           markConsumed();
           return;
@@ -1958,7 +2052,7 @@ export function registerBkHandlers(bot) {
             const m1 = await ctx.reply(cmsg, editOnly(lg, "bk_E:phone"));
             const m2 = await ctx.reply(
               tBK(lg, "ask_service"),
-              yxReplyKeyboardOpts(servicePickReply(lg))
+              yxReplyOptions(servicePickInline(lg))
             );
             return [m1, m2];
           });
@@ -2040,7 +2134,7 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "user", text);
         await logChat(client, uid, "assistant", tBK(lg, "use_menu"));
         await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "use_menu"), mainMenuReply(lg))
+          ctx.reply(tBK(lg, "use_menu"), replyRemoveWithInline(mainMenuInline(lg)))
         );
         markConsumed();
       }

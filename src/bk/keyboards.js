@@ -7,6 +7,17 @@ import {
   tBK,
 } from "./i18n.js";
 
+/** Reply klaviaturani yopib, xabar ostida inline (odatiy bot UX). */
+export function replyRemoveWithInline(markupFromTelegraf) {
+  const ik = markupFromTelegraf?.reply_markup?.inline_keyboard;
+  return {
+    reply_markup: {
+      remove_keyboard: true,
+      ...(ik ? { inline_keyboard: ik } : {}),
+    },
+  };
+}
+
 export function languagePickKb() {
   return Markup.inlineKeyboard([
     [
@@ -20,6 +31,7 @@ export function languagePickKb() {
   ]);
 }
 
+/** Pastki reply menyu (faqat kerak bo‘lsa, masalan maxsus integratsiya). */
 export function mainMenuReply(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.keyboard([
@@ -29,6 +41,30 @@ export function mainMenuReply(lang) {
   ])
     .resize()
     .persistent();
+}
+
+/** Asosiy menyu — inline (`bk_M:in|out|support`). */
+export function mainMenuInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [Markup.button.callback(tBK(lg, "btn_in_park"), "bk_M:in")],
+    [Markup.button.callback(tBK(lg, "btn_not_in_park"), "bk_M:out")],
+    [Markup.button.callback(tBK(lg, "btn_support"), "bk_M:support")],
+  ]);
+}
+
+/** Telefon qadam: kontakt qo‘llanmasi + «raqam yozaman» (`bk_P:contact_hint`, `bk_P:manual`). */
+export function phoneStepInline(lang) {
+  const lg = normalizeBKLang(lang);
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        tBK(lg, "btn_phone_from_telegram"),
+        "bk_P:contact_hint"
+      ),
+    ],
+    [Markup.button.callback(tBK(lg, "btn_phone_manual"), "bk_P:manual")],
+  ]);
 }
 
 /** BK uslubi: kontakt yoki qo‘lda nomer */
