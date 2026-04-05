@@ -324,8 +324,6 @@ const BK_STRINGS = {
     yx_review_use_buttons:
       "Bu bosqichda faqat xabar ostidagi tugmalar ishlaydi (jumladan «✅ Yuborish»).",
 
-    yx_need_video:
-      "Bu bosqichda qisqa video yuboring (video-doira mos kelmaydi).",
 
     group_header_yandex: "🔔 Yangi ariza · Yandex Lavka / Eda",
     group_label_yandex_service: "🛒 Servis:",

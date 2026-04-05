@@ -855,7 +855,7 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   const ex = yxExtractFile(msg, step);
   if (!ex) {
     await ctx.reply(
-      step.t === "video" ? tBK(lg, "yx_need_video") : tBK(lg, "err_doc_need_photo"),
+      tBK(lg, "err_doc_need_photo"),
       fileStepKb
     );
     return true;
