@@ -3,6 +3,11 @@ import { Input } from "telegraf";
 import { getPool } from "../db.js";
 import { normalizeBKLang, tBK } from "../bk/i18n.js";
 
+/** Operatorlar guruhidagi barcha matnlar foydalanuvchi tilidan qat’i nazar rus tilida. */
+function groupNotifyLang() {
+  return normalizeBKLang("ru");
+}
+
 function cap(s, max = 1024) {
   if (!s || s.length <= max) return s || "";
   return `${s.slice(0, max - 3)}...`;
@@ -28,13 +33,13 @@ function docCaptionTitle(lang, docKey) {
 
 /** Rasm ostida faqat [i/n] + номи; исм/username анкета блогида */
 function formatDocCaption(index, total, docKey, profile) {
-  const lg = normalizeBKLang(profile?.language);
+  const lg = groupNotifyLang();
   const title = docCaptionTitle(lg, docKey);
   return cap(`[${index}/${total}] ${title}`);
 }
 
 function formatAnketaBlock(profile) {
-  const lg = normalizeBKLang(profile?.language);
+  const lg = groupNotifyLang();
   const dash = tBK(lg, "group_value_dash");
   const bk = profile?.session_data?.bk || {};
   const name =
@@ -155,7 +160,7 @@ export async function notifyGroupFullSubmission(telegram, profile) {
   const chatId = getDocsGroupChatId();
   if (!chatId || !profile) return;
 
-  const lg = normalizeBKLang(profile.language);
+  const lg = groupNotifyLang();
   const uid = profile.telegram_id;
   const td = profile.session_data || {};
   const completedDocs = td.completed_docs || [];
@@ -223,7 +228,7 @@ export async function notifyGroupFullSubmission(telegram, profile) {
 }
 
 function formatYandexAnketaBlock(profile) {
-  const lg = normalizeBKLang(profile?.language);
+  const lg = groupNotifyLang();
   const dash = tBK(lg, "group_value_dash");
   const yx = profile?.session_data?.yx || {};
   const name =
@@ -258,7 +263,7 @@ function formatYandexAnketaBlock(profile) {
     yx.citizen && citMap[yx.citizen] ? tBK(lg, citMap[yx.citizen]) : yx.citizen || dash;
 
   const lines = [
-    "ANKETA",
+    tBK(lg, "group_anketa_heading"),
     `${tBK(lg, "group_label_name")} ${name}`,
     `${tBK(lg, "group_label_telegram")} ${un}`,
     `${tBK(lg, "group_label_phone")} ${phone}`,
@@ -330,7 +335,7 @@ function yandexDocPromptKey(docType) {
 }
 
 function formatYandexDocCaption(index, total, docKey, profile) {
-  const lg = normalizeBKLang(profile?.language);
+  const lg = groupNotifyLang();
   const promptKey = yandexDocPromptKey(docKey);
   let title = promptKey ? tBK(lg, promptKey) : tBK(lg, "group_caption_yx_generic");
   if (!title || title === promptKey) {
@@ -358,7 +363,7 @@ function formatYandexTextFieldsBlock(profile, lang) {
     parts.push(`${label}: ${v}`);
   }
   if (!parts.length) return "";
-  return ["TEXT", parts.join("\n")].join("\n");
+  return [tBK(lg, "group_yandex_text_heading"), parts.join("\n")].join("\n");
 }
 
 /** Яндекс Лавка / Еда: анкета + вложения yx_* по порядку completed_yx */
@@ -372,7 +377,7 @@ export async function notifyGroupYandexSubmission(telegram, profile) {
     return;
   }
 
-  const lg = normalizeBKLang(profile.language);
+  const lg = groupNotifyLang();
   const uid = profile.telegram_id;
   const td = profile.session_data || {};
   const order = (td.completed_yx || []).filter(
@@ -398,7 +403,7 @@ export async function notifyGroupYandexSubmission(telegram, profile) {
       "",
       formatYandexAnketaBlock(profile),
       "",
-      `DOKUMENTI: ${docsCount}`,
+      `Документы: ${docsCount}`,
     ].join("\n");
     await telegram.sendMessage(chatId, cap(header));
 
