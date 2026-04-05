@@ -14,7 +14,6 @@ import {
   tBKfn,
 } from "./i18n.js";
 import { normalizeLang, t } from "../i18n.js";
-import { communityLinkForCategory } from "./community.js";
 import { logChat, logChatDeferred } from "../services/chatLog.js";
 import {
   notifyGroupFullSubmission,
@@ -1303,13 +1302,11 @@ export function registerBkHandlers(bot) {
           profile = await ensureProfile(client, uid);
           await logChat(client, uid, "user", "review:send");
           await notifyGroupFullSubmission(ctx.telegram, profile);
-          const bk = profile.session_data?.bk || {};
-          const link = communityLinkForCategory(bk.categoryKey);
-          const tail = buildBkFinalWait(lg, link);
+          const tail = buildBkFinalWait(lg);
           await logChat(client, uid, "assistant", tail);
           profile = await ensureProfile(client, uid);
           await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tail, replyRemoveWithInline(mainMenuInline(lg)))
+            ctx.reply(tail, replyRemoveWithInline())
           );
           return;
         }
