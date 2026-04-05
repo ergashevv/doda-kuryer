@@ -7,15 +7,30 @@
 const TEN = /^[3-9]\d{9}$/;
 
 export function normalizeRussianPhone(msg) {
-  let digits = "";
+  let raw = "";
   if (msg.contact?.phone_number) {
-    digits = msg.contact.phone_number.replace(/\D/g, "");
+    raw = msg.contact.phone_number;
   } else if (msg.text) {
-    digits = msg.text.replace(/\D/g, "");
+    raw = msg.text.trim();
   } else {
     return null;
   }
 
+  if (!raw) return null;
+
+  // For text input, we perform stricter validation than just stripping digits.
+  if (msg.text) {
+    // 1. Only allow digits, plus, minus, parenthesis, and space.
+    if (!/^[0-9+\-()\s]+$/.test(raw)) return null;
+
+    // 2. Plus sign can only be at the beginning.
+    if (raw.indexOf("+") > 0) return null;
+
+    // 3. Must end with a digit (reject trailing '-' or '+')
+    if (!/[0-9]$/.test(raw)) return null;
+  }
+
+  const digits = raw.replace(/\D/g, "");
   if (!digits) return null;
 
   let national10;

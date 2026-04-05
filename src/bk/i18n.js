@@ -35,7 +35,7 @@ const BK_STRINGS = {
       "Telegramga biriktirilgan telefon raqamidan foydalanish",
     btn_phone_manual: "Qo'lda kiritaman",
     ask_phone_manual_hint:
-      "Raqamni bitta xabarda yozing: +7… (7 dan keyin 10 raqam), yoki 8…, yoki kodisiz 10 raqam. Faqat RF raqami.",
+      "Raqamni bitta xabarda yozing: +7... Faqat RF raqami.",
     btn_therm_yes: "Ha",
     btn_therm_no: "Yo'q, sotib olish kerak",
     cit_uz: "O'zbekiston",
@@ -47,11 +47,8 @@ const BK_STRINGS = {
 
     city_other_btn: "✏️ Boshqa shahar (matn)",
 
-    welcome_video_missing:
-      "BOGATY KURYER ekotizim botiga xush kelibsiz!\n\nBu yerda kuryerlar uchun daromadni oshirish bo'yicha hamma narsa bor.\n\n⚔️ BK Zaruba\n🏆 BK turniri\n🤝 BK referal dasturi\n👫 BK jamoasi\n📊 Kunlik statistika\n\nTransport yo'q va ijaraga kerak bo'lsa 👉 /ARENDA\n\nAgar hali BOGATY KURYER parkida bo'lmasangiz — eng yaxshi shartlarda bir necha daqiqada ulashamiz 👇",
-
-    welcome_after_video:
-      "BOGATY KURYER ekotizim botiga xush kelibsiz!\n\nBu yerda kuryerlar uchun daromadni oshirish bo'yicha hamma narsa bor.\n\n⚔️ BK Zaruba\n🏆 BK turniri\n🤝 BK referal dasturi\n👫 BK jamoasi\n📊 Kunlik statistika\n\nTransport yo'q va ijaraga kerak bo'lsa 👉 /ARENDA\n\nAgar hali BOGATY KURYER parkida bo'lmasangiz — eng yaxshi shartlarda bir necha daqiqada ulashamiz 👇",
+    welcome_video_missing: "Doda taxi botiga xush kelibsiz!",
+    welcome_after_video: "Doda taxi botiga xush kelibsiz!",
 
     faq_intro: "Allaqachon parkdasan — savolni tanla:",
     faq_back: "◀️ Asosiy menyuga",
@@ -63,7 +60,7 @@ const BK_STRINGS = {
       "Ijara: menejer bilan bog'lanish — Telegramda @{manager}.\n\nQaytish: /start",
 
     ask_phone:
-      "📱 Ariza uchun Rossiya raqamini yozing: +7… yoki 8…, yoki kontakt 📎 (faqat RF).",
+      "📱 Rossiya raqamini yozing: +7... yoki kontakt yuboring.",
 
     ask_phone_keyboard_nudge:
       "👇 Xabar ostidagi tugmalar yoki raqamni matnda yozing.",
@@ -77,7 +74,7 @@ const BK_STRINGS = {
     phone_contact_via_attachment:
       "📎 Skrepka → Kontakt orqali yuboring yoki raqamni matnda yozing (+7…).",
 
-    phone_type_number_cb: "Raqamni chatga yozing: +7… yoki 8…",
+    phone_type_number_cb: "Raqamni yozing: +7...",
 
     confirm_phone: (phone) => `Telefon: ${phone}`,
 
@@ -92,9 +89,7 @@ const BK_STRINGS = {
     confirm_category: (label) => `Tanlangan kategoriya: ${label}`,
 
     ask_vehicle_rf:
-      "🚗 Yengil avto: transport qayerda ro'yxatdan o'tgan?\n\n" +
-      "• Rossiyada (🇷🇺) — STS: odatda bitta foto (barcha maydonlar yaxshi o'qilsin).\n" +
-      "• Chet el transport (🌍) — texpasport: avval old tomoni, keyin orqa tomoni — jami 2 ta alohida foto.",
+      "🚗 Yengil авто: transport qayerda ro'yxatdan o'tgan?",
 
     btn_vehicle_rf_sts: "🇷🇺 Rossiyada ro'yxat — STS",
     btn_vehicle_foreign_tech: "🌍 Chet el TS — texpasport (old + orqa)",
@@ -160,15 +155,15 @@ const BK_STRINGS = {
     confirm_reg_amina_uploaded: "✅ Hujjat qabul qilindi.",
 
     ask_moy_nalog_phone:
-      "Moy nalog programmasi qaysi raqamga registratsiya qilingan? (RF raqami)",
+      "Moy nalog raqamini kiriting.",
     confirm_moy_nalog_phone: (ph) => `Moy nalog telefoni: ${ph}`,
 
-    ask_inn: "INN ni yozing (10–13 raqam).",
+    ask_inn: "INN ni yozing.",
     err_inn_invalid: "INN 10–13 raqamdan iborat bo'lishi kerak.",
     confirm_inn: (inn) => `INN: ${inn}`,
 
     ask_bike_smz_phone:
-      "«Moy nalog» ilovasiga ulangan telefon raqamini yozing (RF: +7… yoki 8…).",
+      "«Moy nalog» telefon raqamini yozing.",
 
     err_bike_smz_phone_invalid:
       "Faqat Rossiya raqami: +7XXXXXXXXXX, 8XXXXXXXXXX yoki 10 raqam.",
@@ -176,7 +171,7 @@ const BK_STRINGS = {
     confirm_bike_smz_phone: (phone) => `«Moy nalog» telefoni: ${phone}`,
 
     ask_bike_smz_address:
-      "To'liq manzilni bitta xabarda yozing: shahar, ko'cha, podyezd, kvartira (barchasi aniq).",
+      "To'liq manzilni yozing.",
 
     err_bike_smz_address_short:
       "Juda qisqa. Shahar, ko'cha, podyezd va kvartirani yozing.",
@@ -236,7 +231,7 @@ const BK_STRINGS = {
     confirm_truck_dimensions: (label) => `Tanlangan o'lcham: ${label}`,
 
     ask_truck_payload:
-      "Yuk ko'taruvchanligini kg da yozing\n\nMasalan:\n2300",
+      "Yuk ko'taruvchanligini kg da yozing.",
     err_truck_payload_number:
       "Yuk ko'taruvchanligini kg da raqam bilan yozing (masalan 2300).",
     confirm_truck_payload: (kg) =>
@@ -262,7 +257,7 @@ const BK_STRINGS = {
     doc_line_passport_spread: "✅ Pasport yoymasi Media (1 dona)",
 
     summary_titles: {
-      phone: "Telefon (avtorizatsiya)",
+      phone: "Telefon",
       category: "Yetkazib berish turi",
       city: "Shahar",
       citizenship: "Fuqarolik",
@@ -274,15 +269,15 @@ const BK_STRINGS = {
       truck_dims: "Yuk bo'limi o'lchamlari",
       truck_payload: "Yuk ko'tarish",
       truck_loaders: "Yuk ko'taruvchilar",
-      truck_wrap: "Brending / yopish",
-      self_employed: "SMZ (O'z-o'zini band)",
+      truck_wrap: "Brending",
+      self_employed: "SMZ",
       inn: "INN",
-      bike_smz_phone: "«Moy nalog» telefoni",
-      bike_smz_address: "Yashash manzili (SMZ)",
+      bike_smz_phone: "Moy nalog telefoni",
+      bike_smz_address: "Yashash manzili",
       bike_thermal: "Velo termokorob",
       bike_passport: "Pasport",
       car_smz_phone: "Moy nalog telefoni",
-      car_reg_amina: "Reg/Amina photo",
+      car_reg_amina: "Reg/Amina",
     },
 
     summary_passport_media: "Media (1 dona)",
@@ -308,7 +303,7 @@ const BK_STRINGS = {
     group_label_bike_self: "🧾 O'z-o'zini band:",
     group_label_bike_inn: "#️⃣ INN:",
     group_label_bike_smz_phone: "📱 «Moy nalog» telefoni:",
-    group_label_bike_smz_address: "📍 Manzil (shahar, ko'cha, podyezd, kvartira):",
+    group_label_bike_smz_address: "📍 Manzil:",
     group_label_bike_thermal: "📦 Velo termokorob:",
     group_docs_heading: "📎 HUJJATLAR",
     group_docs_empty:
@@ -318,13 +313,13 @@ const BK_STRINGS = {
     group_bank_heading: "🏦 BANK (arizadan matn)",
     group_footer_done:
       "━━━━━━━━━━━━━━━━━━━━\n✅ Ariza qabul qilindi, barcha fayllar olindi\n━━━━━━━━━━━━━━━━━━━━",
-    group_caption_license: "Haydovchilik guvohnomasi (VU)",
-    group_caption_sts: "STS — TS ro'yxatdan o'tganligi",
+    group_caption_license: "Haydovchilik guvohnomasi",
+    group_caption_sts: "СТС",
     group_caption_tech_passport_front:
-      "Chet el TS texpasporti — old tomoni",
+      "Texpasport — old tomoni",
     group_caption_tech_passport_back:
-      "Chet el TS texpasporti — orqa tomoni",
-    group_caption_passport: "Pasport (yoyma)",
+      "Texpasport — orqa tomoni",
+    group_caption_passport: "Pasport",
     group_caption_bank: "Bank ma'lumotlari",
     group_truck_kg: "{value} kg",
     group_truck_loader_word_0: "yo'q",
@@ -348,11 +343,11 @@ const BK_STRINGS = {
     group_label_yandex_service: "🛒 Servis:",
     group_label_yandex_city: "🏙 Shahar:",
     group_label_yandex_citizen: "🪪 Fuqarolik / status:",
-    group_label_yandex_uzdoc: "📄 Hujjat turi (UZ/TJ):",
-    group_label_yandex_kzdoc: "📄 Hujjat (KZ/KG):",
+    group_label_yandex_uzdoc: "📄 Hujjat turi:",
+    group_label_yandex_kzdoc: "📄 Hujjat:",
     group_label_yandex_tmvisa: "📄 TM vizasi:",
     group_yandex_text_heading: "📝 MATN MAYDONLARI",
-    group_caption_yx_generic: "Ariza ilovasi (Yandex)",
+    group_caption_yx_generic: "Ariza ilovasi",
 
     yx_btn_doda: "Doda kuryer",
     yx_btn_lavka: "Yandex Lavka",
@@ -481,7 +476,7 @@ const BK_STRINGS = {
       {
         id: "pay",
         q: "💰 Pulni qanday chiqaraman?",
-        a: "Hamkor ilovasida (Yandex Pro / park): Profil → Balans → Chiqarish.",
+        a: "Hamkor ilovasida: Profil → Balans → Chiqarish.",
       },
       {
         id: "orders",
@@ -530,11 +525,8 @@ const BK_STRINGS = {
 
     city_other_btn: "✏️ Другой город (напиши текстом)",
 
-    welcome_video_missing:
-      "Добро пожаловать в бота Doda taxi!\n\nТут ты найдёшь всё, что нужно для работы в доставке и такси:\n\n📊 Статистика и новости парка\n👫 Сообщество водителей\n🤝 Поддержка и подключение\n\nЕсли у тебя нет своего транспорта и нужна аренда — напиши менеджеру.\n\nА если ты ещё не в парке Doda taxi — мы подключим тебя за пару минут на лучших условиях 👇",
-
-    welcome_after_video:
-      "Добро пожаловать в бота Doda taxi!\n\nТут ты найдёшь всё, что нужно для работы в доставке и такси:\n\n📊 Статистика и новости парка\n👫 Сообщество водителей\n🤝 Поддержка и подключение\n\nЕсли у тебя нет своего транспорта и нужна аренда — напиши менеджеру.\n\nА если ты ещё не в парке Doda taxi — мы подключим тебя за пару минут на лучших условиях 👇",
+    welcome_video_missing: "Добро пожаловать в бота Doda taxi!",
+    welcome_after_video: "Добро пожаловать в бота Doda taxi!",
 
     faq_intro: "Раздел для тех, кто уже в парке Doda taxi — выбери вопрос:",
     faq_back: "◀️ В главное меню",
@@ -550,11 +542,9 @@ const BK_STRINGS = {
 
     /** HTML: buildAskPhoneHtml — asosiy qator BK uslubida */
     ask_phone_body_ru:
-      "Для подключения отправьте 📱📞 номер <b>текстом в чат</b> или <b>контактом</b> (скрепка → Контакт). Подсказка — кнопки <b>под этим сообщением</b> 👇",
-
-    /** Havolalar yo‘q bo‘lsa */
+      "Для подключения отправьте 📱 номер текстом или контактом.",
     ask_phone_legal_plain:
-      "Отправляя свой номер телефона, Вы даёте согласие на обработку персональных данных для оформления заявки в парке Doda taxi.",
+      "Отправляя номер телефона, Вы даёте согласие на обработку персональных данных.",
 
     /** HTML; {privacy_url} {referral_url} {tournament_url} {zaruba_url} */
     ask_phone_legal_ru_html:
@@ -616,23 +606,22 @@ const BK_STRINGS = {
         : "Являетесь ли вы самозанятым?",
 
     confirm_self_employed: (yes) =>
-      `Самозанятость: ${yes ? "Да (с СМЗ)" : "Нет (без СМЗ)"}`,
+      `Самозанятость: ${yes ? "Да" : "Нет"}`,
 
     ask_reg_amina: "Отправьте фото регистрации или Амины:",
     confirm_reg_amina_uploaded: "✅ Документ принят.",
 
     ask_moy_nalog_phone:
-      "На какой номер зарегистрирована программа Мой налог? (номер РФ)",
-    confirm_moy_nalog_phone: (ph) => `Телефон Мой налог: ${ph}`,
+      "Укажите номер в программе «Мой налог».",
+    confirm_moy_nalog_phone: (ph) => `Телефон «Мой налог»: ${ph}`,
 
-    ask_inn: "Напиши ИНН (10–13 цифр).",
-
-    err_inn_invalid: "ИНН должен быть числом из 10–13 цифр.",
+    ask_inn: "Напишите ИНН.",
+    err_inn_invalid: "ИНН должен состоять из цифр.",
 
     confirm_inn: (inn) => `Ты указал ИНН: ${inn}`,
 
     ask_bike_smz_phone:
-      "Укажи номер телефона, привязанный к приложению «Мой налог» (РФ: +7… или 8…).",
+      "Укажите номер телефона в приложении «Мой налог».",
 
     err_bike_smz_phone_invalid:
       "Нужен номер РФ: +7XXXXXXXXXX, 8XXXXXXXXXX или 10 цифр без кода страны.",
@@ -640,7 +629,7 @@ const BK_STRINGS = {
     confirm_bike_smz_phone: (phone) => `Телефон «Мой налог»: ${phone}`,
 
     ask_bike_smz_address:
-      "Напиши полный адрес одним сообщением: город, улица, подъезд, квартира (всё читаемо).",
+      "Напишите полный адрес одним сообщением.",
 
     err_bike_smz_address_short:
       "Слишком коротко. Укажи город, улицу, подъезд и квартиру.",
@@ -677,7 +666,7 @@ const BK_STRINGS = {
       "✅ Фото ВУ загружено\n\nУбедись, что на фото хорошо видны и читабельны все поля и нажми кнопку «Продолжить 👉»\n\nлибо отправь другое фото ВУ с передней стороны для замены",
 
     ask_sts_front:
-      "Отправь ОДНО фото СТС: все поля должны быть читаемы (обычно разворот или лицевая сторона бланка).",
+      "Отправьте фото СТС.",
 
     ask_tech_passport_front:
       "Техпаспорт иностранного ТС — ЛИЦЕВАЯ сторона (одно фото).",
@@ -692,10 +681,10 @@ const BK_STRINGS = {
       "✅ Оборот техпаспорта загружен\n\nПроверь читаемость и нажми «Продолжить 👉» или пришли другое фото.",
 
     confirm_sts_uploaded:
-      "✅ Фото СТС автомобиля загружено\n\nУбедись, что на фото хорошо видны и читабельны все поля и нажми кнопку «Продолжить 👉»\n\nлибо отправь другое фото СТС автомобиля с передней стороны для замены",
+      "✅ Фото СТС загружено. Нажмите кнопку «Продолжить 👉» или отправьте другое фото для замены.",
 
     ask_truck_dimensions:
-      "Выбери габариты грузового отсека своего авто длина/ширина/высота",
+      "Выберите габариты грузового отсека.",
 
     truck_dim_btn_S: "S - от 170х100х90 см.",
     truck_dim_btn_M: "M - от 260х130х150 см.",
@@ -706,7 +695,7 @@ const BK_STRINGS = {
     confirm_truck_dimensions: (label) => `Вы указали габариты авто: ${label}`,
 
     ask_truck_payload:
-      "Укажи грузоподъемность грузового отсека в кг\n\nНапример:\n2300",
+      "Укажите грузоподъемность в кг.",
 
     err_truck_payload_number: "Напиши грузоподъемность числом в кг (например 2300).",
 
@@ -765,27 +754,27 @@ const BK_STRINGS = {
     err_doc_mime: "Допустимы только изображения (JPEG/PNG) или PDF.",
 
     summary_titles: {
-      phone: "Телефон для авторизации",
+      phone: "Телефон",
       category: "Класс доставки",
       city: "Город",
       citizenship: "Гражданство",
       thermal: "Термокороб",
-      passport_foreign: "Иностранцы паспорт",
+      passport_foreign: "Иностранный паспорт",
       passport_rf: "Паспорт",
       passport: "Паспорт",
-      vehicle: "Учёт ТС / авто",
-      truck_dims: "Грузовое габариты",
-      truck_payload: "Грузовое грузоподъемность",
-      truck_loaders: "Количество грузчиков",
-      truck_wrap: "Грузовое оклейка",
+      vehicle: "Учёт ТС",
+      truck_dims: "Габариты",
+      truck_payload: "Грузоподъемность",
+      truck_loaders: "Грузчики",
+      truck_wrap: "Оклейка",
       self_employed: "Самозанятость",
       inn: "ИНН",
-      bike_smz_phone: "Тел. «Мой налог»",
-      bike_smz_address: "Адрес (СМЗ)",
+      bike_smz_phone: "Телефон Мой налог",
+      bike_smz_address: "Адрес",
       bike_thermal: "Вело термокороб",
       bike_passport: "Вело паспорт",
       car_smz_phone: "Тел. Мой налог",
-      car_reg_amina: "Рег/Амина фото",
+      car_reg_amina: "Рег/Амина",
     },
 
     summary_yes: "Да",
@@ -811,7 +800,7 @@ const BK_STRINGS = {
     group_label_bike_self: "🧾 Самозанятость:",
     group_label_bike_inn: "#️⃣ ИНН:",
     group_label_bike_smz_phone: "📱 Телефон «Мой налог»:",
-    group_label_bike_smz_address: "📍 Адрес (город, улица, подъезд, квартира):",
+    group_label_bike_smz_address: "📍 Адрес:",
     group_label_bike_thermal: "📦 Вело термокороб:",
     group_docs_heading: "📎 ДОКУМЕНТЫ",
     group_docs_empty:
@@ -821,13 +810,13 @@ const BK_STRINGS = {
     group_bank_heading: "🏦 БАНК (текст из заявки)",
     group_footer_done:
       "━━━━━━━━━━━━━━━━━━━━\n✅ Заявка принята, все файлы получены\n━━━━━━━━━━━━━━━━━━━━",
-    group_caption_license: "Водительское удостоверение (ВУ)",
-    group_caption_sts: "СТС — свидетельство о регистрации ТС",
+    group_caption_license: "Водительское удостоверение",
+    group_caption_sts: "СТС",
     group_caption_tech_passport_front:
-      "Техпаспорт иностранного ТС — лицевая сторона",
+      "Техпаспорт — лицевая сторона",
     group_caption_tech_passport_back:
-      "Техпаспорт иностранного ТС — оборот",
-    group_caption_passport: "Паспорт (разворот)",
+      "Техпаспорт — оборот",
+    group_caption_passport: "Паспорт",
     group_caption_bank: "Банковские реквизиты",
     group_truck_kg: "{value} кг",
     group_truck_loader_word_0: "ни одного",
@@ -851,11 +840,11 @@ const BK_STRINGS = {
     group_label_yandex_service: "🛒 Сервис:",
     group_label_yandex_city: "🏙 Город:",
     group_label_yandex_citizen: "🪪 Гражданство / статус:",
-    group_label_yandex_uzdoc: "📄 Тип документа (УЗ/ТЖ):",
-    group_label_yandex_kzdoc: "📄 Документ КЗ/КГ:",
-    group_label_yandex_tmvisa: "📄 Виза ТМ:",
+    group_label_yandex_uzdoc: "📄 Тип документа:",
+    group_label_yandex_kzdoc: "📄 Документ:",
+    group_label_yandex_tmvisa: "📄 Виза:",
     group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
-    group_caption_yx_generic: "Вложение заявки (Яндекс)",
+    group_caption_yx_generic: "Вложение заявки",
 
     yx_btn_doda: "Doda курьер",
     yx_btn_lavka: "Yandex Lavka",
@@ -1026,11 +1015,8 @@ const BK_STRINGS = {
 
     city_other_btn: "✏️ Шаҳри дигар (матн)",
 
-    welcome_video_missing:
-      "Ба боти экосистемаи БОГАТЫЙ КУРЬЕР хуш омадед!\n\nИн ҷо ҳама чиз барои даромади курьерҳо: Заруба, турнир, реферал, ҷамоа, статистика.\n\nИҷора лозим? 👉 /ARENDA\n\nАгар дар парк нестед — дар як дақиқа пайваст мешавем 👇",
-
-    welcome_after_video:
-      "Ба боти экосистемаи БОГАТЫЙ КУРЬЕР хуш омадед!\n\nИн ҷо ҳама чиз барои даромади курьерҳо.\n\n/ARENDA — иҷора\n\nАгар дар парк нестед — пайваст мешавем 👇",
+    welcome_video_missing: "Ба боти Doda taxi хуш омадед!",
+    welcome_after_video: "Ба боти Doda taxi хуш омадед!",
 
     faq_intro: "Аллакай дар парк ҳастед — саволро интихоб кунед:",
     faq_back: "◀️ Ба менюи асосӣ",
@@ -1042,7 +1028,7 @@ const BK_STRINGS = {
       "Иҷора: барои алоқа бо менеҷер дар Telegram — @{manager}.\n\nБозгашт: /start",
 
     ask_phone:
-      "📱 Барои дархост рақами Русия: +7… ё 8…, ё контакт 📎 (танҳо РФ).",
+      "📱 Рақами Русияро нависед: +7... ё контакт фиристед.",
 
     ask_phone_keyboard_nudge:
       "👇 Тугмаҳои зери паём ё рақамро матн фиристед.",
@@ -1071,9 +1057,7 @@ const BK_STRINGS = {
     confirm_category: (label) => `Категория: ${label}`,
 
     ask_vehicle_rf:
-      "🚗 Мошини сабук: нақлиёт дар куҷо ба қайд гирифта шудааст?\n\n" +
-      "• Дар Русия (🇷🇺) — СТС: одатан як акс (ҳамаи майдонҳо хонда шаванд).\n" +
-      "• ТС-и хориҷӣ (🌍) — техпаспорт: аввал рӯй, баъд пушт — 2 акси алоҳида.",
+      "🚗 Мошини сабук: нақлиёт дар куҷо ба қайд гирифта шудааст?",
 
     btn_vehicle_rf_sts: "🇷🇺 Дар РФ ба қайд — СТС",
     btn_vehicle_foreign_tech: "🌍 ТС хориҷӣ — техпаспорт (рӯй + пушт)",
@@ -1110,7 +1094,7 @@ const BK_STRINGS = {
       "✅ Пушти техпаспорт гирифта шуд\n\n«Идома 👉» ё акси дигар.",
 
     confirm_sts_uploaded:
-      "✅ Акси СТС гирифта шуд\n\nХонданашро санҷед ва «Идома 👉»-ро пахш кунед\n\nё акси дигар фиристед.",
+      "✅ Акси СТС гирифта шуд. Пахш кунед «Идома 👉» ё акси дигар фиристед.",
 
     ask_city: "Дар кадом шаҳр кор мекунед? Тугма ё матн.",
 
@@ -1121,9 +1105,9 @@ const BK_STRINGS = {
     ask_citizenship: "Шумо шаҳрванди РФ ҳастед?",
 
     confirm_citizenship: (yes) => `Шаҳрвандии РФ: ${yes ? "Ҳа" : "Не"}`,
-
-    ask_bike_smz_phone:
-      "Рақами телефонро нависед, ки ба барномаи «Мой налог» пайваст аст (РФ: +7… ё 8…).",
+    ask_self_employed: (cat) =>
+      cat === "car" ? "Бо худкорӣ (СМЗ) ё бе он?" : "Оё шумо худкор ҳастед?",
+    confirm_self_employed: (yes) => `Худкорӣ: ${yes ? "Ҳа" : "Не"}`,
 
     err_bike_smz_phone_invalid:
       "Рақами РФ лозим: +7XXXXXXXXXX, 8XXXXXXXXXX ё 10 рақам бе коди кишвар.",
@@ -1131,7 +1115,7 @@ const BK_STRINGS = {
     confirm_bike_smz_phone: (phone) => `Телефони «Мой налог»: ${phone}`,
 
     ask_bike_smz_address:
-      "Суроғаи пурраро дар як паём нависед: шаҳр, кӯча, даромадгоҳ, квартира.",
+      "Суроғаи пурраро нависед.",
 
     err_bike_smz_address_short:
       "Хеле кӯтоҳ. Шаҳр, кӯча, даромадгоҳ ва квартираро нишон диҳед.",
@@ -1174,7 +1158,7 @@ const BK_STRINGS = {
     err_doc_mime: "Танҳо акс (JPEG/PNG) ё PDF.",
 
     summary_titles: {
-      phone: "Телефон (авторизатсия)",
+      phone: "Телефон",
       category: "Намуди расонидан",
       city: "Шаҳр",
       citizenship: "Шаҳрвандии РФ",
@@ -1190,7 +1174,7 @@ const BK_STRINGS = {
       self_employed: "Худкорӣ",
       inn: "ИНН",
       bike_smz_phone: "Тел. «Мой налог»",
-      bike_smz_address: "Суроға (СМЗ)",
+      bike_smz_address: "Суроға",
       bike_thermal: "Термокороби вело",
       bike_passport: "Паспорт",
     },
@@ -1218,7 +1202,7 @@ const BK_STRINGS = {
     group_label_bike_self: "🧾 Худкорӣ:",
     group_label_bike_inn: "#️⃣ ИНН:",
     group_label_bike_smz_phone: "📱 Телефони «Мой налог»:",
-    group_label_bike_smz_address: "📍 Суроға (шаҳр, кӯча, даромадгоҳ, квартира):",
+    group_label_bike_smz_address: "📍 Суроға:",
     group_label_bike_thermal: "📦 Термокороби вело:",
     group_docs_heading: "📎 ҲУҶҶАТҲО",
     group_docs_empty: "Ба ариза файлҳо замима нашудаанд.",
@@ -1226,13 +1210,13 @@ const BK_STRINGS = {
     group_bank_heading: "🏦 БАНК (матн аз ариза)",
     group_footer_done:
       "━━━━━━━━━━━━━━━━━━━━\n✅ Ариза қабул шуд, ҳама файлҳо гирифта шуданд\n━━━━━━━━━━━━━━━━━━━━",
-    group_caption_license: "Гувоҳиномаи ронандагӣ (ВУ)",
-    group_caption_sts: "СТС — гувоҳномаи сабти ТС",
+    group_caption_license: "Гувоҳиномаи ронандагӣ",
+    group_caption_sts: "СТС",
     group_caption_tech_passport_front:
-      "Техпаспорти ТС хориҷӣ — рӯёна",
+      "Техпаспорт — рӯёна",
     group_caption_tech_passport_back:
-      "Техпаспорти ТС хориҷӣ — пушта",
-    group_caption_passport: "Паспорт (ворид)",
+      "Техпаспорт — пушта",
+    group_caption_passport: "Паспорт",
     group_caption_bank: "Маълумоти бонкӣ",
     group_truck_kg: "{value} кг",
     group_truck_loader_word_0: "ҳеҷ кадом",
@@ -1256,11 +1240,11 @@ const BK_STRINGS = {
     group_label_yandex_service: "🛒 Сервис:",
     group_label_yandex_city: "🏙 Шаар:",
     group_label_yandex_citizen: "🪪 Жарандык / статус:",
-    group_label_yandex_uzdoc: "📄 Документ түрү (УЗ/ТЖ):",
-    group_label_yandex_kzdoc: "📄 Документ (КЗ/КГ):",
+    group_label_yandex_uzdoc: "📄 Документ түрү:",
+    group_label_yandex_kzdoc: "📄 Документ:",
     group_label_yandex_tmvisa: "📄 ТМ визасы:",
     group_yandex_text_heading: "📝 ТЕКСТ ТАЛААЛАРЫ",
-    group_caption_yx_generic: "Арыз тиркемеси (Yandex)",
+    group_caption_yx_generic: "Арыз тиркемеси",
 
     yx_btn_doda: "Doda курьер",
     yx_btn_lavka: "Yandex Lavka",
@@ -1387,7 +1371,7 @@ const BK_STRINGS = {
       {
         id: "pay",
         q: "💰 Пулро чӣ тавр баровардам?",
-        a: "Дар барномаи шарик: Профиль → Баланс → Баровардан.",
+        a: "Дар барномаи шарик: Профил → Баланс → Баровардан.",
       },
       {
         id: "orders",
@@ -1429,11 +1413,8 @@ const BK_STRINGS = {
 
     city_other_btn: "✏️ Башка шаар (текст)",
 
-    welcome_video_missing:
-      "БОГАТЫЙ КУРЬЕР экосистемасынын ботуна кош келиңиз!\n\nКурьерлер үчүн бардыгы: Заруба, турнир, реферал, коомчулук, статистика.\n\nАренда керек болсо 👉 /ARENDA\n\nПаркта эмес болсоңуз — эң жакшы шартта туташтырабыз 👇",
-
-    welcome_after_video:
-      "БОГАТЫЙ КУРЬЕР экосистемасынын ботуна кош келиңиз!\n\nКурьерлер үчүн керектүү маалыматтар.\n\n/ARENDA — аренда\n\nПаркта эмес болсоңуз — туташтырабыз 👇",
+    welcome_video_missing: "Doda taxi ботуна кош келиңиз!",
+    welcome_after_video: "Doda taxi ботуна кош келиңиз!",
 
     faq_intro: "Паркта болсоңуз — суроону тандаңыз:",
     faq_back: "◀️ Негизги менюга",
@@ -1445,7 +1426,7 @@ const BK_STRINGS = {
       "Аренда: менеджер менен байланыш — Telegram @{manager}.\n\nКайтуу: /start",
 
     ask_phone:
-      "📱 Россия номери: +7… же 8…, же контакт 📎 (гана РФ).",
+      "📱 Россия номерин жазыңыз: +7... же контакт жөнөтүңүз.",
 
     ask_phone_keyboard_nudge:
       "👇 Билдирүүнүн астындагы баскычтар же номерди текст менен.",
@@ -1474,9 +1455,7 @@ const BK_STRINGS = {
     confirm_category: (label) => `Тандалган категория: ${label}`,
 
     ask_vehicle_rf:
-      "🚗 Жеңил унаа: транспорт кайда катталган?\n\n" +
-      "• Россияда (🇷🇺) — СТС: адатта бир сүрөт (бардык талаалар окула турган болсун).\n" +
-      "• Чет өлкө ТС (🌍) — техпаспорт: алды менен алдыңкы бет, андан кийин арткы бет — эки өзүнчө сүрөт.",
+      "🚗 Жеңил унаа: транспорт кайда катталган?",
 
     btn_vehicle_rf_sts: "🇷🇺 Россияда каттоо — СТС",
     btn_vehicle_foreign_tech: "🌍 Чет өлкө ТС — техпаспорт (алд + арт)",
@@ -1524,6 +1503,9 @@ const BK_STRINGS = {
     ask_citizenship: "РФ жаранысызбы?",
 
     confirm_citizenship: (yes) => `РФ жарандыгы: ${yes ? "Ооба" : "Жок"}`,
+    ask_self_employed: (cat) =>
+      cat === "car" ? "Өзүн өзү эмгекке жаратуу (СМЗ) мененби же жокпу?" : "Өзүңүз эмгекке жарагансызбы?",
+    confirm_self_employed: (yes) => `Өзүн өзү эмгекке жаратуу: ${yes ? "Ооба" : "Жок"}`,
 
     ask_bike_smz_phone:
       "«Мой налог» колдонмосуна байланган телефон номерин жазыңыз (РФ: +7… же 8…).",
@@ -1534,7 +1516,7 @@ const BK_STRINGS = {
     confirm_bike_smz_phone: (phone) => `«Мой налог» телефону: ${phone}`,
 
     ask_bike_smz_address:
-      "Толук даректи бир билдирүү менен жазыңыз: шаар, көчө, подъезд, батир.",
+      "Толук даректи жазыңыз.",
 
     err_bike_smz_address_short:
       "Өтө кыска. Шаар, көчө, подъезд жана батирди көрсөтүңүз.",
@@ -1578,7 +1560,7 @@ const BK_STRINGS = {
     err_doc_mime: "Гана JPEG/PNG же PDF.",
 
     summary_titles: {
-      phone: "Телефон (авторизация)",
+      phone: "Телефон",
       category: "Жеткирүү классы",
       city: "Шаар",
       citizenship: "РФ жарандыгы",
@@ -1594,7 +1576,7 @@ const BK_STRINGS = {
       self_employed: "Өзүн өзү эмгекке жаратуу",
       inn: "ИНН",
       bike_smz_phone: "«Мой налог» тел.",
-      bike_smz_address: "Дарек (СМЗ)",
+      bike_smz_address: "Дарек",
       bike_thermal: "Вело термокороб",
       bike_passport: "Паспорт",
     },
@@ -1622,7 +1604,7 @@ const BK_STRINGS = {
     group_label_bike_self: "🧾 Өзүн эмгекке жаратуу:",
     group_label_bike_inn: "#️⃣ ИНН:",
     group_label_bike_smz_phone: "📱 «Мой налог» телефону:",
-    group_label_bike_smz_address: "📍 Дарек (шаар, көчө, подъезд, батир):",
+    group_label_bike_smz_address: "📍 Дарек:",
     group_label_bike_thermal: "📦 Вело термокороб:",
     group_docs_heading: "📎 ДОКУМЕНТТЕР",
     group_docs_empty: "Арызга файлдар тиркелген эмес.",
@@ -1630,13 +1612,13 @@ const BK_STRINGS = {
     group_bank_heading: "🏦 БАНК (арыздан текст)",
     group_footer_done:
       "━━━━━━━━━━━━━━━━━━━━\n✅ Арыз кабыл алынды, бардык файлдар алынды\n━━━━━━━━━━━━━━━━━━━━",
-    group_caption_license: "Айдоочулук күбөлүгү (ВУ)",
-    group_caption_sts: "СТС — ТС каттоо күбөлүгү",
+    group_caption_license: "Айдоочулук күбөлүгү",
+    group_caption_sts: "СТС",
     group_caption_tech_passport_front:
-      "Чет өлкө ТС техпаспорту — алды жагы",
+      "Техпаспорт — алды жагы",
     group_caption_tech_passport_back:
-      "Чет өлкө ТС техпаспорту — арткы жагы",
-    group_caption_passport: "Паспорт (жайылма)",
+      "Техпаспорт — арткы жагы",
+    group_caption_passport: "Паспорт",
     group_caption_bank: "Банк маалыматтары",
     group_truck_kg: "{value} кг",
     group_truck_loader_word_0: "эч ким",
@@ -1660,11 +1642,11 @@ const BK_STRINGS = {
     group_label_yandex_service: "🛒 Сервис:",
     group_label_yandex_city: "🏙 Город:",
     group_label_yandex_citizen: "🪪 Гражданство / статус:",
-    group_label_yandex_uzdoc: "📄 Тип документа (УЗ/ТЖ):",
-    group_label_yandex_kzdoc: "📄 Документ КЗ/КГ:",
-    group_label_yandex_tmvisa: "📄 Виза ТМ:",
+    group_label_yandex_uzdoc: "📄 Тип документа:",
+    group_label_yandex_kzdoc: "📄 Документ:",
+    group_label_yandex_tmvisa: "📄 Виза:",
     group_yandex_text_heading: "📝 ТЕКСТОВЫЕ ПОЛЯ",
-    group_caption_yx_generic: "Вложение заявки (Яндекс)",
+    group_caption_yx_generic: "Вложение заявки",
 
     yx_btn_doda: "Doda курьер",
     yx_btn_lavka: "Яндекс Лавка",
