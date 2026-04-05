@@ -28,21 +28,19 @@ const BK_STRINGS = {
     main_menu_after_faq: "Asosiy menyu:",
     faq_freedom_hint: "Savolni pastdagi tugma orqali tanlang yoki /start",
 
-    btn_in_park: "😎 Doda kuryerda ro'yhatdan o'tganman",
-    btn_not_in_park: "🙏 Doda kuryerda emasman, ulash kerak",
+    btn_in_park: "😎 Doda parkida ishlayman",
+    btn_not_in_park: "🙏 Doda parkiga ulanmoqchiman",
     btn_support: "❓ Texnik yordam",
-    btn_phone_from_telegram:
-      "Telegramga biriktirilgan telefon raqamidan foydalanish",
-    btn_phone_manual: "Qo'lda kiritaman",
-    ask_phone_manual_hint:
-      "Raqamni bitta xabarda yozing: +7... Faqat RF raqami.",
+    btn_phone_from_telegram: "Telefon raqamimni yuborish",
+    btn_phone_manual: "Raqamni o'zim yozaman",
+    ask_phone_manual_hint: "Raqamni yozing: +7... (faqat Rossiya raqami)",
     btn_therm_yes: "Ha",
     btn_therm_no: "Yo'q, sotib olish kerak",
     cit_uz: "O'zbekiston",
     cit_tj: "Tojikiston",
     cit_kg: "Qirg'iziston",
     cit_kz: "Qozog'iston",
-    cit_rf: "RF (Rossiya)",
+    cit_rf: "Rossiya",
     cit_tm: "Turkmaniston",
 
     city_other_btn: "✏️ Boshqa shahar (matn)",
@@ -50,23 +48,16 @@ const BK_STRINGS = {
     welcome_video_missing: "Doda taxi botiga xush kelibsiz!",
     welcome_after_video: "Doda taxi botiga xush kelibsiz!",
 
-    faq_intro: "Allaqachon parkdasan — savolni tanla:",
-    faq_back: "◀️ Asosiy menyuga",
+    faq_intro: "Parkdasan — savolni tanla:",
+    faq_back: "◀️ Orqaga",
 
-    support:
-      "Texnik yordam: muammoni bitta xabarda yozing (arizadagi telefon, nima qildingiz).",
+    support: "Texnik yordam: muammoni yozing (telefon, nima bo'lgan).",
 
-    arenda:
-      "Ijara: menejer bilan bog'lanish — Telegramda @{manager}.\n\nQaytish: /start",
+    arenda: "Ijara: menejer bilan bog'lanish — @{manager}.\n\nQaytish: /start",
 
-    ask_phone:
-      "📱 Rossiya raqamini yozing: +7... yoki kontakt yuboring.",
-
-    ask_phone_keyboard_nudge:
-      "👇 Xabar ostidagi tugmalar yoki raqamni matnda yozing.",
-
-    err_phone_invalid:
-      "Faqat Rossiya raqami: +7XXXXXXXXXX, 8XXXXXXXXXX yoki 10 raqam kodisiz. Boshqa davlat raqamlari qabul qilinmaydi.",
+    ask_phone: "📱 Rossiya raqamini yozing: +7... yoki raqamni yuborging.",
+    ask_phone_keyboard_nudge: "👇 Pastdagi tugmalardan foydalaning.",
+    err_phone_invalid: "Faqat Rossiya raqami: +7XXXXXXXXXX, 8XXXXXXXXXX. Boshqa davlat raqamlari bo'lmaydi.",
 
     err_phone_no_media:
       "Bu qadamda foto yoki fayl emas — telefon raqamini matn yoki kontakt sifatida yuboring.",
@@ -102,28 +93,28 @@ const BK_STRINGS = {
     btn_continue: "Davom etish 👉",
 
     ask_license_front:
-      "Haydovchilik guvohnomasi  — old tomonidan bitta foto yuboring.",
+      "Haydovchilik guvohnomangizni (prava) old tomonini rasmga tushirib yuboring.",
 
     confirm_license_uploaded:
-      "✅ VU foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
+      "✅ Guvohnoma (prava) qabul qilindi\n\nYaxshi ko'rinayotganini tekshiring va «Davom etish 👉»ni bosing.",
 
     ask_sts_front:
-      "Transport vositasi ro'yxatdan o'tkazilganligi to'g'risidagi guvohnoma (STS) — bitta foto: barcha yozuvlar aniq ko'rinadigan qilib yuboring (odatda asosiy bet).",
+      "Texpasportingizni (asosiy betini) rasmga tushirib yuboring.",
 
     ask_tech_passport_front:
-      "Chet elda ro'yxatdan o'tgan transport texpasporti — OLD tomoni (bitta foto).",
+      "Chet el texpasportining old tomonini rasmga tushirib yuboring.",
 
     ask_tech_passport_back:
-      "Chet elda ro'yxatdan o'tgan transport texpasporti — ORQA tomoni (bitta foto).",
+      "Chet el texpasportining orqa tomonini rasmga tushirib yuboring.",
 
     confirm_tech_passport_front:
-      "✅ Texpasport old tomoni qabul qilindi\n\nO'qilishini tekshiring, «Davom etish 👉» yoki boshqa foto.",
+      "✅ Texpasport (old) qabul qilindi\n\n«Davom etish 👉»ni bosing.",
 
     confirm_tech_passport_back:
-      "✅ Texpasport orqa tomoni qabul qilindi\n\nO'qilishini tekshiring, «Davom etish 👉» yoki boshqa foto.",
+      "✅ Texpasport (orqa) qabul qilindi\n\n«Davom etish 👉»ni bosing.",
 
     confirm_sts_uploaded:
-      "✅ Guvohnoma (STS) foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
+      "✅ Texpasport qabul qilindi\n\n«Davom etish 👉»ni bosing.",
 
     ask_city: "Qaysi shaharda ishlaysiz?",
 
@@ -140,14 +131,11 @@ const BK_STRINGS = {
     confirm_citizenship: (label) => `Fuqarolik: ${label}`,
 
     ask_self_employed: (cat) =>
-      cat === "car"
-        ? "O'z-o'zini band qilish (СМЗ) bilanmi yoki usiz?"
-        : "O'z-o'zini band qilganmisiz?",
+      cat === "car" ? "O'zini o'zi band qilganmisiz (SMZ)?" : "O'zini o'zi band qilganmisiz?",
 
-    confirm_self_employed: (yes) =>
-      `O'z-o'zini band qilish: ${yes ? "Ha (bilan)" : "Yo'q (u siz)"}`,
+    confirm_self_employed: (yes) => `O'zini o'zi band qilgan: ${yes ? "Ha" : "Yo'q"}`,
 
-    ask_reg_amina: "Registratsiya yoki Amina rasmini yuboring:",
+    ask_reg_amina: "Ro'yxatdan o'tganlik (registratsiya) hujjati rasmini yuboring:",
     confirm_reg_amina_uploaded: "✅ Hujjat qabul qilindi.",
 
     ask_moy_nalog_phone:
@@ -192,14 +180,10 @@ const BK_STRINGS = {
 
     submit_btn: "✅ Yuborish",
 
-    final_wait:
-      "Zo'r! Menejerlar akkauntni tayyorlayapti — taxminan 20 daqiqa.\n\nJamo'a: https://t.me/+HCQG5WLhKNk3Y2My",
+    final_wait: "Menejerlar akkauntingizni tayyorlamoqda — taxminan 20 daqiqa kuting.\n\nJamoamiz: https://t.me/+HCQG5WLhKNk3Y2My",
 
-    final_wait_intro:
-      "Ajoyib!\n\nMenejerlar akkauntingizni tayyorlayapti — taxminan 20 daqiqa 👌\nRo'yxatdan o'tish tugagach, bu yerda keyingi ko'rsatma bor xabar olasiz",
-
-    final_wait_community:
-      "Hozircha shahringiz bo'yicha Doda taxi jamoasiga qo'shiling: {link}\n\nKurator boshchiligidagi jamoa daromad bo'yicha foydali maslahatlar almashadi, bir-biriga yordam beradi — yangilar ham qatnashadi 🤝\n\nSavollardan tortinmang — tezroq natijaga chiqishga yordam beradi 💪",
+    final_wait_intro: "Ajoyib! Menejerlar akkauntingizni tayyorlamoqda — taxminan 20 daqiqa 👌\nTez orada bu yerda keyingi yo'riqnomani olasiz.",
+    final_wait_community: "Hozircha shahringiz bo'yiycha Doda taxi jamoasiga qo'shiling: {link}\nU yerda foydali maslahatlar va yordam olasiz 🤝",
 
     use_menu: "Iltimos, pastdagi tugmalar yoki /start.",
 
@@ -243,17 +227,17 @@ const BK_STRINGS = {
     },
 
     ask_truck_branding: "Avtomobilda brending (yopish) bormi?",
-    ask_passport_front: "Pasportning rasm bor varag'ini (old tomoni) yuboring",
-    ask_passport_front_bike: "Pasportning rasm bor varag'ini (old tomoni) yuboring",
-    ask_passport_back: "Pasportning propiska (registratsiya) varag'ini yuboring",
+    ask_passport_front: "Pasportingizning rasm bor sahifasini rasmga tushirib yuboring.",
+    ask_passport_front_bike: "Pasportingizning rasm bor sahifasini rasmga tushirib yuboring.",
+    ask_passport_back: "Pasportingizning propiska bor sahifasini rasmga tushirib yuboring.",
 
     confirm_passport_front_uploaded:
-      "✅ Pasportning rasm bor varianti qabul qilindi\n\n«Davom etish 👉»ni bosing yoki boshqasini yuboring.",
+      "✅ Pasport (foto) qabul qilindi.\n\n«Davom etish 👉»ni bosing.",
     confirm_passport_back_uploaded:
-      "✅ Pasportning propiska varianti qabul qilindi\n\n«Davom etish 👉»ni bosing yoki boshqasini yuboring.",
+      "✅ Propiska qabul qilindi.\n\n«Davom etish 👉»ni bosing.",
 
     doc_line_passport_front: "✅ Pasport (foto)",
-    doc_line_passport_back: "✅ Pasport (propiska)",
+    doc_line_passport_back: "✅ Propiska",
 
     summary_titles: {
       phone: "Telefon",
@@ -262,12 +246,12 @@ const BK_STRINGS = {
       citizenship: "Fuqarolik",
       thermal: "Termokorob",
       passport_front: "Pasport (foto)",
-      passport_back: "Pasport (propiska)",
+      passport_back: "Propiska",
       passport_foreign: "Chet el pasporti",
       passport_rf: "Pasport",
       passport: "Pasport",
-      vehicle: "TS hisobi",
-      truck_dims: "Yuk bo'limi o'lchamlari",
+      vehicle: "Transport",
+      truck_dims: "O'lcham",
       truck_payload: "Yuk ko'tarish",
       truck_loaders: "Yuk ko'taruvchilar",
       truck_wrap: "Brending",
@@ -275,12 +259,12 @@ const BK_STRINGS = {
       inn: "INN",
       bike_smz_phone: "Moy nalog telefoni",
       bike_smz_address: "Yashash manzili",
-      bike_thermal: "Velo termokorob",
+      bike_thermal: "Termokorob",
       bike_passport: "Pasport",
       car_smz_phone: "Moy nalog telefoni",
-      car_reg_amina: "Reg/Amina",
+      car_reg_amina: "Hujjat",
       license: "Haydovchilik guvohnomasi",
-      sts: "STS",
+      sts: "Texpasport",
       tech_passport_front: "Texpasport (old)",
       tech_passport_back: "Texpasport (orqa)",
     },
@@ -363,19 +347,15 @@ const BK_STRINGS = {
     yx_city_other: "Boshqa",
     yx_city_other_blocked: "Uzr, biz shu Moscow va oblastdan boshqalariga hozircha boglab hizmat korsatolmaymiz.",
 
-    yx_ask_city:
-      "Moskva yoki Moskva viloyatini pastdagi tugma orqali tanlang.",
-    yx_ask_citizen: "Status / fuqaroligingizni pastdagi tugma orqali tanlang.",
-    yx_p_uz_pre_pass_f: "Pasport fotosi — rasmli sahifa (old tomon).",
-    yx_p_uz_pre_pass_b: "Pasport fotosi — keyingi sahifa (propiska yoki orqa tomon).",
-    yx_ask_uz_doc: "Tasdiqlovchi hujjat turini tanlang.",
-    yx_ask_kz_doc_kz:
-      "Qozog‘iston fuqarosi — keyingi qadamni pastdagi tugmalar bilan tanlang.",
-    yx_ask_kz_doc_kg:
-      "Qirg‘iziston fuqarosi — keyingi qadamni pastdagi tugmalar bilan tanlang.",
-    yx_ask_kz_doc_neutral: "Keyingi qadamni pastdagi tugmalar bilan tanlang.",
-    yx_ask_tm_visa:
-      "Qaysi turdagi viza bilan? Pastdagi tugmalardan tanlang: turizm yoki ishchi viza.",
+    yx_ask_city: "Moskva yoki Moskva viloyatidan birini tanlang.",
+    yx_ask_citizen: "Fuqaroligingizni tanlang.",
+    yx_p_uz_pre_pass_f: "Pasportingizning rasm bor sahifasini yuboring.",
+    yx_p_uz_pre_pass_b: "Pasportingizning propiska (yashash joyi) sahifasini yuboring.",
+    yx_ask_uz_doc: "Hujjat turini tanlang.",
+    yx_ask_kz_doc_kz: "Qozog'iston fuqarosi — kerakli hujjatni tanlang.",
+    yx_ask_kz_doc_kg: "Qirg'iziston fuqarosi — kerakli hujjatni tanlang.",
+    yx_ask_kz_doc_neutral: "Hujjatni tanlang.",
+    yx_ask_tm_visa: "Viza turini tanlang (ishchi yoki turizm vizasi).",
 
     yx_cit_uz: "O'zbekiston",
     yx_cit_tj: "Tojikiston",
@@ -442,38 +422,36 @@ const BK_STRINGS = {
       "Bank rekvizitlarini bitta xabarda yuboring (servis yo'riqnomasiga ko'ra).",
     yx_p_card16: "Bank karta raqamini kiriting — ketma-ket 16 raqam (bo'shliq bilan ham mumkin).",
 
-    yx_p_uz_pat_pass: "Pasport fotosi (rasmli sahifa).",
-    yx_p_uz_pat_front: "Patent fotosi — old tomoni.",
-    yx_p_uz_pat_back: "Patent fotosi — orqa tomoni.",
-    yx_p_reg_f: "Registratsiya fotosi — old tomoni.",
-    yx_p_reg_b: "Registratsiya fotosi — orqa tomoni.",
-    yx_p_amina: "«Amina» hujjati fotosi.",
-    yx_p_mig: "Migratsion karta fotosi.",
-    yx_p_pay_ph: "Patent to'lovi cheki / tasdig'i fotosi.",
-    yx_p_pay_file: "Patent to'lovi kvitansiyasi (foto yoki PDF).",
+    yx_p_uz_pat_pass: "Pasport rasmi (rasmli sahifasi).",
+    yx_p_uz_pat_front: "Patent rasmi — old tomoni.",
+    yx_p_uz_pat_back: "Patent rasmi — orqa tomoni.",
+    yx_p_reg_f: "Propiska (registratsiya) rasmi — old tomoni.",
+    yx_p_reg_b: "Propiska (registratsiya) rasmi — orqa tomoni.",
+    yx_p_amina: "«Amina» hujjati rasmi.",
+    yx_p_mig: "Migratsiya kartasi rasmi.",
+    yx_p_pay_ph: "Patent to'lovi cheki rasmi.",
+    yx_p_pay_file: "Patent to'lovi kvitansiyasi (rasm yoki PDF).",
 
-    yx_p_vnzh_f: "VNJ / RVP fotosi — old tomoni.",
-    yx_p_vnzh_b: "VNJ / RVP fotosi — orqa tomoni.",
-    yx_p_vnzh_pass: "Pasport fotosi (rasmli sahifa).",
+    yx_p_vnzh_f: "VNJ / RVP rasmi — old tomoni.",
+    yx_p_vnzh_b: "VNJ / RVP rasmi — orqa tomoni.",
+    yx_p_vnzh_pass: "Pasport rasmi (rasmli sahifasi).",
     yx_p_inn: "INN ni kiriting — 10 yoki 12 raqam (faqat raqamlar).",
     yx_p_snils: "SNILS ni kiriting — 11 raqam (defislar ixtiyoriy).",
 
-    yx_p_st_bilet: "Talabalik guvohnomasi fotosi.",
-    yx_p_st_spravka: "O'qish joyidan ma'lumotnoma fotosi.",
-    yx_p_st_pass: "Pasport fotosi (rasmli sahifa).",
+    yx_p_st_bilet: "Talabalik guvohnomasi rasmi.",
+    yx_p_st_spravka: "O'qish joyidan ma'lumotnoma rasmi.",
+    yx_p_st_pass: "Pasport rasmi (rasmli sahifa).",
 
-    yx_p_kz_pass_face: "Pasport fotosi (rasmli sahifa).",
-    yx_p_kz_id_f: "Shaxsni tasdiqlovchi guvohnoma — old tomoni.",
-    yx_p_kz_id_b: "Shaxsni tasdiqlovchi guvohnoma — orqa tomoni.",
+    yx_p_kz_pass_face: "Pasport rasmi (rasmli sahifa).",
+    yx_p_kz_id_f: "ID karta (shaxsiy guvohnoma) — old tomoni.",
+    yx_p_kz_id_b: "ID karta (shaxsiy guvohnoma) — orqa tomoni.",
 
-    yx_p_rf_pass_face: "RF pasporti fotosi (rasmli sahifa).",
-    yx_p_rf_pass_prop: "Propiska sahifasi fotosi.",
+    yx_p_rf_pass_face: "Rossiya pasporti rasmi (rasmli sahifa).",
+    yx_p_rf_pass_prop: "Propiska sahifasi rasmi.",
 
-    yx_p_tm_pass: "Pasport fotosi (rasmli sahifa).",
-    yx_p_tm_visa:
-      "Viza / ruxsatnoma fotosini yuboring (turi oldingi bosqichda tanlangan).",
-    yx_p_tm_amina_or_reg:
-      "«Amina» skrinshoti yoki qog‘oz registratsiya — bitta foto yoki PDF (ikkala tomonda bo‘lsa, bitta fayl yoki birinchi bet).",
+    yx_p_tm_pass: "Pasport rasmi (rasmli sahifasi).",
+    yx_p_tm_visa: "Viza rasmini yuboring.",
+    yx_p_tm_amina_or_reg: "«Amina» hujjati yoki qog'oz propiska (registratsiya) rasmi.",
 
     yx_p_contact_phone: "Kontakt telefon raqamini kiriting (RF).",
 
