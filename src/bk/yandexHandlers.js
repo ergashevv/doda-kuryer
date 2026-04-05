@@ -379,13 +379,12 @@ export async function applyBkServiceSelection(ctx, client, uid, svc) {
     td.completed_yx = [];
     td.collected = clearYandexCollected(td);
     td = clearYandexStagingSessionFields(td);
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: { ...td, bk: td.bk || {} },
       session_state: "bk_category",
       service: null,
       tariff: null,
     });
-    profile = await ensureProfile(client, uid);
     await sendBkPlaceholderStep(
       ctx,
       client,
@@ -405,13 +404,12 @@ export async function applyBkServiceSelection(ctx, client, uid, svc) {
       bk: profile.session_data?.bk || {},
     };
     const td = initYandexSession(base, sk, profile.phone);
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: td,
       session_state: "bk_yx",
       service: sk,
       tariff: "foot_bike",
     });
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
@@ -453,9 +451,8 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     }
     const nextCompleted = [...completed, staged];
     const nextTd = clearYandexStagingSessionFields({ ...td, yx, completed_yx: nextCompleted });
-    await updateProfile(client, uid, { session_data: nextTd });
+    profile = await updateProfile(client, uid, { session_data: nextTd });
     await logChat(client, uid, "user", `yx:cont:${staged}`);
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     if (ctx.message?.message_id != null && ctx.chat?.id != null) {
       try {
@@ -477,10 +474,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     if (ck !== "msk" && ck !== "msk_obl") return false;
     yx.cityKey = ck;
     yx.regAmina = null;
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
@@ -503,10 +499,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     yx.kzDocKind = null;
     yx.tmVisaKind = null;
     yx.regAmina = null;
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
@@ -515,24 +510,22 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     yx.regAmina = null;
     const cur = [...(td.completed_yx || [])];
     const keep = uzTjPassportPrefixComplete(cur) ? cur.slice(0, 2) : [];
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: clearYandexStagingSessionFields({
         ...td,
         yx,
         completed_yx: keep,
       }),
     });
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
   if (payload.startsWith("kz:")) {
     yx.kzDocKind = payload.slice(3) === "pass" ? "pass" : "id";
     yx.regAmina = null;
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
     });
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
@@ -548,10 +541,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     if (raw === "work" || raw === "study") {
       yx.tmVisaKind = "work";
       yx.regAmina = null;
-      await updateProfile(client, uid, {
+      profile = await updateProfile(client, uid, {
         session_data: { ...td, yx, completed_yx: completed },
       });
-      profile = await ensureProfile(client, uid);
       await promptYandexStep(ctx, client, uid, profile);
       return true;
     }
@@ -559,10 +551,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
   }
   if (payload === "ram:reg" || payload === "ram:amina") {
     yx.regAmina = payload === "ram:reg" ? "reg" : "amina";
-    await updateProfile(client, uid, {
+    profile = await updateProfile(client, uid, {
       session_data: { ...td, yx, completed_yx: completed },
     });
-    profile = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, profile);
     return true;
   }
@@ -580,8 +571,7 @@ async function yxSendFileStepPrompt(ctx, client, uid, profile, caption, lg) {
   }
   td.yx_prompt_msg_ids = [];
   td.yx_preview_msg_ids = [];
-  await updateProfile(client, uid, { session_data: td });
-  profile = await ensureProfile(client, uid);
+  profile = await updateProfile(client, uid, { session_data: td });
   const sent = await ctx.reply(caption, yxReplyOptions(yxEditOnlyInline(lg)));
   const ids = bkCollectMessageIds(sent);
   await updateProfile(client, uid, { session_data_patch: { yx_prompt_msg_ids: ids } });
@@ -849,11 +839,10 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
     const marker = `__text__:${step.colKey}`;
     completed = completed.filter((x) => x !== marker);
     completed.push(marker);
-    await updateProfile(client, uid, {
+    const p2 = await updateProfile(client, uid, {
       session_data: { ...td, yx, collected: coll, completed_yx: completed },
     });
     await logChat(client, uid, "user", `yx:text:${step.colKey}`);
-    const p2 = await ensureProfile(client, uid);
     await promptYandexStep(ctx, client, uid, p2);
     return true;
   }
@@ -906,9 +895,8 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   nextTd.yx_staged_doc = step.docType;
   if (msg?.message_id != null) nextTd.bk_pending_user_message_id = msg.message_id;
   else delete nextTd.bk_pending_user_message_id;
-  await updateProfile(client, uid, { session_data: nextTd });
+  const p2 = await updateProfile(client, uid, { session_data: nextTd });
   await logChat(client, uid, "user", `yx:file:${step.docType}`);
-  const p2 = await ensureProfile(client, uid);
   await replyYxStagedPreview(ctx, client, uid, p2, msg, step, lg);
   return true;
 }

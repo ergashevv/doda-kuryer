@@ -600,14 +600,22 @@ export function registerBkHandlers(bot) {
     const uid = ctx.from?.id;
     if (!data || !uid) return;
 
+    // Tezroq javob berish (loading holatini yopish)
+    if (!data.startsWith("bk_P:")) {
+      try {
+        await ctx.answerCbQuery();
+      } catch (e) {
+        console.warn("[bk] answerCbQuery:", e?.description || e?.message || e);
+      }
+    }
+
     if (data.startsWith("bk_P:")) {
       const sub = data.slice(5);
       let cbText = null;
       let cbAlert = false;
       try {
         await withTransaction(async (client) => {
-          await syncTelegramInfo(client, uid, ctx.from);
-          const profile = await ensureProfile(client, uid);
+          const profile = await syncTelegramInfo(client, uid, ctx.from);
           const lg = langOf(profile);
           if (profile.session_state !== "bk_phone") {
             cbText = tBK(lg, "review_callback_stale");
@@ -638,12 +646,6 @@ export function registerBkHandlers(bot) {
       return;
     }
 
-    try {
-      await ctx.answerCbQuery();
-    } catch (e) {
-      console.warn("[bk] answerCbQuery:", e?.description || e?.message || e);
-    }
-
     if (data === "bk_YR:send") {
       await finalizeYandexReviewSubmit(ctx, uid);
       return;
@@ -654,8 +656,7 @@ export function registerBkHandlers(bot) {
       if (!["in", "out", "support"].includes(sub)) return;
       try {
         await withTransaction(async (client) => {
-          await syncTelegramInfo(client, uid, ctx.from);
-          const profile = await ensureProfile(client, uid);
+          const profile = await syncTelegramInfo(client, uid, ctx.from);
           await executeBkMainMenuIntent(ctx, client, uid, profile, sub, `cb:menu_${sub}`);
         });
       } catch (e) {
@@ -688,7 +689,7 @@ export function registerBkHandlers(bot) {
       const langNorm = normalizeBKLang(code);
       /** Bir martalik o‘tish: qayta kelgan callback yoki ikki marta bosish ikkinchi telefon qadami yubormasin. */
       const advanced = await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
+        const profile = await syncTelegramInfo(client, uid, ctx.from);
         const r = await client.query(
           `UPDATE user_profiles
            SET language = $1::varchar, session_state = 'bk_phone', updated_at = NOW()
@@ -696,15 +697,13 @@ export function registerBkHandlers(bot) {
            RETURNING *`,
           [langNorm, uid]
         );
-        if (!r.rows.length) return false;
+        if (!r.rows.length) return null;
         await logChat(client, uid, "user", `lang:${code}`);
-        return true;
+        return r.rows[0];
       });
       if (!advanced) return;
       await withTransaction(async (client) => {
-        const profile = await ensureProfile(client, uid);
-        if (profile.session_state !== "bk_phone") return;
-        await sendBkAskPhonePrompt(ctx, client, uid, profile, langNorm);
+        await sendBkAskPhonePrompt(ctx, client, uid, advanced, langNorm);
       });
       return;
     }
@@ -716,9 +715,8 @@ export function registerBkHandlers(bot) {
         let profile = await ensureProfile(client, uid);
         const lg = langOf(profile);
         if (id === "back") {
-          await updateProfile(client, uid, { session_state: "bk_main" });
+          profile = await updateProfile(client, uid, { session_state: "bk_main" });
           await logChat(client, uid, "user", "faq:back");
-          profile = await ensureProfile(client, uid);
           await bkSendStepMessage(ctx, client, uid, profile, () =>
             ctx.reply(tBK(lg, "main_menu_after_faq"), replyRemoveWithInline(mainMenuInline(lg)))
           );
@@ -738,8 +736,7 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_C:")) {
       const cat = data.slice(5);
       await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
+        let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
         const label = categoryLabelForLang(lg, cat);
         if (!label) return;
@@ -757,12 +754,10 @@ export function registerBkHandlers(bot) {
           clearBikeFields(bk);
         }
         td.bk = bk;
-        // Barcha kategoriyalar: shahar → fuqarolik → hujjatlar
-        await updateProfile(client, uid, {
+        profile = await updateProfile(client, uid, {
           session_data: td,
           session_state: "bk_city_pick",
         });
-        profile = await ensureProfile(client, uid);
         const msg = tBKfn(lg, "confirm_category", label);
         await logChat(client, uid, "assistant", msg);
         try {
@@ -780,8 +775,7 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_V:")) {
       const rf = data.endsWith(":1");
       await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
+        let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
         const td = { ...(profile.session_data || {}) };
         const bk = { ...(td.bk || {}) };
@@ -805,8 +799,7 @@ export function registerBkHandlers(bot) {
               !["sts", "tech_passport_front", "tech_passport_back"].includes(d)
           );
         td.completed_docs = stripVehicle(td.completed_docs);
-        await updateProfile(client, uid, { session_data: td });
-        profile = await ensureProfile(client, uid);
+        profile = await updateProfile(client, uid, { session_data: td });
         const cmsg = tBKfn(lg, "confirm_vehicle_rf", rf);
         await logChat(client, uid, "assistant", cmsg);
         try {
@@ -822,20 +815,18 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_G:")) {
       const payload = data.slice(5);
       await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
+        let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
         if (payload === "t") {
-          await updateProfile(client, uid, { session_state: "bk_city_text" });
+          profile = await updateProfile(client, uid, { session_state: "bk_city_text" });
           await logChat(client, uid, "user", "city:free_text_mode");
-          profile = await ensureProfile(client, uid);
           await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_city"), cityInline(lg));
           return;
         }
         const cityRaw = cityByIndex(payload);
         if (!cityRaw) return;
         const city = formatCityForProfile(cityRaw);
-        await updateProfile(client, uid, { city, session_state: "bk_citizenship" });
+        profile = await updateProfile(client, uid, { city, session_state: "bk_citizenship" });
         await logChat(client, uid, "user", city);
         const cmsg = tBKfn(lg, "confirm_city", city);
         await logChat(client, uid, "assistant", cmsg);
@@ -854,18 +845,16 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_Z:")) {
       const code = data.slice(5);
       await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
+        let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
         const td = { ...(profile.session_data || {}) };
         const bk = { ...(td.bk || {}) };
         bk.citizenship = code;
         bk.rfCitizen = code === "rf";
         td.bk = bk;
-        await updateProfile(client, uid, {
+        profile = await updateProfile(client, uid, {
           session_data: td,
         });
-        profile = await ensureProfile(client, uid);
         const cmsg = tBKfn(lg, "confirm_citizenship", tBK(lg, `cit_${code}`));
         await logChat(client, uid, "assistant", cmsg);
         try {
@@ -882,8 +871,7 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_SE:")) {
       const yes = data.endsWith(":1");
       await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
+        let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
         const td = { ...(profile.session_data || {}) };
         const bk = { ...(td.bk || {}) };
@@ -901,8 +889,7 @@ export function registerBkHandlers(bot) {
           }
         }
         td.bk = bk;
-        await updateProfile(client, uid, { session_data: td });
-        profile = await ensureProfile(client, uid);
+        profile = await updateProfile(client, uid, { session_data: td });
         const cmsg = tBKfn(lg, "confirm_self_employed", yes);
         await logChat(client, uid, "assistant", cmsg);
         try {
@@ -910,7 +897,6 @@ export function registerBkHandlers(bot) {
         } catch {
           await ctx.reply(cmsg, editOnly(lg, "bk_E:bself"));
         }
-        // car ham truck ham bir xil sequence bilan ishlaydi
         await promptFirstMissingDodaDoc(ctx, client, uid, profile);
       });
       return;
@@ -955,8 +941,7 @@ export function registerBkHandlers(bot) {
       if (!parsed) return;
       const { kind, val } = parsed;
       await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
+        let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
         const td = { ...(profile.session_data || {}) };
         const bk = { ...(td.bk || {}) };
@@ -969,8 +954,7 @@ export function registerBkHandlers(bot) {
           bk.truckDimensionCode = val;
           bk.truckDimensionLabel = label;
           td.bk = bk;
-          await updateProfile(client, uid, { session_data: td });
-          profile = await ensureProfile(client, uid);
+          profile = await updateProfile(client, uid, { session_data: td });
           const cmsg = tBKfn(lg, "confirm_truck_dimensions", label);
           await logChat(client, uid, "assistant", cmsg);
           try {
@@ -986,8 +970,7 @@ export function registerBkHandlers(bot) {
           const yes = val === "1";
           bk.truckBranding = yes;
           td.bk = bk;
-          await updateProfile(client, uid, { session_data: td });
-          profile = await ensureProfile(client, uid);
+          profile = await updateProfile(client, uid, { session_data: td });
           const cmsg = tBKfn(lg, "confirm_truck_branding", yes);
           await logChat(client, uid, "assistant", cmsg);
           try {
@@ -1296,287 +1279,285 @@ export function registerBkHandlers(bot) {
 
     if (data.startsWith("bk_R:")) {
       const rest = data.slice(5);
-      await withTransaction(async (client) => {
-        await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
-        const lg = langOf(profile);
-        if (profile.session_state !== "bk_review") {
-          await bkSendStepMessage(ctx, client, uid, profile, () =>
-            ctx.reply(tBK(lg, "review_callback_stale"))
-          );
-          return;
-        }
-        if (rest === "send") {
-          await updateProfile(client, uid, { session_state: "done" });
-          profile = await ensureProfile(client, uid);
-          await logChat(client, uid, "user", "review:send");
-          await notifyGroupFullSubmission(ctx.telegram, profile);
-          const tail = buildBkFinalWait(lg);
-          await logChat(client, uid, "assistant", tail);
-          profile = await ensureProfile(client, uid);
-          await bkSendStepMessage(ctx, client, uid, profile, () =>
+      let submissionProfile = null;
+      let lgForRes = "uz";
+      try {
+        await withTransaction(async (client) => {
+          let profile = await syncTelegramInfo(client, uid, ctx.from);
+          const lg = langOf(profile);
+          lgForRes = lg;
+          if (profile.session_state !== "bk_review") {
+            await bkSendStepMessage(ctx, client, uid, profile, () =>
+              ctx.reply(tBK(lg, "review_callback_stale"))
+            );
+            return;
+          }
+          if (rest === "send") {
+            profile = await updateProfile(client, uid, { session_state: "done" });
+            await logChat(client, uid, "user", "review:send");
+            submissionProfile = profile;
+            return;
+          }
+          if (rest.startsWith("e:")) {
+            const f = rest.slice(2);
+            if (f === "phone") {
+              const tdPh = { ...(profile.session_data || {}) };
+              const bkPh = { ...(tdPh.bk || {}) };
+              bkPh.returnToReview = true;
+              tdPh.bk = bkPh;
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_phone",
+                phone: null,
+                session_data: tdPh,
+              });
+              await replyBkAskPhoneNoPhoto(ctx, client, uid, profile, lg);
+            } else if (f === "cat") {
+              await client.query(`DELETE FROM uploaded_files WHERE telegram_user_id = $1`, [uid]);
+              const td = { ...(profile.session_data || {}) };
+              td.completed_docs = [];
+              const bk = { ...(td.bk || {}) };
+              delete bk.categoryKey;
+              delete bk.categoryLabel;
+              delete bk.vehicleRf;
+              clearTruckBkFields(bk);
+              clearBikeFields(bk);
+              td.bk = bk;
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_category",
+                city: null,
+                session_data: td,
+              });
+              await sendBkPlaceholderStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                "category",
+                tBK(lg, "ask_category"),
+                categoryInline(lg)
+              );
+            } else if (f === "tdim") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              delete bk.truckDimensionCode;
+              delete bk.truckDimensionLabel;
+              delete bk.truckPayloadKg;
+              delete bk.truckLoaders;
+              delete bk.truckBranding;
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_truck_dimensions",
+                session_data: td,
+              });
+              await bkReplyStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                tBK(lg, "ask_truck_dimensions"),
+                truckDimensionsInline(lg)
+              );
+            } else if (f === "tpay") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              delete bk.truckPayloadKg;
+              delete bk.truckLoaders;
+              delete bk.truckBranding;
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_truck_payload",
+                session_data: td,
+              });
+              await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_truck_payload"));
+            } else if (f === "twrap") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              delete bk.truckBranding;
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_truck_branding",
+                session_data: td,
+              });
+              await bkReplyStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                tBK(lg, "ask_truck_branding"),
+                truckBrandingInline(lg)
+              );
+            } else if (f === "city") {
+              profile = await updateProfile(client, uid, { session_state: "bk_city_pick", city: null });
+              await sendBkPlaceholderStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                "city",
+                tBK(lg, "ask_city"),
+                cityInline(lg)
+              );
+            } else if (f === "cit") {
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              clearBikeFields(bk);
+              td.bk = bk;
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_citizenship",
+                session_data: td,
+              });
+              await sendBkPlaceholderStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                "passport",
+                tBK(lg, "ask_citizenship"),
+                citizenshipInline(lg)
+              );
+            } else if (f === "bself") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              clearBikeFields(bk);
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_self_employed",
+                session_data: td,
+              });
+              await bkReplyStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                tBK(lg, "ask_self_employed"),
+                selfEmployedInline(lg)
+              );
+            } else if (f === "binn") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              delete bk.inn;
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_inn",
+                session_data: td,
+              });
+              await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_inn"));
+            } else if (f === "bsmzphone") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              delete bk.moyNalogPhone;
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_bike_smz_phone",
+                session_data: td,
+              });
+              await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_phone"));
+            } else if (f === "bsmzaddr") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              delete bk.smzAddress;
+              td.bk = bk;
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_bike_smz_address",
+                session_data: td,
+              });
+              await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_address"));
+            } else if (f === "veh") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = ANY($2::text[])`,
+                [uid, ["sts", "tech_passport_front", "tech_passport_back"]]
+              );
+              const td = { ...(profile.session_data || {}) };
+              const done = [...(td.completed_docs || [])].filter(
+                (d) =>
+                  !["sts", "tech_passport_front", "tech_passport_back"].includes(d)
+              );
+              td.completed_docs = done;
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_vehicle_rf",
+                session_data: td,
+              });
+              await sendBkPlaceholderStep(
+                ctx,
+                client,
+                uid,
+                profile,
+                "vehicle_rf",
+                tBK(lg, "ask_vehicle_rf"),
+                vehicleRfInline(lg)
+              );
+            } else if (f === "passport") {
+              await client.query(
+                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
+                [uid]
+              );
+              const td = { ...(profile.session_data || {}) };
+              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_doc_passport",
+                session_data: td,
+              });
+              const legal = tBK(lg, "passport_legal_block");
+              const p = resolvePlaceholderPath("passport");
+              await bkSendStepMessage(ctx, client, uid, profile, async () => {
+                if (p && fs.existsSync(p)) {
+                  return await ctx.replyWithPhoto({ source: p }, { caption: legal });
+                }
+                return await ctx.reply(legal);
+              });
+            }
+          }
+        });
+      } catch (e) {
+        console.error("[bk] bk_R cleanup:", e?.message || e);
+      }
+
+      if (submissionProfile) {
+        const lg = lgForRes;
+        await notifyGroupFullSubmission(ctx.telegram, submissionProfile);
+        const tail = buildBkFinalWait(lg);
+        logChatDeferred(uid, "assistant", tail);
+        await withTransaction(async (client) => {
+          await bkSendStepMessage(ctx, client, uid, submissionProfile, () =>
             ctx.reply(tail, replyRemoveWithInline())
           );
-          return;
-        }
-        if (rest.startsWith("e:")) {
-          const f = rest.slice(2);
-          if (f === "phone") {
-            const tdPh = { ...(profile.session_data || {}) };
-            const bkPh = { ...(tdPh.bk || {}) };
-            bkPh.returnToReview = true;
-            tdPh.bk = bkPh;
-            await updateProfile(client, uid, {
-              session_state: "bk_phone",
-              phone: null,
-              session_data: tdPh,
-            });
-            profile = await ensureProfile(client, uid);
-            await replyBkAskPhoneNoPhoto(ctx, client, uid, profile, lg);
-          } else if (f === "cat") {
-            await client.query(`DELETE FROM uploaded_files WHERE telegram_user_id = $1`, [uid]);
-            const td = { ...(profile.session_data || {}) };
-            td.completed_docs = [];
-            const bk = { ...(td.bk || {}) };
-            delete bk.categoryKey;
-            delete bk.categoryLabel;
-            delete bk.vehicleRf;
-            clearTruckBkFields(bk);
-            clearBikeFields(bk);
-            td.bk = bk;
-            await updateProfile(client, uid, {
-              session_state: "bk_category",
-              city: null,
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await sendBkPlaceholderStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              "category",
-              tBK(lg, "ask_category"),
-              categoryInline(lg)
-            );
-          } else if (f === "tdim") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            delete bk.truckDimensionCode;
-            delete bk.truckDimensionLabel;
-            delete bk.truckPayloadKg;
-            delete bk.truckLoaders;
-            delete bk.truckBranding;
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_truck_dimensions",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              tBK(lg, "ask_truck_dimensions"),
-              truckDimensionsInline(lg)
-            );
-          } else if (f === "tpay") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            delete bk.truckPayloadKg;
-            delete bk.truckLoaders;
-            delete bk.truckBranding;
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_truck_payload",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_truck_payload"));
-          } else if (f === "twrap") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            delete bk.truckBranding;
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_truck_branding",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              tBK(lg, "ask_truck_branding"),
-              truckBrandingInline(lg)
-            );
-          } else if (f === "city") {
-            await updateProfile(client, uid, { session_state: "bk_city_pick", city: null });
-            profile = await ensureProfile(client, uid);
-            await sendBkPlaceholderStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              "city",
-              tBK(lg, "ask_city"),
-              cityInline(lg)
-            );
-          } else if (f === "cit") {
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            clearBikeFields(bk);
-            td.bk = bk;
-            await updateProfile(client, uid, {
-              session_state: "bk_citizenship",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await sendBkPlaceholderStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              "passport",
-              tBK(lg, "ask_citizenship"),
-              citizenshipInline(lg)
-            );
-          } else if (f === "bself") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            clearBikeFields(bk);
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_self_employed",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              tBK(lg, "ask_self_employed"),
-              selfEmployedInline(lg)
-            );
-          } else if (f === "binn") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            delete bk.inn;
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_inn",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_inn"));
-          } else if (f === "bsmzphone") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            delete bk.moyNalogPhone;
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_bike_smz_phone",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_phone"));
-          } else if (f === "bsmzaddr") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const bk = { ...(td.bk || {}) };
-            delete bk.smzAddress;
-            td.bk = bk;
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_bike_smz_address",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_address"));
-          } else if (f === "veh") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = ANY($2::text[])`,
-              [uid, ["sts", "tech_passport_front", "tech_passport_back"]]
-            );
-            const td = { ...(profile.session_data || {}) };
-            const done = [...(td.completed_docs || [])].filter(
-              (d) =>
-                !["sts", "tech_passport_front", "tech_passport_back"].includes(d)
-            );
-            td.completed_docs = done;
-            await updateProfile(client, uid, {
-              session_state: "bk_vehicle_rf",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            await sendBkPlaceholderStep(
-              ctx,
-              client,
-              uid,
-              profile,
-              "vehicle_rf",
-              tBK(lg, "ask_vehicle_rf"),
-              vehicleRfInline(lg)
-            );
-          } else if (f === "passport") {
-            await client.query(
-              `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-              [uid]
-            );
-            const td = { ...(profile.session_data || {}) };
-            td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-            await updateProfile(client, uid, {
-              session_state: "bk_doc_passport",
-              session_data: td,
-            });
-            profile = await ensureProfile(client, uid);
-            const legal = tBK(lg, "passport_legal_block");
-            const p = resolvePlaceholderPath("passport");
-            await bkSendStepMessage(ctx, client, uid, profile, async () => {
-              if (p && fs.existsSync(p)) {
-                return await ctx.replyWithPhoto({ source: p }, { caption: legal });
-              }
-              return await ctx.reply(legal);
-            });
-          }
-        }
-      });
+        });
+      }
       return;
     }
   });
