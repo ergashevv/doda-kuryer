@@ -108,7 +108,7 @@ const BK_STRINGS = {
       "✅ VU foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
 
     ask_sts_front:
-      "STS — bitta foto: barcha yozuvlar aniq ko'rinadigan qilib yuboring (odatda yoyma yoki asosiy bet).",
+      "Transport vositasi ro'yxatdan o'tkazilganligi to'g'risidagi guvohnoma (STS) — bitta foto: barcha yozuvlar aniq ko'rinadigan qilib yuboring (odatda yoyma yoki asosiy bet).",
 
     ask_tech_passport_front:
       "Chet el TS texpasporti — OLD tomoni (bitta foto).",
@@ -123,7 +123,7 @@ const BK_STRINGS = {
       "✅ Texpasport orqa tomoni qabul qilindi\n\nO'qilishini tekshiring, «Davom etish 👉» yoki boshqa foto.",
 
     confirm_sts_uploaded:
-      "✅ STS foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
+      "✅ Guvohnoma (STS) foto qabul qilindi\n\nMaydonlar aniq ko'rinishini tekshiring va «Davom etish 👉»ni bosing\n\nyoki almashtirish uchun boshqa foto yuboring.",
 
     ask_city: "Qaysi shaharda ishlaysiz?",
 
