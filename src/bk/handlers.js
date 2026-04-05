@@ -439,33 +439,46 @@ export function registerBkHandlers(bot) {
   bot.command("start", async (ctx) => {
     const uid = ctx.from?.id;
     if (!uid || !ctx.message) return;
-    await withTransaction(async (client) => {
-      await resetRegistration(client, uid);
-      await client.query(
-        `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type LIKE 'yx_%'`,
-        [uid]
-      );
-      await syncTelegramInfo(client, uid, ctx.from);
-      await logChat(client, uid, "user", "/start");
-      await updateProfile(client, uid, {
-        language: "ru",
-        session_state: "bk_lang",
-        session_data: { bk: {} },
-        service: null,
-        tariff: null,
-        city: null,
-        phone: null,
+    console.log(new Date().toISOString(), "[bk] /start received", uid);
+    try {
+      await withTransaction(async (client) => {
+        await resetRegistration(client, uid);
+        await client.query(
+          `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type LIKE 'yx_%'`,
+          [uid]
+        );
+        await syncTelegramInfo(client, uid, ctx.from);
+        await logChat(client, uid, "user", "/start");
+        await updateProfile(client, uid, {
+          language: "ru",
+          session_state: "bk_lang",
+          session_data: { bk: {} },
+          service: null,
+          tariff: null,
+          city: null,
+          phone: null,
+        });
       });
-    });
-    const pick = tBK("ru", "pick_language");
-    const kb = languagePickKb();
-    await withTransaction(async (client) => {
-      let profile = await ensureProfile(client, uid);
-      await bkClearStepUi(ctx, client, uid, profile);
-      profile = await ensureProfile(client, uid);
-      await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(pick, kb));
-      await logChat(client, uid, "assistant", pick);
-    });
+      const pick = tBK("ru", "pick_language");
+      const kb = languagePickKb();
+      await withTransaction(async (client) => {
+        let profile = await ensureProfile(client, uid);
+        await bkClearStepUi(ctx, client, uid, profile);
+        profile = await ensureProfile(client, uid);
+        await bkSendStepMessage(ctx, client, uid, profile, () => ctx.reply(pick, kb));
+        await logChat(client, uid, "assistant", pick);
+      });
+    } catch (e) {
+      console.error("[bk] /start failed:", e?.stack || e?.message || e);
+      try {
+        await ctx.reply(
+          "Временная ошибка сервера. Попробуйте позже или напишите администратору.\n\n" +
+            "Если так и тишина — на сервере не запущен бот или конфликт 409 (два процесса с одним токеном)."
+        );
+      } catch (replyErr) {
+        console.warn("[bk] /start fallback reply:", replyErr?.message || replyErr);
+      }
+    }
   });
 
   bot.command("ARENDA", async (ctx) => {
