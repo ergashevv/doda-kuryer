@@ -61,6 +61,7 @@ import {
   handleYandexReviewPickMenu,
   isYandexSubmitButtonText,
   matchBkServiceText,
+  normalizeYandexReplyLabelText,
   promptYandexStep,
   servicePickInline,
   yxReplyOptions,
@@ -94,6 +95,13 @@ function bkPayload(profile) {
 
 function langOf(profile) {
   return normalizeBKLang(profile?.language);
+}
+
+function isBkContinueButtonText(lg, text) {
+  return (
+    normalizeYandexReplyLabelText(text) ===
+    normalizeYandexReplyLabelText(tBK(lg, "btn_continue"))
+  );
 }
 
 const BK_MAIN_MENU_PARK_STATES = new Set(["bk_main", "bk_yx", "bk_yx_review"]);
@@ -586,6 +594,82 @@ const DOC_OK_STATE = {
   bk_doc_passport_back_ok: "passport_back",
 };
 
+function dodaDocContStepFromOkState(sessionState) {
+  const docKey = DOC_OK_STATE[sessionState];
+  if (!docKey) return null;
+  if (docKey === "passport_front" || docKey === "passport_back") return "passport";
+  return docKey;
+}
+
+/** `bk_D:cont:*` — inline tugma yoki «Davom etish 👉» matni (Telegram reply klaviatura). */
+async function applyDodaDocContinue(ctx, client, uid, step) {
+  let profile = await ensureProfile(client, uid);
+  const bk = profile.session_data?.bk || {};
+  const seq = dodaDocSequence(bk.categoryKey || "foot", bk);
+  const uploaded = await getUploadedDocTypes(client, uid);
+
+  if (bk.returnToReview) {
+    const br = { ...bk };
+    delete br.returnToReview;
+    const td = { ...(profile.session_data || {}) };
+    td.bk = br;
+    td.completed_docs = seq.filter(
+      (k) => isDodaUploadDocKey(k) && uploaded.has(k)
+    );
+    const missing = getFirstMissingDodaStepSync(br, uploaded);
+    if (!missing) {
+      await updateProfile(client, uid, {
+        session_data: td,
+        session_state: "bk_review",
+      });
+      profile = await ensureProfile(client, uid);
+      await logChat(client, uid, "user", `doc:cont:${step}:review`);
+      await sendBkReviewMessage(ctx, client, uid, profile);
+      return;
+    }
+    await updateProfile(client, uid, { session_data: td });
+    profile = await ensureProfile(client, uid);
+    await promptDodaDocStep(ctx, client, uid, profile, missing);
+    return;
+  }
+
+  if (step === "passport") {
+    const missingPassport = !uploaded.has("passport_front")
+      ? "passport_front"
+      : !uploaded.has("passport_back")
+        ? "passport_back"
+        : null;
+    if (missingPassport) {
+      await promptDodaDocStep(ctx, client, uid, profile, missingPassport);
+      return;
+    }
+    const td = { ...(profile.session_data || {}) };
+    const bk2 = { ...(td.bk || {}) };
+    td.bk = bk2;
+    td.completed_docs = seq.filter(
+      (k) => isDodaUploadDocKey(k) && uploaded.has(k)
+    );
+    await updateProfile(client, uid, {
+      session_data: td,
+      session_state: "bk_review",
+    });
+    profile = await ensureProfile(client, uid);
+    await logChat(client, uid, "user", "doc:cont:passport");
+    await sendBkReviewMessage(ctx, client, uid, profile);
+    return;
+  }
+
+  const idx = seq.indexOf(step);
+  if (idx < 0) {
+    await promptFirstMissingDodaDoc(ctx, client, uid, profile);
+    return;
+  }
+  if (idx >= seq.length - 1) return;
+  const next = seq[idx + 1];
+  await logChat(client, uid, "user", `doc:cont:${step}`);
+  await promptDodaDocStep(ctx, client, uid, profile, next);
+}
+
 /** Ketma-ketlik: til → asosiy menyu → (FAQ | ro‘yxatdan o‘tish) → telefon → kategoriya → shahar → fuqarolik → termokorob → hujjatlar → ko‘rib chiqish → yuborish */
 async function sendWelcomeAfterLanguage(ctx, client, uid, profile, lang) {
   const lg = normalizeBKLang(lang);
@@ -1011,71 +1095,7 @@ export function registerBkHandlers(bot) {
       const step = data.slice(10);
       await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
-        let profile = await ensureProfile(client, uid);
-        const bk = profile.session_data?.bk || {};
-        const seq = dodaDocSequence(bk.categoryKey || "foot", bk);
-        const uploaded = await getUploadedDocTypes(client, uid);
-
-        if (bk.returnToReview) {
-          const br = { ...bk };
-          delete br.returnToReview;
-          const td = { ...(profile.session_data || {}) };
-          td.bk = br;
-          td.completed_docs = seq.filter(
-            (k) => isDodaUploadDocKey(k) && uploaded.has(k)
-          );
-          const missing = getFirstMissingDodaStepSync(br, uploaded);
-          if (!missing) {
-            await updateProfile(client, uid, {
-              session_data: td,
-              session_state: "bk_review",
-            });
-            profile = await ensureProfile(client, uid);
-            await logChat(client, uid, "user", `doc:cont:${step}:review`);
-            await sendBkReviewMessage(ctx, client, uid, profile);
-            return;
-          }
-          await updateProfile(client, uid, { session_data: td });
-          profile = await ensureProfile(client, uid);
-          await promptDodaDocStep(ctx, client, uid, profile, missing);
-          return;
-        }
-
-        const idx = seq.indexOf(step);
-        if (step === "passport") {
-          const missingPassport = !uploaded.has("passport_front")
-            ? "passport_front"
-            : !uploaded.has("passport_back")
-              ? "passport_back"
-              : null;
-          if (missingPassport) {
-            await promptDodaDocStep(ctx, client, uid, profile, missingPassport);
-            return;
-          }
-          const td = { ...(profile.session_data || {}) };
-          const bk2 = { ...(td.bk || {}) };
-          td.bk = bk2;
-          td.completed_docs = seq.filter(
-            (k) => isDodaUploadDocKey(k) && uploaded.has(k)
-          );
-          await updateProfile(client, uid, {
-            session_data: td,
-            session_state: "bk_review",
-          });
-          profile = await ensureProfile(client, uid);
-          await logChat(client, uid, "user", "doc:cont:passport");
-          await sendBkReviewMessage(ctx, client, uid, profile);
-          return;
-        }
-        // Ketma-kilikda yo'q qadam (masalan eski moto oqimida СТС) — qayta hisoblash
-        if (idx < 0) {
-          await promptFirstMissingDodaDoc(ctx, client, uid, profile);
-          return;
-        }
-        if (idx >= seq.length - 1) return;
-        const next = seq[idx + 1];
-        await logChat(client, uid, "user", `doc:cont:${step}`);
-        await promptDodaDocStep(ctx, client, uid, profile, next);
+        await applyDodaDocContinue(ctx, client, uid, step);
       });
       return;
     }
@@ -2055,6 +2075,19 @@ export function registerBkHandlers(bot) {
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:truck_pay"));
         profile = await ensureProfile(client, uid);
         await promptNextAfterTruckStep(ctx, client, uid, profile);
+        markConsumed();
+        return;
+      }
+
+      const docContStep = dodaDocContStepFromOkState(state);
+      if (
+        docContStep &&
+        text &&
+        !msg.photo &&
+        !msg.document &&
+        isBkContinueButtonText(lg, text)
+      ) {
+        await applyDodaDocContinue(ctx, client, uid, docContStep);
         markConsumed();
         return;
       }

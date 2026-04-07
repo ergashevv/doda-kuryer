@@ -3,7 +3,7 @@ import { logChat } from "../services/chatLog.js";
 import { yxDocTypeToPromptKey } from "../services/groupInbox.js";
 import { downloadTelegramFile } from "../services/storage.js";
 import { ensureProfile, updateProfile } from "../services/users.js";
-import { isAllowedDocumentMime } from "./media.js";
+import { isAllowedDocumentMime, isAllowedYxRekvizitDocument } from "./media.js";
 import { normalizeRussianPhone } from "./phone.js";
 import {
   categoryInline,
@@ -12,16 +12,20 @@ import {
 } from "./keyboards.js";
 import { normalizeBKLang, tBK, yxAskKzDocPrompt } from "./i18n.js";
 import {
+  YX_COL_REQ_FILE,
   YX_EATS,
   YX_LAVKA,
   buildYxLine,
   getYandexUiState,
+  isYxCitizenUzTjGroup,
+  uzTjCompletedIndexForLine,
   uzTjPassportPrefixComplete,
   initYandexSession,
   clearYandexCollected,
   clearYandexStagingSessionFields,
   mergeCompletedIfYxReviewRedoDone,
   prepareYandexSingleReviewRedo,
+  stripYandexReviewRedoMeta,
   yxExtractFile,
   yxForbiddenMedia,
   validateYxText,
@@ -114,7 +118,11 @@ export function yxKzDocReply(lang) {
 
 export function yxTmVisaKindReply(lang) {
   const lg = normalizeBKLang(lang);
-  return Markup.keyboard([[tBK(lg, "yx_tm_work")], [tBK(lg, "yx_tm_tourism")]])
+  return Markup.keyboard([
+    [tBK(lg, "yx_tm_work")],
+    [tBK(lg, "yx_tm_tourism")],
+    [tBK(lg, "yx_tm_study")],
+  ])
     .resize()
     .oneTime();
 }
@@ -158,7 +166,7 @@ export function yxReviewSendOptions(lg) {
   );
 }
 
-function yxReviewStepButtonLabel(lg, entry, index, total) {
+function yxReviewStepButtonLabel(lg, entry, index, total, sessionData) {
   let part;
   if (typeof entry !== "string") {
     part = `${index + 1}/${total}`;
@@ -169,7 +177,7 @@ function yxReviewStepButtonLabel(lg, entry, index, total) {
     if (lbl === lk) lbl = colKey;
     part = `${index + 1}/${total} · ${lbl}`;
   } else {
-    const pk = yxDocTypeToPromptKey(entry);
+    const pk = yxDocTypeToPromptKey(entry, sessionData);
     let title = pk ? tBK(lg, pk) : tBK(lg, "group_caption_yx_generic");
     if (!title || title === pk) title = tBK(lg, "group_caption_yx_generic");
     title = String(title).replace(/\s+/g, " ").trim().replace(/[.]+$/, "");
@@ -198,7 +206,7 @@ export async function handleYandexReviewPickMenu(ctx, client, uid) {
   const total = completed.length;
   const rows = completed.map((entry, idx) => [
     Markup.button.callback(
-      yxReviewStepButtonLabel(lg, entry, idx, total),
+      yxReviewStepButtonLabel(lg, entry, idx, total, profile.session_data),
       `bk_YR:e:${idx}`
     ),
   ]);
@@ -334,6 +342,7 @@ export function yxTmVisaKindInline(lang) {
   return Markup.inlineKeyboard([
     [Markup.button.callback(tBK(lg, "yx_tm_work"), "bk_YX:tmkind:work")],
     [Markup.button.callback(tBK(lg, "yx_tm_tourism"), "bk_YX:tmkind:tourism")],
+    [Markup.button.callback(tBK(lg, "yx_tm_study"), "bk_YX:tmkind:study")],
   ]);
 }
 
@@ -446,6 +455,7 @@ export function mapYandexUserTextToPayload(profile, text) {
     if (st.step.choiceId === "visa_kind") {
       if (t === tBK(lg, "yx_tm_work")) return "tmkind:work";
       if (t === tBK(lg, "yx_tm_tourism")) return "tmkind:tourism";
+      if (t === tBK(lg, "yx_tm_study")) return "tmkind:study";
       return null;
     }
     if (t === tBK(lg, "yx_ram_reg")) return "ram:reg";
@@ -471,7 +481,7 @@ export async function applyBkServiceSelection(ctx, client, uid, svc) {
     delete td.yx;
     td.completed_yx = [];
     td.collected = clearYandexCollected(td);
-    td = clearYandexStagingSessionFields(td);
+    td = stripYandexReviewRedoMeta(clearYandexStagingSessionFields(td));
     profile = await updateProfile(client, uid, {
       session_data: { ...td, bk: td.bk || {} },
       session_state: "bk_category",
@@ -527,12 +537,20 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
       return true;
     }
     const line = buildYxLine(yx, completed);
-    const expected = line[completed.length];
-    if (
-      !expected ||
-      expected.docType !== staged ||
-      (expected.t !== "photo" && expected.t !== "video" && expected.t !== "doc")
-    ) {
+    const pos = isYxCitizenUzTjGroup(yx.citizen)
+      ? uzTjCompletedIndexForLine(completed)
+      : completed.length;
+    const expected = line[pos];
+    const okNormalFile =
+      expected &&
+      expected.docType === staged &&
+      (expected.t === "photo" || expected.t === "video" || expected.t === "doc");
+    const okRekvizitFile =
+      expected &&
+      expected.t === "text" &&
+      expected.colKey === "yx_col_req_text" &&
+      staged === YX_COL_REQ_FILE;
+    if (!expected || (!okNormalFile && !okRekvizitFile)) {
       await ctx.reply(tBK(lg, "review_callback_stale"));
       return true;
     }
@@ -574,7 +592,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     yx.cityKey = ck;
     yx.regAmina = null;
     profile = await updateProfile(client, uid, {
-      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
+      session_data: clearYandexStagingSessionFields(
+        stripYandexReviewRedoMeta({ ...td, yx, completed_yx: [] })
+      ),
     });
     await promptYandexStep(ctx, client, uid, profile);
     return true;
@@ -599,7 +619,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     yx.tmVisaKind = null;
     yx.regAmina = null;
     profile = await updateProfile(client, uid, {
-      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
+      session_data: clearYandexStagingSessionFields(
+        stripYandexReviewRedoMeta({ ...td, yx, completed_yx: [] })
+      ),
     });
     await promptYandexStep(ctx, client, uid, profile);
     return true;
@@ -608,13 +630,15 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     yx.uzDocKind = payload.slice(3);
     yx.regAmina = null;
     const cur = [...(td.completed_yx || [])];
-    const keep = uzTjPassportPrefixComplete(cur) ? cur.slice(0, 2) : [];
+    const keep = uzTjPassportPrefixComplete(cur) ? ["yx_uz_pre_pass_f"] : [];
     profile = await updateProfile(client, uid, {
-      session_data: clearYandexStagingSessionFields({
-        ...td,
-        yx,
-        completed_yx: keep,
-      }),
+      session_data: clearYandexStagingSessionFields(
+        stripYandexReviewRedoMeta({
+          ...td,
+          yx,
+          completed_yx: keep,
+        })
+      ),
     });
     await promptYandexStep(ctx, client, uid, profile);
     return true;
@@ -623,7 +647,9 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     yx.kzDocKind = payload.slice(3) === "pass" ? "pass" : "id";
     yx.regAmina = null;
     profile = await updateProfile(client, uid, {
-      session_data: clearYandexStagingSessionFields({ ...td, yx, completed_yx: [] }),
+      session_data: clearYandexStagingSessionFields(
+        stripYandexReviewRedoMeta({ ...td, yx, completed_yx: [] })
+      ),
     });
     await promptYandexStep(ctx, client, uid, profile);
     return true;
@@ -638,10 +664,10 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
       return true;
     }
     if (raw === "work" || raw === "study") {
-      yx.tmVisaKind = "work";
+      yx.tmVisaKind = raw;
       yx.regAmina = null;
       profile = await updateProfile(client, uid, {
-        session_data: { ...td, yx, completed_yx: completed },
+        session_data: stripYandexReviewRedoMeta({ ...td, yx, completed_yx: completed }),
       });
       await promptYandexStep(ctx, client, uid, profile);
       return true;
@@ -651,7 +677,7 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
   if (payload === "ram:reg" || payload === "ram:amina") {
     yx.regAmina = payload === "ram:reg" ? "reg" : "amina";
     profile = await updateProfile(client, uid, {
-      session_data: { ...td, yx, completed_yx: completed },
+      session_data: stripYandexReviewRedoMeta({ ...td, yx, completed_yx: completed }),
     });
     await promptYandexStep(ctx, client, uid, profile);
     return true;
@@ -797,6 +823,20 @@ function yxCitizenLabel(lg, code) {
   return k ? tBK(lg, k) : code || "—";
 }
 
+/** UZ–TJ oqimi: yorliq faqat tanlangan davlatga mos (uz_tj / fallback — neytral). */
+function yxRevUzDocHeading(lg, citizen) {
+  if (citizen === "uz") return tBK(lg, "yx_rev_uzdoc_uz");
+  if (citizen === "tj") return tBK(lg, "yx_rev_uzdoc_tj");
+  return tBK(lg, "yx_rev_uzdoc_pair");
+}
+
+/** KZ–KG oqimi: xuddi shu. */
+function yxRevKzDocHeading(lg, citizen) {
+  if (citizen === "kz") return tBK(lg, "yx_rev_kzdoc_kz");
+  if (citizen === "kg") return tBK(lg, "yx_rev_kzdoc_kg");
+  return tBK(lg, "yx_rev_kzdoc_pair");
+}
+
 function buildYxReviewSummary(lg, profile) {
   const yx = profile.session_data?.yx || {};
   const coll = profile.session_data?.collected || {};
@@ -813,19 +853,19 @@ function buildYxReviewSummary(lg, profile) {
   ];
   if (yx.uzDocKind) {
     lines.push(
-      `${tBK(lg, "yx_rev_uzdoc")}: ${tBK(lg, `yx_doc_${yx.uzDocKind}`)}`
+      `${yxRevUzDocHeading(lg, yx.citizen)}: ${tBK(lg, `yx_doc_${yx.uzDocKind}`)}`
     );
   }
   if (yx.kzDocKind) {
     lines.push(
-      `${tBK(lg, "yx_rev_kzdoc")}: ${tBK(lg, yx.kzDocKind === "pass" ? "yx_kz_pass" : "yx_kz_id")}`
+      `${yxRevKzDocHeading(lg, yx.citizen)}: ${tBK(lg, yx.kzDocKind === "pass" ? "yx_kz_pass" : "yx_kz_id")}`
     );
   }
   if (yx.tmVisaKind) {
-    const workish = yx.tmVisaKind === "work" || yx.tmVisaKind === "study";
-    lines.push(
-      `${tBK(lg, "yx_rev_tmvisa")}: ${tBK(lg, workish ? "yx_tm_work" : "yx_tm_tourism")}`
-    );
+    let visaKey = "yx_tm_tourism";
+    if (yx.tmVisaKind === "work") visaKey = "yx_tm_work";
+    else if (yx.tmVisaKind === "study") visaKey = "yx_tm_study";
+    lines.push(`${tBK(lg, "yx_rev_tmvisa")}: ${tBK(lg, visaKey)}`);
   }
   for (const [k, v] of Object.entries(coll)) {
     if (!k.startsWith("yx_col_") || !v) continue;
@@ -914,6 +954,65 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
   }
 
   if (step.t === "text") {
+    if (step.colKey === "yx_col_req_text" && (msg.photo || msg.document)) {
+      const fileStep = {
+        t: "doc",
+        docType: YX_COL_REQ_FILE,
+        promptKey: step.promptKey,
+      };
+      if (yxForbiddenMedia(msg, fileStep)) {
+        await ctx.reply(tBK(lg, "err_wrong_media_type"), textStepKb);
+        return true;
+      }
+      if (msg.document && !isAllowedYxRekvizitDocument(msg.document)) {
+        await ctx.reply(tBK(lg, "err_doc_mime"), textStepKb);
+        return true;
+      }
+      const ex = yxExtractFile(msg, fileStep);
+      if (!ex) {
+        await ctx.reply(tBK(lg, "err_doc_need_photo"), textStepKb);
+        return true;
+      }
+      await client.query(
+        `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = $2`,
+        [uid, YX_COL_REQ_FILE]
+      );
+      const completedUp = completed.filter(
+        (d) => d !== YX_COL_REQ_FILE && d !== "__text__:yx_col_req_text"
+      );
+      const coll = { ...(td.collected || {}) };
+      delete coll.yx_col_req_text;
+      const path = await downloadTelegramFile(
+        ctx.telegram,
+        ex.fileId,
+        uid,
+        YX_COL_REQ_FILE,
+        ex.mime
+      );
+      await client.query(
+        `INSERT INTO uploaded_files (telegram_user_id, doc_type, telegram_file_id, local_path)
+         VALUES ($1, $2, $3, $4)`,
+        [uid, YX_COL_REQ_FILE, ex.fileId, path]
+      );
+      const chatIdRf = ctx.chat?.id;
+      const promptIdsRf = [...(td.yx_prompt_msg_ids || [])];
+      if (chatIdRf && promptIdsRf.length) {
+        await telegramDeleteMany(ctx, chatIdRf, promptIdsRf);
+      }
+      const nextTdRf = { ...td, yx, completed_yx: completedUp, collected: coll };
+      nextTdRf.yx_prompt_msg_ids = [];
+      nextTdRf.yx_staged_doc = YX_COL_REQ_FILE;
+      if (msg?.message_id != null) {
+        nextTdRf.bk_pending_user_message_id = msg.message_id;
+      } else {
+        delete nextTdRf.bk_pending_user_message_id;
+      }
+      const pRf = await updateProfile(client, uid, { session_data: nextTdRf });
+      await logChat(client, uid, "user", `yx:file:${YX_COL_REQ_FILE}`);
+      await replyYxStagedPreview(ctx, client, uid, pRf, msg, fileStep, lg);
+      return true;
+    }
+
     const text = (msg.text || "").trim();
     if (msg.photo || msg.document) {
       await ctx.reply(tBK(lg, "yx_need_text"), textStepKb);
@@ -934,6 +1033,13 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
       phoneNorm = p;
     }
     const coll = { ...(td.collected || {}) };
+    if (step.colKey === "yx_col_req_text") {
+      await client.query(
+        `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = $2`,
+        [uid, YX_COL_REQ_FILE]
+      );
+      completed = completed.filter((x) => x !== YX_COL_REQ_FILE);
+    }
     coll[step.colKey] = phoneNorm;
     const marker = `__text__:${step.colKey}`;
     completed = completed.filter((x) => x !== marker);

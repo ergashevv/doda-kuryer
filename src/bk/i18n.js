@@ -348,7 +348,8 @@ const BK_STRINGS = {
     yx_city_other: "Boshqa",
     yx_city_other_blocked: "Uzr, biz shu Moscow va oblastdan boshqalariga hozircha boglab hizmat korsatolmaymiz.",
 
-    yx_ask_city: "Moskva yoki Moskva viloyatidan birini tanlang.",
+    yx_ask_city:
+      "Qayerda ishlashni xohlaysiz — Moskva (MSK) yoki Moskva viloyati? Pastdagi tugmalar bilan tanlang.",
     yx_ask_citizen: "Fuqaroligingizni tanlang.",
     yx_p_uz_pre_pass_f: "Pasportingizning rasm bor sahifasini yuboring.",
     yx_p_uz_pre_pass_b: "Pasportingizning propiska (yashash joyi) sahifasini yuboring.",
@@ -356,7 +357,8 @@ const BK_STRINGS = {
     yx_ask_kz_doc_kz: "Qozog'iston fuqarosi — kerakli hujjatni tanlang.",
     yx_ask_kz_doc_kg: "Qirg'iziston fuqarosi — kerakli hujjatni tanlang.",
     yx_ask_kz_doc_neutral: "Hujjatni tanlang.",
-    yx_ask_tm_visa: "Viza turini tanlang (ishchi yoki turizm vizasi).",
+    yx_ask_tm_visa:
+      "Viza turini tanlang (ishchi, turizm yoki o‘qish vizasi).",
 
     yx_cit_uz: "O'zbekiston",
     yx_cit_tj: "Tojikiston",
@@ -377,6 +379,7 @@ const BK_STRINGS = {
 
     yx_tm_work: "Ishchi viza",
     yx_tm_tourism: "Turizm viza",
+    yx_tm_study: "O‘qish vizasi",
     yx_tm_tourism_blocked:
       "Turizm vizasi bilan hozircha ulab bera olmaymiz. Faqat ishchi viza bilan to‘liq ro‘yxatdan o‘tish mumkin. «Ishchi viza»ni tanlang.",
 
@@ -398,8 +401,12 @@ const BK_STRINGS = {
     yx_rev_service: "Servis",
     yx_rev_city: "Shahar",
     yx_rev_citizen: "Status",
-    yx_rev_uzdoc: "UZ/TJ hujjati",
-    yx_rev_kzdoc: "KZ/KG hujjati",
+    yx_rev_uzdoc_uz: "O'zbekiston hujjati",
+    yx_rev_uzdoc_tj: "Tojikiston hujjati",
+    yx_rev_uzdoc_pair: "Hujjat turi",
+    yx_rev_kzdoc_kz: "Qozog'iston hujjati",
+    yx_rev_kzdoc_kg: "Qirg'iziston hujjati",
+    yx_rev_kzdoc_pair: "Hujjat turi",
     yx_rev_tmvisa: "TM vizasi",
     yx_rev_files: "Yakunlangan bosqichlar (matnlar bilan birga)",
 
@@ -413,7 +420,7 @@ const BK_STRINGS = {
       "Formatni tekshiring: karta — 16 raqam; telefon — RF; INN — 10 yoki 12 raqam; SNILS — 11 raqam; maydon bo'sh bo'lmasin.",
     yx_file_ok: "Qabul qilindi. Keyingi bosqichga o'tamiz.",
 
-    yx_lbl_yx_col_req_text: "Rekvizitlar (matn)",
+    yx_lbl_yx_col_req_text: "Bank rekvizitlari",
     yx_lbl_yx_col_card16: "Karta raqami",
     yx_lbl_yx_col_contact_phone: "Kontakt telefoni",
     yx_lbl_yx_col_tm_contact: "Kontakt telefoni",
@@ -425,7 +432,7 @@ const BK_STRINGS = {
     yx_p_req_photo:
       "Bank kartasi rekvizitlari bilan foto yuboring (yuz va pasportsiz).",
     yx_p_req_text:
-      "Bank rekvizitlarini bitta xabarda yuboring (servis yo'riqnomasiga ko'ra).",
+      "Bank rekvizitlarini bitta matn xabari, surat yoki fayl (PDF va h.k.) bilan yuboring (servis yo'riqnomasiga ko'ra).",
     yx_p_card16: "Bank karta raqamini kiriting — ketma-ket 16 raqam (bo'shliq bilan ham mumkin).",
 
     yx_p_uz_pat_pass: "Pasport rasmi (rasmli sahifasi).",
@@ -454,6 +461,8 @@ const BK_STRINGS = {
 
     yx_p_rf_pass_face: "Rossiya pasporti rasmi (rasmli sahifa).",
     yx_p_rf_pass_prop: "Propiska sahifasi rasmi.",
+    yx_p_other_pass_face: "Pasport rasmi (rasmli sahifa).",
+    yx_p_other_pass_prop: "Propiska yoki yashash joyi sahifasi rasmi.",
 
     yx_p_tm_pass: "Pasport rasmi (rasmli sahifasi).",
     yx_p_tm_visa: "Viza rasmini yuboring.",
@@ -859,7 +868,7 @@ const BK_STRINGS = {
       "Перезагрузится только выбранный шаг — уже введённые следующие данные сохранятся.",
 
     yx_ask_city:
-      "Укажите Москву или Московскую область кнопкой ниже.",
+      "Где вы хотите работать — в Москве (МСК) или в Московской области? Выберите кнопкой ниже.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_p_uz_pre_pass_f: "Фото паспорта (разворот с фото).",
     yx_p_uz_pre_pass_b: "Фото паспорта — страница с пропиской или следующий разворот.",
@@ -870,7 +879,7 @@ const BK_STRINGS = {
       "Гражданину Кыргызстана: выберите вариант кнопкой ниже.",
     yx_ask_kz_doc_neutral: "Выберите вариант кнопкой ниже.",
     yx_ask_tm_visa:
-      "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
+      "Какой тип визы? Выберите кнопкой ниже: туристическая, рабочая или учебная.",
 
     yx_cit_uz: "Узбекистан",
     yx_cit_tj: "Таджикистан",
@@ -891,6 +900,7 @@ const BK_STRINGS = {
 
     yx_tm_work: "Рабочая виза",
     yx_tm_tourism: "Туристическая виза",
+    yx_tm_study: "Учебная виза",
     yx_tm_tourism_blocked:
       "С туристической визой сейчас подключить не можем — полное оформление только с рабочей визой. Выберите «Рабочая виза».",
 
@@ -907,8 +917,12 @@ const BK_STRINGS = {
     yx_rev_service: "Сервис",
     yx_rev_city: "Город",
     yx_rev_citizen: "Статус",
-    yx_rev_uzdoc: "Документ УЗ/ТЖ",
-    yx_rev_kzdoc: "Документ КЗ/КГ",
+    yx_rev_uzdoc_uz: "Документ (Узбекистан)",
+    yx_rev_uzdoc_tj: "Документ (Таджикистан)",
+    yx_rev_uzdoc_pair: "Тип документа",
+    yx_rev_kzdoc_kz: "Документ (Казахстан)",
+    yx_rev_kzdoc_kg: "Документ (Кыргызстан)",
+    yx_rev_kzdoc_pair: "Тип документа",
     yx_rev_tmvisa: "Виза ТМ",
     yx_rev_files: "Шагов пройдено (включая текстовые)",
 
@@ -922,7 +936,7 @@ const BK_STRINGS = {
       "Проверьте формат: карта — 16 цифр; телефон — РФ; ИНН — 10 или 12 цифр; СНИЛС — 11 цифр; поле не пустое.",
     yx_file_ok: "Принято. Переходим к следующему шагу.",
 
-    yx_lbl_yx_col_req_text: "Реквизиты (текст)",
+    yx_lbl_yx_col_req_text: "Банковские реквизиты",
     yx_lbl_yx_col_card16: "Номер карты",
     yx_lbl_yx_col_contact_phone: "Контактный телефон",
     yx_lbl_yx_col_tm_contact: "Контактный телефон",
@@ -934,7 +948,7 @@ const BK_STRINGS = {
     yx_p_req_photo:
       "Отправьте фото с реквизитами банковской карты (без лица и паспорта).",
     yx_p_req_text:
-      "Одним сообщением укажите банковские реквизиты (как в инструкции сервиса).",
+      "Отправьте банковские реквизиты одним текстом, фото или файлом (PDF и др.) — как в инструкции сервиса.",
     yx_p_card16: "Введите номер банковской карты — 16 цифр подряд (можно с пробелами).",
 
     yx_p_uz_pat_pass: "Фото паспорта (разворот с фото).",
@@ -963,6 +977,8 @@ const BK_STRINGS = {
 
     yx_p_rf_pass_face: "Фото паспорта РФ (разворот с фото).",
     yx_p_rf_pass_prop: "Фото страницы с пропиской.",
+    yx_p_other_pass_face: "Фото паспорта (разворот с фото).",
+    yx_p_other_pass_prop: "Фото страницы с регистрацией / пропиской.",
 
     yx_p_tm_pass: "Фото паспорта (разворот с фото).",
     yx_p_tm_visa:
@@ -1260,7 +1276,7 @@ const BK_STRINGS = {
     yx_city_mo: "Вилояти Москва",
 
     yx_ask_city:
-      "Москва же Москванын областин төмөнкү баскыч менен тандаңыз.",
+      "Кӯда кор кардан мехоҳед — дар Москва (МСК) ё дар вилояти Москва? Бо тугмаҳои зерин интихоб кунед.",
     yx_ask_citizen: "Статус / жарандыгыңызды төмөнкү баскыч менен тандаңыз.",
     yx_p_uz_pre_pass_f: "Паспорттун сүрөтү — сүрөтү бар бет (алдыңкы).",
     yx_p_uz_pre_pass_b: "Паспорттун сүрөтү — кийинки бет (прописка же арткы).",
@@ -1271,7 +1287,7 @@ const BK_STRINGS = {
       "Кыргызстан жараны үчүн: төмөнкү баскыч менен тандаңыз.",
     yx_ask_kz_doc_neutral: "Төмөнкү баскыч менен тандаңыз.",
     yx_ask_tm_visa:
-      "Кайсы түрдөгү виза? Төмөнкү баскычтардан тандаңыз: туризм же иш визасы.",
+      "Кайсы түрдөгү виза? Төмөнкү баскычтардан тандаңыз: туризм, иш же окуу визасы.",
 
     yx_cit_uz: "Өзбекстан",
     yx_cit_tj: "Тажикстан",
@@ -1292,6 +1308,7 @@ const BK_STRINGS = {
 
     yx_tm_work: "Жумушчу виза",
     yx_tm_tourism: "Туризм визасы",
+    yx_tm_study: "Окуу визасы",
     yx_tm_tourism_blocked:
       "Туризм визасы менен азыр туташтыра албайбыз; толук каттоо үчүн гана жумуш визасы ылайыктуу. «Жумушчу виза»ны тандаңыз.",
 
@@ -1313,8 +1330,12 @@ const BK_STRINGS = {
     yx_rev_service: "Сервис",
     yx_rev_city: "Шаар",
     yx_rev_citizen: "Статус",
-    yx_rev_uzdoc: "УЗ/ТЖ документи",
-    yx_rev_kzdoc: "КЗ/КГ документи",
+    yx_rev_uzdoc_uz: "Өзбекстандын документи",
+    yx_rev_uzdoc_tj: "Тажикстандын документи",
+    yx_rev_uzdoc_pair: "Документтин түрү",
+    yx_rev_kzdoc_kz: "Казакстандын документи",
+    yx_rev_kzdoc_kg: "Кыргызстандын документи",
+    yx_rev_kzdoc_pair: "Документтин түрү",
     yx_rev_tmvisa: "ТМ визасы",
     yx_rev_files: "Өтүлгөн кадамдар (текст менен кошо)",
 
@@ -1328,7 +1349,7 @@ const BK_STRINGS = {
       "Форматты текшериңиз: карта — 16 сан; телефон — РФ; ИНН — 10 же 12 сан; СНИЛС — 11 сан; талаа бош болбосун.",
     yx_file_ok: "Кабыл алынды. Кийинки кадамга өтөбүз.",
 
-    yx_lbl_yx_col_req_text: "Реквизиттер (текст)",
+    yx_lbl_yx_col_req_text: "Банк реквизиттери",
     yx_lbl_yx_col_card16: "Карта номери",
     yx_lbl_yx_col_contact_phone: "Байланыш телефону",
     yx_lbl_yx_col_tm_contact: "Байланыш телефону",
@@ -1340,7 +1361,7 @@ const BK_STRINGS = {
     yx_p_req_photo:
       "Банк картасынын реквизиттери менен сүрөт жөнөтүңүз (бет жана паспорт жок).",
     yx_p_req_text:
-      "Банк реквизиттерин бир билдирүү менен жазыңыз (сервис нускамасына ылайык).",
+      "Банк реквизиттерин бир тексттик билдирүү, сүрөт же файл (PDF ж.б.) менен жөнөтүңүз (сервис нускамасына ылайык).",
     yx_p_card16: "Банк картасынын номерин киргизиңиз — 16 сан катары менен (боштук менен да болот).",
 
     yx_p_uz_pat_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
@@ -1369,6 +1390,8 @@ const BK_STRINGS = {
 
     yx_p_rf_pass_face: "РФ паспортунун сүрөтү (сүрөтү бар бети).",
     yx_p_rf_pass_prop: "Каттоо барагынын сүрөтү.",
+    yx_p_other_pass_face: "Паспорттун сүрөтү (сүрөтү бар бети).",
+    yx_p_other_pass_prop: "Каттоо же жашоо жери көрсөтүлгөн барактын сүрөтү.",
 
     yx_p_tm_pass: "Паспорттун сүрөтү (сүрөтү бар бети).",
     yx_p_tm_visa:
@@ -1675,7 +1698,7 @@ const BK_STRINGS = {
     yx_city_mo: "Москва облысы",
 
     yx_ask_city:
-      "Укажите Москву или Московскую область кнопкой ниже.",
+      "Кайда иштегиңиз келет — Москва (МСК) же Москва облысы? Төмөнкү баскыч менен тандаңыз.",
     yx_ask_citizen: "Укажите ваш статус / гражданство кнопкой ниже.",
     yx_p_uz_pre_pass_f: "Фото паспорта (разворот с фото).",
     yx_p_uz_pre_pass_b: "Фото паспорта — страница с пропиской или следующий разворот.",
@@ -1686,7 +1709,7 @@ const BK_STRINGS = {
       "Гражданину Кыргызстана: выберите вариант кнопкой ниже.",
     yx_ask_kz_doc_neutral: "Выберите вариант кнопкой ниже.",
     yx_ask_tm_visa:
-      "Какой тип визы? Выберите кнопкой ниже: туристическая или рабочая.",
+      "Какой тип визы? Выберите кнопкой ниже: туристическая, рабочая или учебная.",
 
     yx_cit_uz: "Узбекистан",
     yx_cit_tj: "Таджикистан",
@@ -1707,6 +1730,7 @@ const BK_STRINGS = {
 
     yx_tm_work: "Рабочая виза",
     yx_tm_tourism: "Туристическая виза",
+    yx_tm_study: "Учебная виза",
     yx_tm_tourism_blocked:
       "С туристической визой сейчас подключить не можем — полное оформление только с рабочей визой. Выберите «Рабочая виза».",
 
@@ -1723,8 +1747,12 @@ const BK_STRINGS = {
     yx_rev_service: "Сервис",
     yx_rev_city: "Город",
     yx_rev_citizen: "Статус",
-    yx_rev_uzdoc: "Документ УЗ/ТЖ",
-    yx_rev_kzdoc: "Документ КЗ/КГ",
+    yx_rev_uzdoc_uz: "Документ (Узбекистан)",
+    yx_rev_uzdoc_tj: "Документ (Таджикистан)",
+    yx_rev_uzdoc_pair: "Тип документа",
+    yx_rev_kzdoc_kz: "Документ (Казахстан)",
+    yx_rev_kzdoc_kg: "Документ (Кыргызстан)",
+    yx_rev_kzdoc_pair: "Тип документа",
     yx_rev_tmvisa: "Виза ТМ",
     yx_rev_files: "Шагов пройдено (включая текстовые)",
 
@@ -1738,7 +1766,7 @@ const BK_STRINGS = {
       "Проверьте формат: карта — 16 цифр; телефон — РФ; ИНН — 10 или 12 цифр; СНИЛС — 11 цифр; поле не пустое.",
     yx_file_ok: "Принято. Переходим к следующему шагу.",
 
-    yx_lbl_yx_col_req_text: "Реквизиты (текст)",
+    yx_lbl_yx_col_req_text: "Банковские реквизиты",
     yx_lbl_yx_col_card16: "Номер карты",
     yx_lbl_yx_col_contact_phone: "Контактный телефон",
     yx_lbl_yx_col_tm_contact: "Контактный телефон",
@@ -1750,7 +1778,7 @@ const BK_STRINGS = {
     yx_p_req_photo:
       "Отправьте фото с реквизитами банковской карты (без лица и паспорта).",
     yx_p_req_text:
-      "Одним сообщением укажите банковские реквизиты (как в инструкции сервиса).",
+      "Отправьте банковские реквизиты одним текстом, фото или файлом (PDF и др.) — как в инструкции сервиса.",
     yx_p_card16: "Введите номер банковской карты — 16 цифр подряд (можно с пробелами).",
 
     yx_p_uz_pat_pass: "Фото паспорта (разворот с фото).",
@@ -1779,6 +1807,8 @@ const BK_STRINGS = {
 
     yx_p_rf_pass_face: "Фото паспорта РФ (разворот с фото).",
     yx_p_rf_pass_prop: "Фото страницы с пропиской.",
+    yx_p_other_pass_face: "Фото паспорта (разворот с фото).",
+    yx_p_other_pass_prop: "Фото страницы с регистрацией / пропиской.",
 
     yx_p_tm_pass: "Фото паспорта (разворот с фото).",
     yx_p_tm_visa:
@@ -1896,7 +1926,15 @@ export function buildBkSummaryI18n(lang, profile) {
   if (profile.city) {
     lines.push(`${n++}. ${T.city}: ${profile.city}`);
   }
-  if (typeof bk.rfCitizen === "boolean") {
+  if (bk.citizenship) {
+    const citKey = `cit_${bk.citizenship}`;
+    const citLabel = tBK(lang, citKey);
+    lines.push(
+      `${n++}. ${T.citizenship}: ${
+        citLabel === citKey ? String(bk.citizenship) : citLabel
+      }`
+    );
+  } else if (typeof bk.rfCitizen === "boolean") {
     lines.push(`${n++}. ${T.citizenship}: ${bk.rfCitizen ? y : no}`);
   }
 

@@ -14,6 +14,8 @@ import {
   initYandexSession,
   mergeCompletedIfYxReviewRedoDone,
   prepareYandexSingleReviewRedo,
+  stripYandexReviewRedoMeta,
+  uzTjCompletedIndexForLine,
   stripYandexTailFromCompleted,
   validateYxText,
   yxExtractFile,
@@ -66,10 +68,12 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.equal(st.step.docType, "yx_uz_pre_pass_f");
   });
 
-  test("UZ: pasport 2-qadam, keyin uz_doc", () => {
+  test("UZ: bitta pasport rasmi, keyin uz_doc (legacy [f,b] ham uz_doc)", () => {
     const yx = baseYx({ citizen: "uz", uzDocKind: null });
-    const st1 = getYandexUiState(yx, 0, { completed_yx: ["yx_uz_pre_pass_f"] });
-    assert.equal(st1.step.docType, "yx_uz_pre_pass_b");
+    assert.deepEqual(
+      getYandexUiState(yx, 0, { completed_yx: ["yx_uz_pre_pass_f"] }),
+      { ui: "uz_doc" }
+    );
     assert.deepEqual(
       getYandexUiState(yx, 0, {
         completed_yx: ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"],
@@ -78,14 +82,14 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     );
   });
 
-  test("UZ: noto'g'ri uzDocKind — avval pasport, prefix tugagach uz_doc", () => {
+  test("UZ: noto'g'ri uzDocKind — avval pasport, bitta suratdan keyin uz_doc", () => {
     const yx = baseYx({ citizen: "uz", uzDocKind: "bogus" });
     const st0 = getYandexUiState(yx, 0, { completed_yx: [] });
     assert.equal(st0.ui, "step");
     assert.equal(st0.step.docType, "yx_uz_pre_pass_f");
     assert.equal(
       getYandexUiState(yx, 0, {
-        completed_yx: ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"],
+        completed_yx: ["yx_uz_pre_pass_f"],
       }).ui,
       "uz_doc"
     );
@@ -124,12 +128,21 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
     assert.equal(st.step.t, "photo");
   });
 
-  test("Boshqa davlat: RF bilan bir xil liniya", () => {
+  test("Boshqa davlat: RF bilan bir xil ketma-kilik, boshqa pasport matni", () => {
     const rf = buildYxLine(baseYx({ citizen: "rf" }));
     const other = buildYxLine(baseYx({ citizen: "other" }));
-    assert.deepEqual(other, rf);
+    assert.equal(rf.length, other.length);
+    assert.deepEqual(
+      rf.map((s) => s.docType || s.colKey || s.choiceId),
+      other.map((s) => s.docType || s.colKey || s.choiceId)
+    );
+    assert.equal(rf[0].promptKey, "yx_p_rf_pass_face");
+    assert.equal(other[0].promptKey, "yx_p_other_pass_face");
+    assert.equal(rf[1].promptKey, "yx_p_rf_pass_prop");
+    assert.equal(other[1].promptKey, "yx_p_other_pass_prop");
     const st = getYandexUiState(baseYx({ citizen: "other" }), 0);
     assert.equal(st.step.docType, "yx_rf_pass_face");
+    assert.equal(st.step.promptKey, "yx_p_other_pass_face");
   });
 
   test("RF: completedLen toliq bolsa → done", () => {
@@ -146,11 +159,11 @@ describe("getYandexUiState — boshidan yakunigacha tartib", () => {
       uzDocKind: "patent",
       regAmina: null,
     });
-    const prefixOk = ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"];
+    const prefixOk = ["yx_uz_pre_pass_f"];
     const line = buildYxLine(yx, prefixOk);
-    const idx = 4;
+    const idx = 3;
     assert.equal(line[idx].t, "choice");
-    const st = getYandexUiState(yx, idx);
+    const st = getYandexUiState(yx, 0, { completed_yx: prefixOk.concat(["yx_uz_pat_front", "yx_uz_pat_back"]) });
     assert.equal(st.ui, "step");
     assert.equal(st.step.t, "choice");
   });
@@ -199,7 +212,7 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
   });
 
   test("VNJ (UZ/TJ): VNJ ikkala tomoni, INN, SNILS, migratsiya, tail — reg/amina yo‘q", () => {
-    const prefixOk = ["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"];
+    const prefixOk = ["yx_uz_pre_pass_f"];
     const line = buildYxLine(
       baseYx({ citizen: "uz_tj", uzDocKind: "vnzh" }),
       prefixOk
@@ -219,12 +232,12 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.equal(line[line.length - 1].colKey, "yx_col_card16");
   });
 
-  test("KZ pass: kzDocKind=pass — pasport suratisiz, migratsiyadan boshlanadi", () => {
+  test("KZ pass: bitta pasport rasmi, keyin migratsiya", () => {
     const line = buildYxLine(
       baseYx({ citizen: "kz_kg", kzDocKind: "pass" })
     );
-    assert.ok(!line.some((s) => s.docType === "yx_kz_pass_face"));
-    assert.equal(line[0].docType, "yx_kz_mig");
+    assert.equal(line[0].docType, "yx_kz_pass_face");
+    assert.equal(line[1].docType, "yx_kz_mig");
   });
 
   test("TM: ishchi viza — Amina/reg bitta fayl, keyin mig, telefon, rekvizit + 16", () => {
@@ -259,9 +272,21 @@ describe("buildYxLine — tarmoqlar uzunligi va oxirgi qadamlar", () => {
     assert.ok(!line.some((s) => s.docType === "yx_tm_visa"));
   });
 
-  test("TM: eski study sessiya work liniyasiga map qilinadi", () => {
-    const line = buildYxLine(baseYx({ citizen: "tm", tmVisaKind: "study" }));
-    assert.ok(line.some((s) => s.docType === "yx_tm_visa"));
+  test("TM: o‘qish vizasi — viza, talaba bilet va spravka, keyin registratsiya tanlovi", () => {
+    const yx = baseYx({ citizen: "tm", tmVisaKind: "study", regAmina: null });
+    const line = buildYxLine(yx);
+    assert.equal(line[0].docType, "yx_tm_visa");
+    assert.equal(line[1].docType, "yx_tm_st_bilet");
+    assert.equal(line[2].docType, "yx_tm_st_spravka");
+    assert.equal(line[3].t, "choice");
+    assert.equal(line[3].choiceId, "ram_st");
+  });
+
+  test("TM: o‘qish vizasi + reg — migratsiya, alohida doc_type (ishchi vizadan ajratilgan)", () => {
+    const yx = baseYx({ citizen: "tm", tmVisaKind: "study", regAmina: "reg" });
+    const line = buildYxLine(yx);
+    assert.ok(line.some((s) => s.docType === "yx_tm_st_mig"));
+    assert.ok(!line.some((s) => s.docType === "yx_tm_mig"));
   });
 
   test("TM: tmkind tanlangach — birinchi qadam viza surati", () => {
@@ -306,9 +331,10 @@ describe("Callback data — handler bilan mos payload", () => {
     assert.equal(yxPayload(`${PREFIX_YX}kz:id`).slice(3) === "id", true);
   });
 
-  test("bk_YX:tmkind:work / tourism", () => {
+  test("bk_YX:tmkind:work / tourism / study", () => {
     assert.equal(yxPayload(`${PREFIX_YX}tmkind:work`).slice(7), "work");
     assert.equal(yxPayload(`${PREFIX_YX}tmkind:tourism`).slice(7), "tourism");
+    assert.equal(yxPayload(`${PREFIX_YX}tmkind:study`).slice(7), "study");
   });
 
   test("bk_YX:ram:reg → reg", () => {
@@ -411,6 +437,27 @@ describe("prepareYandexSingleReviewRedo / mergeCompletedIfYxReviewRedoDone", () 
     assert.deepEqual(m.completed, ["a", "b"]);
     assert.equal(m.clearRedoMeta, false);
   });
+
+  test("merge: tail birinchi elementi yangi qadam bilan bir xil — qo‘shmasdan meta tozalash", () => {
+    const td = {
+      yx_review_restore_tail: ["yx_mig", "__text__:x"],
+      yx_review_redo_edit_index: 1,
+    };
+    const m = mergeCompletedIfYxReviewRedoDone(td, ["vis", "yx_mig"]);
+    assert.deepEqual(m.completed, ["vis", "yx_mig"]);
+    assert.equal(m.clearRedoMeta, true);
+  });
+
+  test("stripYandexReviewRedoMeta", () => {
+    const u = stripYandexReviewRedoMeta({
+      completed_yx: ["a"],
+      yx_review_restore_tail: ["b"],
+      yx_review_redo_edit_index: 0,
+    });
+    assert.deepEqual(u.completed_yx, ["a"]);
+    assert.equal(u.yx_review_restore_tail, undefined);
+    assert.equal(u.yx_review_redo_edit_index, undefined);
+  });
 });
 
 describe("initYandexSession / clearYandexCollected", () => {
@@ -508,6 +555,31 @@ describe("yxForbiddenMedia / yxExtractFile", () => {
     const step = { t: "photo", docType: "d" };
     const msg = { photo: [{ file_id: "a" }, { file_id: "b" }] };
     assert.equal(yxExtractFile(msg, step).fileId, "b");
+  });
+});
+
+describe("uzTjCompletedIndexForLine (legacy propiska)", () => {
+  test("yangi: indeks = uzunlik", () => {
+    assert.equal(uzTjCompletedIndexForLine(["yx_uz_pre_pass_f"]), 1);
+    assert.equal(
+      uzTjCompletedIndexForLine(["yx_uz_pre_pass_f", "yx_uz_pat_front"]),
+      2
+    );
+  });
+
+  test("eski [f,b] — bitta prefiks sifatida", () => {
+    assert.equal(
+      uzTjCompletedIndexForLine(["yx_uz_pre_pass_f", "yx_uz_pre_pass_b"]),
+      1
+    );
+    assert.equal(
+      uzTjCompletedIndexForLine([
+        "yx_uz_pre_pass_f",
+        "yx_uz_pre_pass_b",
+        "yx_uz_pat_front",
+      ]),
+      2
+    );
   });
 });
 

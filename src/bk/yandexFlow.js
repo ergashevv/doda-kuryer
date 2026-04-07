@@ -6,6 +6,9 @@
 export const YX_LAVKA = "yandex_lavka";
 export const YX_EATS = "yandex_eda";
 
+/** Bank rekvizitlari matn yoki fayl/rasm sifatida (`text` qadamida yuklangan hujjat). */
+export const YX_COL_REQ_FILE = "yx_col_req_file";
+
 export function initYandexSession(td, serviceKey, registeredPhone = null) {
   const phone = (registeredPhone && String(registeredPhone).trim()) || "";
   const useRegisteredPhone = phone.length > 0;
@@ -31,9 +34,7 @@ export function initYandexSession(td, serviceKey, registeredPhone = null) {
     completed_yx: [],
     collected,
   });
-  delete fresh.yx_review_restore_tail;
-  delete fresh.yx_review_redo_edit_index;
-  return fresh;
+  return stripYandexReviewRedoMeta(fresh);
 }
 
 export function clearYandexCollected(td) {
@@ -90,19 +91,30 @@ function tailKzAfterMig() {
   return tailRekvizitCard16();
 }
 
-/** UZ/TJ: fuqarolikdan keyin, hujjat turidan oldin — pasport (old → orqa). */
+/** UZ/TJ: fuqarolikdan keyin, hujjat turidan oldin — faqat pasportning rasmli sahifasi (propiska yo‘q). */
 export const UZ_TJ_PASSPORT_PREFIX = [
   photo("yx_uz_pre_pass_f", "yx_p_uz_pre_pass_f"),
-  photo("yx_uz_pre_pass_b", "yx_p_uz_pre_pass_b"),
 ];
 
 export function uzTjPassportPrefixComplete(completed) {
   const c = completed || [];
-  return (
+  return c[0] === "yx_uz_pre_pass_f";
+}
+
+/**
+ * Eski oqimda `yx_uz_pre_pass_b` bor; yangi liniyada bitta prefiks indeksi hisoblanadi.
+ * (Masalan: [f,b] → jadvalda indeks 1, keyingi qadam patent oldi.)
+ */
+export function uzTjCompletedIndexForLine(completed) {
+  const c = completed || [];
+  if (
     c.length >= 2 &&
     c[0] === "yx_uz_pre_pass_f" &&
     c[1] === "yx_uz_pre_pass_b"
-  );
+  ) {
+    return c.length - 1;
+  }
+  return c.length;
 }
 
 /** Eski oqim: prefixsiz boshlangan sessiyalar (completed birinchi elementi patent/VNJ/talaba). */
@@ -171,7 +183,9 @@ function lineUzStudent(yx) {
 function lineKzKg(yx) {
   const L = [];
   if (!yx.kzDocKind) return L;
-  if (yx.kzDocKind !== "pass") {
+  if (yx.kzDocKind === "pass") {
+    L.push(photo("yx_kz_pass_face", "yx_p_kz_pass_face"));
+  } else {
     L.push(photo("yx_kz_id_f", "yx_p_kz_id_f"), photo("yx_kz_id_b", "yx_p_kz_id_b"));
   }
   L.push(photo("yx_kz_mig", "yx_p_mig"));
@@ -189,20 +203,22 @@ function lineKzKg(yx) {
 }
 
 function lineRf(yx) {
+  const other = yx.citizen === "other";
   return [
-    photo("yx_rf_pass_face", "yx_p_rf_pass_face"),
-    photo("yx_rf_pass_prop", "yx_p_rf_pass_prop"),
+    photo(
+      "yx_rf_pass_face",
+      other ? "yx_p_other_pass_face" : "yx_p_rf_pass_face"
+    ),
+    photo(
+      "yx_rf_pass_prop",
+      other ? "yx_p_other_pass_prop" : "yx_p_rf_pass_prop"
+    ),
     ...tailRfAfterMig(yx),
   ];
 }
 
-/** TZ: pasport → viza turi → viza surati → Amina/reg (bitta fayl) → mig → telefon → rekvizit → 16 raqam. Faqat işçi wiza. */
-function lineTm(yx) {
-  const tmVisaKind =
-    yx.tmVisaKind === "study" ? "work" : yx.tmVisaKind;
-  if (!tmVisaKind) {
-    return [choice("visa_kind", "yx_ask_tm_visa")];
-  }
+/** TM ishchi viza: viza surati → Amina/reg (bitta fayl) → mig → telefon → rekvizit → 16 raqam. */
+function lineTmWork(yx) {
   const tmTail = [];
   if (!yx || !yx.useRegisteredPhone) {
     tmTail.push(textField("yx_col_tm_contact", "yx_p_contact_phone", "phone"));
@@ -214,6 +230,43 @@ function lineTm(yx) {
     ...tmTail,
     ...tailRekvizitCard16(),
   ];
+}
+
+/**
+ * TM o'qish vizasi: UZ talaba oqimi bilan bir xil qo'shimcha hujjatlar (bilet, o'qish joyidan spravka),
+ * keyin registratsiya yoki Amina, migratsiya, telefon (agar kerak), rekvizit.
+ */
+function lineTmStudy(yx) {
+  const L = [
+    photo("yx_tm_visa", "yx_p_tm_visa"),
+    photo("yx_tm_st_bilet", "yx_p_st_bilet"),
+    photo("yx_tm_st_spravka", "yx_p_st_spravka"),
+  ];
+  if (!yx.regAmina) {
+    L.push(choice("ram_st", "yx_p_ram_choice"));
+    return L;
+  }
+  if (yx.regAmina === "reg") {
+    L.push(photo("yx_tm_st_reg_f", "yx_p_reg_f"), photo("yx_tm_st_reg_b", "yx_p_reg_b"));
+  } else {
+    L.push(photo("yx_tm_st_amina", "yx_p_amina"));
+  }
+  const tmTail = [];
+  if (!yx || !yx.useRegisteredPhone) {
+    tmTail.push(textField("yx_col_tm_contact", "yx_p_contact_phone", "phone"));
+  }
+  L.push(photo("yx_tm_st_mig", "yx_p_mig"), ...tmTail, ...tailRekvizitCard16());
+  return L;
+}
+
+/** TM: viza turi tanlovi (ishchi / turizm / o'qish). Turizm — handlerda blok. */
+function lineTm(yx) {
+  if (!yx.tmVisaKind) {
+    return [choice("visa_kind", "yx_ask_tm_visa")];
+  }
+  if (yx.tmVisaKind === "study") return lineTmStudy(yx);
+  if (yx.tmVisaKind === "work") return lineTmWork(yx);
+  return [choice("visa_kind", "yx_ask_tm_visa")];
 }
 
 /** UZ/TJ guruh (alohida tugmalar: uz, tj; eski: uz_tj) */
@@ -316,10 +369,23 @@ export function mergeCompletedIfYxReviewRedoDone(td, completed) {
   if (completed.length !== idx + 1) {
     return { completed, clearRedoMeta: false };
   }
+  const last = completed[completed.length - 1];
+  if (tail.length && tail[0] === last) {
+    /* Sessiyada `yx_review_*` qolgan bo‘lsa — tail takrorlanmasin, meta tozalanadi. */
+    return { completed, clearRedoMeta: true };
+  }
   return {
     completed: [...completed, ...tail],
     clearRedoMeta: true,
   };
+}
+
+/** Masterketma-ketlikni nolga qaytarishda review-tahrir `yx_review_*` kalitlari qolmasin (merge xato ishlamasin). */
+export function stripYandexReviewRedoMeta(td) {
+  const o = td && typeof td === "object" ? { ...td } : {};
+  delete o.yx_review_restore_tail;
+  delete o.yx_review_redo_edit_index;
+  return o;
 }
 
 export function getYandexUiState(yx, completedLen, td) {
@@ -353,8 +419,11 @@ export function getYandexUiState(yx, completedLen, td) {
     if (isYxCitizenUzTjGroup(yx.citizen)) return { ui: "uz_doc" };
     return { ui: "none" };
   }
-  if (doneCount >= line.length) return { ui: "done" };
-  return { ui: "step", step: line[doneCount] };
+  const idx = isYxCitizenUzTjGroup(yx.citizen)
+    ? uzTjCompletedIndexForLine(completed)
+    : doneCount;
+  if (idx >= line.length) return { ui: "done" };
+  return { ui: "step", step: line[idx] };
 }
 
 export function yxForbiddenMedia(msg, step) {

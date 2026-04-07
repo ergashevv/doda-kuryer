@@ -35,8 +35,8 @@ export function languagePickKb() {
 export function mainMenuReply(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.keyboard([
-    [tBK(lg, "btn_in_park")],
     [tBK(lg, "btn_not_in_park")],
+    [tBK(lg, "btn_in_park")],
     [tBK(lg, "btn_support")],
   ])
     .resize()
@@ -47,8 +47,8 @@ export function mainMenuReply(lang) {
 export function mainMenuInline(lang) {
   const lg = normalizeBKLang(lang);
   return Markup.inlineKeyboard([
-    [Markup.button.callback(tBK(lg, "btn_in_park"), "bk_M:in")],
     [Markup.button.callback(tBK(lg, "btn_not_in_park"), "bk_M:out")],
+    [Markup.button.callback(tBK(lg, "btn_in_park"), "bk_M:in")],
     [Markup.button.callback(tBK(lg, "btn_support"), "bk_M:support")],
   ]);
 }

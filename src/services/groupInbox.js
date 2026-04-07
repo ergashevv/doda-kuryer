@@ -51,8 +51,17 @@ function formatAnketaBlock(profile) {
   const category = bk.categoryLabel || dash;
   const y = tBK(lg, "summary_yes");
   const no = tBK(lg, "summary_no");
-  const rf =
-    typeof bk.rfCitizen === "boolean" ? (bk.rfCitizen ? y : no) : dash;
+  const citizenshipDisplay = bk.citizenship
+    ? (() => {
+        const citKey = `cit_${bk.citizenship}`;
+        const citLabel = tBK(lg, citKey);
+        return citLabel === citKey ? String(bk.citizenship) : citLabel;
+      })()
+    : typeof bk.rfCitizen === "boolean"
+      ? bk.rfCitizen
+        ? y
+        : no
+      : dash;
 
   const lines = [
     tBK(lg, "group_separator"),
@@ -73,7 +82,7 @@ function formatAnketaBlock(profile) {
         ]
       : []),
     `${tBK(lg, "group_label_city")} ${city}`,
-    `${tBK(lg, "group_label_citizenship")} ${rf}`,
+    `${tBK(lg, "group_label_citizenship")} ${citizenshipDisplay}`,
     ...(bk.categoryKey === "truck"
       ? [
           "",
@@ -282,15 +291,23 @@ function formatYandexAnketaBlock(profile) {
     );
   }
   if (yx.tmVisaKind) {
+    let visaKey = "yx_tm_tourism";
+    if (yx.tmVisaKind === "work") visaKey = "yx_tm_work";
+    else if (yx.tmVisaKind === "study") visaKey = "yx_tm_study";
     lines.push(
-      `${tBK(lg, "group_label_yandex_tmvisa")} ${tBK(lg, yx.tmVisaKind === "work" || yx.tmVisaKind === "study" ? "yx_tm_work" : "yx_tm_tourism")}`
+      `${tBK(lg, "group_label_yandex_tmvisa")} ${tBK(lg, visaKey)}`
     );
   }
   return lines.join("\n");
 }
 
 /** Yandex `doc_type` → i18n `yx_p_*` kaliti (tugma yoki sarlavha uchun). */
-export function yxDocTypeToPromptKey(docType) {
+export function yxDocTypeToPromptKey(docType, sessionData) {
+  const citizen = sessionData?.yx?.citizen;
+  if (citizen === "other") {
+    if (docType === "yx_rf_pass_face") return "yx_p_other_pass_face";
+    if (docType === "yx_rf_pass_prop") return "yx_p_other_pass_prop";
+  }
   const map = {
     yx_uz_pre_pass_f: "yx_p_uz_pre_pass_f",
     yx_uz_pre_pass_b: "yx_p_uz_pre_pass_b",
@@ -328,18 +345,25 @@ export function yxDocTypeToPromptKey(docType) {
     yx_rf_pass_prop: "yx_p_rf_pass_prop",
     yx_tm_pass: "yx_p_tm_pass",
     yx_tm_visa: "yx_p_tm_visa",
+    yx_tm_st_bilet: "yx_p_st_bilet",
+    yx_tm_st_spravka: "yx_p_st_spravka",
+    yx_tm_st_reg_f: "yx_p_reg_f",
+    yx_tm_st_reg_b: "yx_p_reg_b",
+    yx_tm_st_amina: "yx_p_amina",
+    yx_tm_st_mig: "yx_p_mig",
     yx_tm_amina_or_reg: "yx_p_tm_amina_or_reg",
     yx_tm_reg_f: "yx_p_reg_f",
     yx_tm_reg_b: "yx_p_reg_b",
     yx_tm_amina: "yx_p_amina",
     yx_tm_mig: "yx_p_mig",
+    yx_col_req_file: "yx_p_req_text",
   };
   return map[docType] || null;
 }
 
 function formatYandexDocCaption(index, total, docKey, profile) {
   const lg = groupNotifyLang();
-  const promptKey = yxDocTypeToPromptKey(docKey);
+  const promptKey = yxDocTypeToPromptKey(docKey, profile?.session_data);
   let title = promptKey ? tBK(lg, promptKey) : tBK(lg, "group_caption_yx_generic");
   if (!title || title === promptKey) {
     title = tBK(lg, "group_caption_yx_generic");
