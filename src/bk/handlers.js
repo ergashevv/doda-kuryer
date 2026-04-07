@@ -55,8 +55,10 @@ import {
 import {
   applyBkServiceSelection,
   applyYandexEditCallback,
+  applyYandexReviewEditFromIndex,
   handleYandexCallback,
   handleYandexMessage,
+  handleYandexReviewPickMenu,
   isYandexSubmitButtonText,
   matchBkServiceText,
   promptYandexStep,
@@ -319,9 +321,46 @@ async function getFirstMissingDodaStep(client, uid, profile) {
   return getFirstMissingDodaStepSync(bk, uploaded);
 }
 
+/** Reviewdan tahrir: maydon to‘ldirilgach yoki inline tanlanganidan keyin qayta ko‘rib chiqish. */
+async function finishReturnToBkReviewFromEdit(ctx, client, uid, profile) {
+  const td = { ...(profile.session_data || {}) };
+  const bk = { ...(td.bk || {}) };
+  if (!bk.returnToReview) return false;
+  delete bk.returnToReview;
+  td.bk = bk;
+  const seq = dodaDocSequence(bk.categoryKey || "foot", bk);
+  const uploaded = await getUploadedDocTypes(client, uid);
+  td.completed_docs = seq.filter((k) => isDodaUploadDocKey(k) && uploaded.has(k));
+  const missing = getFirstMissingDodaStepSync(bk, uploaded);
+  if (!missing) {
+    await updateProfile(client, uid, {
+      session_data: td,
+      session_state: "bk_review",
+    });
+    const p2 = await ensureProfile(client, uid);
+    await sendBkReviewMessage(ctx, client, uid, p2);
+    return true;
+  }
+  await updateProfile(client, uid, { session_data: td });
+  const p2 = await ensureProfile(client, uid);
+  await promptDodaDocStep(ctx, client, uid, p2, missing);
+  return true;
+}
+
+async function afterAuxStepMaybeReturnToReview(ctx, client, uid, profile, mode) {
+  const p = await ensureProfile(client, uid);
+  if (await finishReturnToBkReviewFromEdit(ctx, client, uid, p)) return;
+  if (mode === "truckNext") await promptNextAfterTruckStep(ctx, client, uid, p);
+  else await promptFirstMissingDodaDoc(ctx, client, uid, p);
+}
+
 async function promptNextAfterTruckStep(ctx, client, uid, profile) {
   let p2 = await ensureProfile(client, uid);
   const bk0 = p2.session_data?.bk || {};
+  if (bk0.returnToReview) {
+    await finishReturnToBkReviewFromEdit(ctx, client, uid, p2);
+    return;
+  }
   const next = await getFirstMissingDodaStep(client, uid, p2);
   if (next === "passport" && bk0.categoryKey === "bike") {
     await client.query(`DELETE FROM uploaded_files WHERE telegram_user_id = $1`, [uid]);
@@ -489,6 +528,44 @@ async function promptDodaDocStep(ctx, client, uid, profile, docKey, errPrefix = 
   }
 }
 
+/** Yakuniy ko‘rib chiqishdan bitta fayl qadamini almashtirish — «Davom etish»dan keyin yana review. */
+async function startDodaDocReviewEdit(ctx, client, uid, profile, docKey) {
+  if (!isDodaUploadDocKey(docKey)) return profile;
+  await client.query(
+    `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = $2`,
+    [uid, docKey]
+  );
+  const td = { ...(profile.session_data || {}) };
+  const bk = { ...(td.bk || {}) };
+  bk.returnToReview = true;
+  td.bk = bk;
+  td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== docKey);
+  await updateProfile(client, uid, { session_data: td });
+  const p2 = await ensureProfile(client, uid);
+  await logChat(client, uid, "user", `review_edit:${docKey}`);
+  await promptDodaDocStep(ctx, client, uid, p2, docKey);
+  return p2;
+}
+
+async function startDodaPassportFullReviewEdit(ctx, client, uid, profile) {
+  await client.query(
+    `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = ANY($2::text[])`,
+    [uid, ["passport_front", "passport_back"]]
+  );
+  const td = { ...(profile.session_data || {}) };
+  const bk = { ...(td.bk || {}) };
+  bk.returnToReview = true;
+  td.bk = bk;
+  td.completed_docs = [...(td.completed_docs || [])].filter(
+    (d) => d !== "passport_front" && d !== "passport_back" && d !== "passport"
+  );
+  await updateProfile(client, uid, { session_data: td });
+  const p2 = await ensureProfile(client, uid);
+  await logChat(client, uid, "user", "review_edit:passport_full");
+  await promptDodaDocStep(ctx, client, uid, p2, "passport_front");
+  return p2;
+}
+
 const DOC_PENDING_STATE = {
   bk_doc_license: "license",
   bk_doc_sts: "sts",
@@ -651,6 +728,25 @@ export function registerBkHandlers(bot) {
       return;
     }
 
+    if (data === "bk_YR:pick" || data.startsWith("bk_YR:e:")) {
+      try {
+        await withTransaction(async (client) => {
+          await syncTelegramInfo(client, uid, ctx.from);
+          if (data === "bk_YR:pick") {
+            await handleYandexReviewPickMenu(ctx, client, uid);
+          } else {
+            const rest = data.slice("bk_YR:e:".length);
+            const idx = parseInt(rest, 10);
+            if (!Number.isFinite(idx) || idx < 0) return;
+            await applyYandexReviewEditFromIndex(ctx, client, uid, idx);
+          }
+        });
+      } catch (e) {
+        console.error("[bk] bk_YR pick/edit:", e?.stack || e?.message || e);
+      }
+      return;
+    }
+
     if (data.startsWith("bk_M:")) {
       const sub = data.slice(5);
       if (!["in", "out", "support"].includes(sub)) return;
@@ -807,6 +903,7 @@ export function registerBkHandlers(bot) {
         } catch {
           await ctx.reply(cmsg, editOnly(lg, "bk_E:veh"));
         }
+        if (await finishReturnToBkReviewFromEdit(ctx, client, uid, profile)) return;
         await promptFirstMissingDodaDoc(ctx, client, uid, profile);
       });
       return;
@@ -826,7 +923,11 @@ export function registerBkHandlers(bot) {
         const cityRaw = cityByIndex(payload);
         if (!cityRaw) return;
         const city = formatCityForProfile(cityRaw);
-        profile = await updateProfile(client, uid, { city, session_state: "bk_citizenship" });
+        const tdG = { ...(profile.session_data || {}) };
+        const bkG = { ...(tdG.bk || {}) };
+        tdG.bk = bkG;
+        profile = await updateProfile(client, uid, { city, session_data: tdG });
+        profile = await ensureProfile(client, uid);
         await logChat(client, uid, "user", city);
         const cmsg = tBKfn(lg, "confirm_city", city);
         await logChat(client, uid, "assistant", cmsg);
@@ -835,7 +936,9 @@ export function registerBkHandlers(bot) {
         } catch {
           await ctx.reply(cmsg, editOnly(lg, "bk_E:city"));
         }
-        const citLabel = tBK(lg, `cit_${payload}`);
+        if (await finishReturnToBkReviewFromEdit(ctx, client, uid, profile)) return;
+        profile = await updateProfile(client, uid, { session_state: "bk_citizenship" });
+        profile = await ensureProfile(client, uid);
         const askCit = tBKfn(lg, "ask_citizenship", profile.session_data?.bk?.categoryKey);
         await sendBkPlaceholderStep(ctx, client, uid, profile, "passport", askCit, citizenshipInline(lg));
       });
@@ -863,6 +966,7 @@ export function registerBkHandlers(bot) {
           await ctx.reply(cmsg, editOnly(lg, "bk_E:cit"));
         }
         profile = await ensureDodaTariffService(client, uid, profile);
+        if (await finishReturnToBkReviewFromEdit(ctx, client, uid, profile)) return;
         await promptFirstMissingDodaDoc(ctx, client, uid, profile);
       });
       return;
@@ -897,6 +1001,7 @@ export function registerBkHandlers(bot) {
         } catch {
           await ctx.reply(cmsg, editOnly(lg, "bk_E:bself"));
         }
+        if (await finishReturnToBkReviewFromEdit(ctx, client, uid, profile)) return;
         await promptFirstMissingDodaDoc(ctx, client, uid, profile);
       });
       return;
@@ -907,13 +1012,52 @@ export function registerBkHandlers(bot) {
       await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
         let profile = await ensureProfile(client, uid);
-        const lg = langOf(profile);
         const bk = profile.session_data?.bk || {};
         const seq = dodaDocSequence(bk.categoryKey || "foot", bk);
+        const uploaded = await getUploadedDocTypes(client, uid);
+
+        if (bk.returnToReview) {
+          const br = { ...bk };
+          delete br.returnToReview;
+          const td = { ...(profile.session_data || {}) };
+          td.bk = br;
+          td.completed_docs = seq.filter(
+            (k) => isDodaUploadDocKey(k) && uploaded.has(k)
+          );
+          const missing = getFirstMissingDodaStepSync(br, uploaded);
+          if (!missing) {
+            await updateProfile(client, uid, {
+              session_data: td,
+              session_state: "bk_review",
+            });
+            profile = await ensureProfile(client, uid);
+            await logChat(client, uid, "user", `doc:cont:${step}:review`);
+            await sendBkReviewMessage(ctx, client, uid, profile);
+            return;
+          }
+          await updateProfile(client, uid, { session_data: td });
+          profile = await ensureProfile(client, uid);
+          await promptDodaDocStep(ctx, client, uid, profile, missing);
+          return;
+        }
+
         const idx = seq.indexOf(step);
         if (step === "passport") {
+          const missingPassport = !uploaded.has("passport_front")
+            ? "passport_front"
+            : !uploaded.has("passport_back")
+              ? "passport_back"
+              : null;
+          if (missingPassport) {
+            await promptDodaDocStep(ctx, client, uid, profile, missingPassport);
+            return;
+          }
           const td = { ...(profile.session_data || {}) };
-          td.completed_docs = seq.filter((k) => isDodaUploadDocKey(k));
+          const bk2 = { ...(td.bk || {}) };
+          td.bk = bk2;
+          td.completed_docs = seq.filter(
+            (k) => isDodaUploadDocKey(k) && uploaded.has(k)
+          );
           await updateProfile(client, uid, {
             session_data: td,
             session_state: "bk_review",
@@ -1337,19 +1481,15 @@ export function registerBkHandlers(bot) {
                 categoryInline(lg)
               );
             } else if (f === "tdim") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               delete bk.truckDimensionCode;
               delete bk.truckDimensionLabel;
               delete bk.truckPayloadKg;
               delete bk.truckLoaders;
               delete bk.truckBranding;
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_truck_dimensions",
                 session_data: td,
@@ -1363,32 +1503,24 @@ export function registerBkHandlers(bot) {
                 truckDimensionsInline(lg)
               );
             } else if (f === "tpay") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               delete bk.truckPayloadKg;
               delete bk.truckLoaders;
               delete bk.truckBranding;
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_truck_payload",
                 session_data: td,
               });
               await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_truck_payload"));
             } else if (f === "twrap") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               delete bk.truckBranding;
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_truck_branding",
                 session_data: td,
@@ -1402,7 +1534,15 @@ export function registerBkHandlers(bot) {
                 truckBrandingInline(lg)
               );
             } else if (f === "city") {
-              profile = await updateProfile(client, uid, { session_state: "bk_city_pick", city: null });
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
+              td.bk = bk;
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_city_pick",
+                city: null,
+                session_data: td,
+              });
               await sendBkPlaceholderStep(
                 ctx,
                 client,
@@ -1416,6 +1556,7 @@ export function registerBkHandlers(bot) {
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
               clearBikeFields(bk);
+              bk.returnToReview = true;
               td.bk = bk;
               profile = await updateProfile(client, uid, {
                 session_state: "bk_citizenship",
@@ -1431,15 +1572,11 @@ export function registerBkHandlers(bot) {
                 citizenshipInline(lg)
               );
             } else if (f === "bself") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               clearBikeFields(bk);
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_self_employed",
                 session_data: td,
@@ -1453,61 +1590,63 @@ export function registerBkHandlers(bot) {
                 selfEmployedInline(lg)
               );
             } else if (f === "binn") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               delete bk.inn;
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_inn",
                 session_data: td,
               });
               await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_inn"));
             } else if (f === "bsmzphone") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               delete bk.moyNalogPhone;
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_bike_smz_phone",
                 session_data: td,
               });
               await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_phone"));
             } else if (f === "bsmzaddr") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
-              );
               const td = { ...(profile.session_data || {}) };
               const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               delete bk.smzAddress;
               td.bk = bk;
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
               profile = await updateProfile(client, uid, {
                 session_state: "bk_bike_smz_address",
                 session_data: td,
               });
               await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_bike_smz_address"));
+            } else if (f === "mnlog") {
+              const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
+              delete bk.moyNalogPhone;
+              td.bk = bk;
+              profile = await updateProfile(client, uid, {
+                session_state: "bk_moy_nalog_phone",
+                session_data: td,
+              });
+              await bkReplyStep(ctx, client, uid, profile, tBK(lg, "ask_moy_nalog_phone"));
             } else if (f === "veh") {
               await client.query(
                 `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = ANY($2::text[])`,
                 [uid, ["sts", "tech_passport_front", "tech_passport_back"]]
               );
               const td = { ...(profile.session_data || {}) };
+              const bk = { ...(td.bk || {}) };
+              bk.returnToReview = true;
               const done = [...(td.completed_docs || [])].filter(
                 (d) =>
                   !["sts", "tech_passport_front", "tech_passport_back"].includes(d)
               );
               td.completed_docs = done;
+              td.bk = bk;
               profile = await updateProfile(client, uid, {
                 session_state: "bk_vehicle_rf",
                 session_data: td,
@@ -1521,25 +1660,32 @@ export function registerBkHandlers(bot) {
                 tBK(lg, "ask_vehicle_rf"),
                 vehicleRfInline(lg)
               );
-            } else if (f === "passport") {
-              await client.query(
-                `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = 'passport'`,
-                [uid]
+            } else if (
+              f === "license" ||
+              f === "sts" ||
+              f === "tech_passport_front" ||
+              f === "tech_passport_back" ||
+              f === "reg_amina"
+            ) {
+              profile = await startDodaDocReviewEdit(ctx, client, uid, profile, f);
+            } else if (f === "pf") {
+              profile = await startDodaDocReviewEdit(
+                ctx,
+                client,
+                uid,
+                profile,
+                "passport_front"
               );
-              const td = { ...(profile.session_data || {}) };
-              td.completed_docs = [...(td.completed_docs || [])].filter((d) => d !== "passport");
-              profile = await updateProfile(client, uid, {
-                session_state: "bk_doc_passport",
-                session_data: td,
-              });
-              const legal = tBK(lg, "passport_legal_block");
-              const p = resolvePlaceholderPath("passport");
-              await bkSendStepMessage(ctx, client, uid, profile, async () => {
-                if (p && fs.existsSync(p)) {
-                  return await ctx.replyWithPhoto({ source: p }, { caption: legal });
-                }
-                return await ctx.reply(legal);
-              });
+            } else if (f === "pb") {
+              profile = await startDodaDocReviewEdit(
+                ctx,
+                client,
+                uid,
+                profile,
+                "passport_back"
+              );
+            } else if (f === "passport") {
+              profile = await startDodaPassportFullReviewEdit(ctx, client, uid, profile);
             }
           }
         });
@@ -1697,7 +1843,7 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "assistant", cmsg);
         await bkReplyStep(ctx, client, uid, profile, cmsg);
         profile = await ensureProfile(client, uid);
-        await promptFirstMissingDodaDoc(ctx, client, uid, profile);
+        await afterAuxStepMaybeReturnToReview(ctx, client, uid, profile, "firstMissing");
         markConsumed();
         return;
       }
@@ -1734,7 +1880,7 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "assistant", cmsg);
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:bsmzphone"));
         profile = await ensureProfile(client, uid);
-        await promptNextAfterTruckStep(ctx, client, uid, profile);
+        await afterAuxStepMaybeReturnToReview(ctx, client, uid, profile, "truckNext");
         markConsumed();
         return;
       }
@@ -1774,7 +1920,7 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "assistant", cmsg);
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:bsmzaddr"));
         profile = await ensureProfile(client, uid);
-        await promptNextAfterTruckStep(ctx, client, uid, profile);
+        await afterAuxStepMaybeReturnToReview(ctx, client, uid, profile, "truckNext");
         markConsumed();
         return;
       }
@@ -1821,7 +1967,7 @@ export function registerBkHandlers(bot) {
         await logChat(client, uid, "assistant", cmsg);
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:binn"));
         profile = await ensureProfile(client, uid);
-        await promptNextAfterTruckStep(ctx, client, uid, profile);
+        await afterAuxStepMaybeReturnToReview(ctx, client, uid, profile, "truckNext");
         markConsumed();
         return;
       }
@@ -2035,10 +2181,9 @@ export function registerBkHandlers(bot) {
           const cmsg = tBKfn(lg, "confirm_phone", phone);
           await logChat(client, uid, "user", phone);
           await logChat(client, uid, "assistant", cmsg);
-          const bkRv = profile.session_data?.bk || {};
           await bkSendStepMessage(ctx, client, uid, profile, async () => {
             const m1 = await ctx.reply(cmsg, editOnly(lg, "bk_E:phone"));
-            const m2 = await ctx.reply(tBK(lg, "review_hint"), reviewKb(lg, bkRv));
+            const m2 = await ctx.reply(tBK(lg, "review_hint"), reviewKb(lg, profile));
             return [m1, m2];
           });
           markConsumed();
@@ -2095,7 +2240,6 @@ export function registerBkHandlers(bot) {
         const city = formatCityForProfile(text);
         await updateProfile(client, uid, {
           city,
-          session_state: "bk_citizenship",
           session_data: td,
         });
         profile = await ensureProfile(client, uid);
@@ -2103,6 +2247,12 @@ export function registerBkHandlers(bot) {
         const cmsg = tBKfn(lg, "confirm_city", city);
         await logChat(client, uid, "assistant", cmsg);
         await bkReplyStep(ctx, client, uid, profile, cmsg, editOnly(lg, "bk_E:city"));
+        profile = await ensureProfile(client, uid);
+        if (await finishReturnToBkReviewFromEdit(ctx, client, uid, profile)) {
+          markConsumed();
+          return;
+        }
+        await updateProfile(client, uid, { session_state: "bk_citizenship" });
         profile = await ensureProfile(client, uid);
         await sendBkPlaceholderStep(
           ctx,
@@ -2118,13 +2268,12 @@ export function registerBkHandlers(bot) {
       }
 
       if (state === "bk_review") {
-        const bkRv = profile.session_data?.bk || {};
         if (text) {
           await logChat(client, uid, "user", text);
           await logChat(client, uid, "assistant", tBK(lg, "use_menu"));
         }
         await bkSendStepMessage(ctx, client, uid, profile, () =>
-          ctx.reply(tBK(lg, "use_menu"), reviewKb(lg, bkRv))
+          ctx.reply(tBK(lg, "use_menu"), reviewKb(lg, profile))
         );
         markConsumed();
         return;

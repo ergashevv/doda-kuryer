@@ -158,9 +158,8 @@ export async function replyBkDocUploadedEcho(ctx, client, uid, profile, lg, msg,
 
 export async function sendBkReviewMessage(ctx, client, uid, profile) {
   const lg = normalizeBKLang(profile?.language);
-  const bk2 = profile.session_data?.bk || {};
   const summary = buildBkSummaryI18n(lg, profile);
   return bkSendStepMessage(ctx, client, uid, profile, () =>
-    ctx.reply(`${summary}\n\n${tBK(lg, "review_hint")}`, reviewKb(lg, bk2))
+    ctx.reply(`${summary}\n\n${tBK(lg, "review_hint")}`, reviewKb(lg, profile))
   );
 }

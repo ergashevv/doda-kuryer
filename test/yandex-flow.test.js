@@ -12,6 +12,7 @@ import {
   clearYandexStagingSessionFields,
   getYandexUiState,
   initYandexSession,
+  stripYandexTailFromCompleted,
   validateYxText,
   yxExtractFile,
   yxForbiddenMedia,
@@ -321,6 +322,42 @@ describe("Callback data — handler bilan mos payload", () => {
 
   test("bk_YR:send aniq mos keladi", () => {
     assert.equal("bk_YR:send", "bk_YR:send");
+  });
+
+  test("bk_YR:e: indeks slice(9)", () => {
+    const data = "bk_YR:e:3";
+    assert.equal(data.slice("bk_YR:e:".length), "3");
+    assert.equal(parseInt(data.slice("bk_YR:e:".length), 10), 3);
+  });
+});
+
+describe("stripYandexTailFromCompleted", () => {
+  test("noto‘g‘ri indeks → null", () => {
+    const td = { completed_yx: ["a"], collected: {} };
+    assert.equal(stripYandexTailFromCompleted(td, -1), null);
+    assert.equal(stripYandexTailFromCompleted(td, 1), null);
+  });
+
+  test("tail: fayllar va matn maydonlari tozalanadi", () => {
+    const td = {
+      completed_yx: [
+        "yx_a",
+        "yx_b",
+        "__text__:yx_col_inn",
+        "yx_c",
+      ],
+      collected: {
+        yx_col_inn: "123",
+        yx_col_card16: "4111",
+        other: "keep",
+      },
+    };
+    const r = stripYandexTailFromCompleted(td, 1);
+    assert.deepEqual(r.completed_yx, ["yx_a"]);
+    assert.equal(r.collected.yx_col_inn, undefined);
+    assert.equal(r.collected.yx_col_card16, "4111");
+    assert.equal(r.collected.other, "keep");
+    assert.deepEqual(r.docTypesToDelete.sort(), ["yx_b", "yx_c"].sort());
   });
 });
 

@@ -246,6 +246,34 @@ export function buildYxLine(yx, completed = []) {
   return [];
 }
 
+/**
+ * Yakuniy tekshiruvdan bitta qadamni qayta bosish: `fromIndex` dan boshlab tail olib tashlash.
+ * `completed_yx` ichida `yx_*` fayl qadamlari va `__text__:yx_col_*` belgilari.
+ * @returns {{ completed_yx: string[], collected: object, docTypesToDelete: string[] } | null}
+ */
+export function stripYandexTailFromCompleted(td, fromIndex) {
+  const completed = [...(td.completed_yx || [])];
+  if (fromIndex < 0 || fromIndex >= completed.length) return null;
+  const tail = completed.slice(fromIndex);
+  const newCompleted = completed.slice(0, fromIndex);
+  const coll = { ...(td.collected || {}) };
+  const docTypesToDelete = [];
+  for (const entry of tail) {
+    if (typeof entry !== "string") continue;
+    if (entry.startsWith("__text__:")) {
+      const colKey = entry.slice("__text__:".length);
+      delete coll[colKey];
+    } else if (entry.startsWith("yx_")) {
+      docTypesToDelete.push(entry);
+    }
+  }
+  return {
+    completed_yx: newCompleted,
+    collected: coll,
+    docTypesToDelete,
+  };
+}
+
 export function getYandexUiState(yx, completedLen, td) {
   if (td?.yx_staged_doc) return { ui: "staged" };
   if (!yx?.service) return { ui: "none" };

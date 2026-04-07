@@ -289,7 +289,8 @@ function formatYandexAnketaBlock(profile) {
   return lines.join("\n");
 }
 
-function yandexDocPromptKey(docType) {
+/** Yandex `doc_type` → i18n `yx_p_*` kaliti (tugma yoki sarlavha uchun). */
+export function yxDocTypeToPromptKey(docType) {
   const map = {
     yx_uz_pre_pass_f: "yx_p_uz_pre_pass_f",
     yx_uz_pre_pass_b: "yx_p_uz_pre_pass_b",
@@ -338,7 +339,7 @@ function yandexDocPromptKey(docType) {
 
 function formatYandexDocCaption(index, total, docKey, profile) {
   const lg = groupNotifyLang();
-  const promptKey = yandexDocPromptKey(docKey);
+  const promptKey = yxDocTypeToPromptKey(docKey);
   let title = promptKey ? tBK(lg, promptKey) : tBK(lg, "group_caption_yx_generic");
   if (!title || title === promptKey) {
     title = tBK(lg, "group_caption_yx_generic");

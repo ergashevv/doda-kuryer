@@ -177,6 +177,8 @@ const BK_STRINGS = {
     review_hint:
       "👆 Ma'lumotlar tayyor. «✅ Yuborish»ni bosing yoki maydonni tahrirlang.",
 
+    review_redo_passport_both: "Pasport — ikkala betni qayta",
+
     review_callback_stale:
       "Bu tugmalar faqat «qisqacha» ekranida ishlaydi. Ro'yxatdan o'tishni davom ettiring yoki /start",
 
@@ -386,6 +388,11 @@ const BK_STRINGS = {
 
     yx_review_hint:
       "Ma'lumotlarni tekshiring. Yuborish uchun «✅ Yuborish»ni bosing.",
+
+    yx_review_fix_btn: "📝 Hujjatni tuzatish",
+    yx_review_pick_title: "Qaysi qadam noto‘g‘ri? Pastdan tanlang.",
+    yx_review_fix_note:
+      "Tanlangan qadam va undan keyingi barcha qadamlar qayta so‘raladi (ma’lumotlar mos bo‘lishi uchun).",
 
     yx_rev_title: "Arizani tekshirish (Yandex)",
     yx_rev_service: "Servis",
@@ -628,6 +635,8 @@ const BK_STRINGS = {
     review_hint:
       "👇 Данные из твоей заявки готовы к отправке.\n\nУбедись, что все правильно и нажми «✅ Отправить».\n\nЕсли нужно изменить какое-то поле — нажми на кнопку с его названием.",
 
+    review_redo_passport_both: "Паспорт — оба разворота заново",
+
     review_callback_stale:
       "Эти кнопки работают на экране проверки заявки. Продолжи регистрацию или открой последнее сообщение бота, /start",
 
@@ -843,6 +852,11 @@ const BK_STRINGS = {
     yx_city_mo: "Московская область",
     yx_city_other: "Другой",
     yx_city_other_blocked: "Извините, мы пока не можем подключить к сервису в других регионах, кроме Москвы и области.",
+
+    yx_review_fix_btn: "📝 Исправить документ",
+    yx_review_pick_title: "Какой шаг перезагрузить? Выберите ниже.",
+    yx_review_fix_note:
+      "Выбранный шаг и все следующие нужно пройти снова — так данные останутся согласованными.",
 
     yx_ask_city:
       "Укажите Москву или Московскую область кнопкой ниже.",
@@ -1124,6 +1138,8 @@ const BK_STRINGS = {
     review_hint:
       "👆 Маълумот омода аст. «✅ Фиристодан» ё тағйири майдон.",
 
+    review_redo_passport_both: "Паспорт — ҳар ду саҳифа аз нав",
+
     review_callback_stale:
       "Ин тугмаҳо дар экрани санҷиши ариза кор мекунанд. Регистрацияро идома диҳед ё охирин паёми ботро кушоед, /start",
 
@@ -1287,6 +1303,11 @@ const BK_STRINGS = {
 
     yx_review_hint:
       "Маалыматты текшериңиз. Жөнөтүү үчүн «✅ Жөнөтүү» баскычын басыңыз.",
+
+    yx_review_fix_btn: "📝 Документти оңдоо",
+    yx_review_pick_title: "Кайсы ката кадам? Төмөнкүдөн тандаңыз.",
+    yx_review_fix_note:
+      "Тандалган кадам жана андан кийинкилер кайра суроолот — маалыматтар дал келиши үчүн.",
 
     yx_rev_title: "Арызды текшерүү (Yandex)",
     yx_rev_service: "Сервис",
@@ -1526,6 +1547,8 @@ const BK_STRINGS = {
     review_hint:
       "👆 Маалыматтар даяр. «✅ Жөнөтүү» же талааны оңдоо.",
 
+    review_redo_passport_both: "Паспорт — эки бет токтолуп кайра",
+
     review_callback_stale:
       "Бул баскычтар текшерүү экранында гана иштейт. Каттоону улантыңыз же акыркы билдирүүнү ачыңыз, /start",
 
@@ -1619,6 +1642,11 @@ const BK_STRINGS = {
     group_value_dash: "—",
 
     ask_service: "Кайсы сервиске туташууну каалайсыз?",
+
+    yx_review_fix_btn: "📝 Документти оңдоо",
+    yx_review_pick_title: "Кайсы кадам ката? Төмөнкүдөн тандаңыз.",
+    yx_review_fix_note:
+      "Тандалган кадам жана андан кийинкилер кайра суроолот — маалыматтар шайкеш болушу үчүн.",
 
     yx_final_thanks:
       "Маалымат үчүн рахмат. Арыз кабыл алынды; жакыныраак убакытта сиз менен байланышабыз.",
@@ -1871,6 +1899,24 @@ export function buildBkSummaryI18n(lang, profile) {
   if (typeof bk.rfCitizen === "boolean") {
     lines.push(`${n++}. ${T.citizenship}: ${bk.rfCitizen ? y : no}`);
   }
+
+  const smzCit = ["rf", "kg", "kz"].includes(bk.citizenship);
+  if (smzCit && bk.selfEmployed === true) {
+    if (completed.includes("reg_amina")) {
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "car_reg_amina")}: ${tBK(
+          lang,
+          "summary_passport_media"
+        )}`
+      );
+    }
+    if (bk.moyNalogPhone && bk.categoryKey !== "bike") {
+      lines.push(
+        `${n++}. ${summaryTitle(lg, "car_smz_phone")}: ${bk.moyNalogPhone}`
+      );
+    }
+  }
+
   if (bk.categoryKey === "bike") {
     if (typeof bk.selfEmployed === "boolean") {
       lines.push(

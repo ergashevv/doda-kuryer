@@ -1,5 +1,6 @@
 import { Markup } from "telegraf";
 import { logChat } from "../services/chatLog.js";
+import { yxDocTypeToPromptKey } from "../services/groupInbox.js";
 import { downloadTelegramFile } from "../services/storage.js";
 import { ensureProfile, updateProfile } from "../services/users.js";
 import { isAllowedDocumentMime } from "./media.js";
@@ -19,6 +20,7 @@ import {
   initYandexSession,
   clearYandexCollected,
   clearYandexStagingSessionFields,
+  stripYandexTailFromCompleted,
   yxExtractFile,
   yxForbiddenMedia,
   validateYxText,
@@ -150,8 +152,96 @@ export function yxReviewSendOptions(lg) {
   return yxReplyOptions(
     Markup.inlineKeyboard([
       [Markup.button.callback(tBK(lang, "submit_btn"), "bk_YR:send")],
+      [Markup.button.callback(tBK(lang, "yx_review_fix_btn"), "bk_YR:pick")],
     ])
   );
+}
+
+function yxReviewStepButtonLabel(lg, entry, index, total) {
+  let part;
+  if (typeof entry !== "string") {
+    part = `${index + 1}/${total}`;
+  } else if (entry.startsWith("__text__:")) {
+    const colKey = entry.slice("__text__:".length);
+    const lk = `yx_lbl_${colKey}`;
+    let lbl = tBK(lg, lk);
+    if (lbl === lk) lbl = colKey;
+    part = `${index + 1}/${total} · ${lbl}`;
+  } else {
+    const pk = yxDocTypeToPromptKey(entry);
+    let title = pk ? tBK(lg, pk) : tBK(lg, "group_caption_yx_generic");
+    if (!title || title === pk) title = tBK(lg, "group_caption_yx_generic");
+    title = String(title).replace(/\s+/g, " ").trim().replace(/[.]+$/, "");
+    part = `${index + 1}/${total} · ${title}`;
+  }
+  if (part.length <= 64) return part;
+  return `${part.slice(0, 61)}…`;
+}
+
+export async function handleYandexReviewPickMenu(ctx, client, uid) {
+  let profile = await ensureProfile(client, uid);
+  const lg = lgOf(profile);
+  if (profile.session_state !== "bk_yx_review") {
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "review_callback_stale"))
+    );
+    return;
+  }
+  const completed = profile.session_data?.completed_yx || [];
+  if (!Array.isArray(completed) || completed.length === 0) {
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "review_callback_stale"))
+    );
+    return;
+  }
+  const total = completed.length;
+  const rows = completed.map((entry, idx) => [
+    Markup.button.callback(
+      yxReviewStepButtonLabel(lg, entry, idx, total),
+      `bk_YR:e:${idx}`
+    ),
+  ]);
+  const msg = `${tBK(lg, "yx_review_pick_title")}\n\n${tBK(lg, "yx_review_fix_note")}`;
+  await bkSendStepMessage(ctx, client, uid, profile, () =>
+    ctx.reply(msg, yxReplyOptions(Markup.inlineKeyboard(rows)))
+  );
+}
+
+export async function applyYandexReviewEditFromIndex(ctx, client, uid, editIndex) {
+  let profile = await ensureProfile(client, uid);
+  const lg = lgOf(profile);
+  if (profile.session_state !== "bk_yx_review") {
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "review_callback_stale"))
+    );
+    return;
+  }
+  const td = { ...(profile.session_data || {}) };
+  const stripped = stripYandexTailFromCompleted(td, editIndex);
+  if (!stripped) {
+    await bkSendStepMessage(ctx, client, uid, profile, () =>
+      ctx.reply(tBK(lg, "review_callback_stale"))
+    );
+    return;
+  }
+  for (const dt of stripped.docTypesToDelete) {
+    await client.query(
+      `DELETE FROM uploaded_files WHERE telegram_user_id = $1 AND doc_type = $2`,
+      [uid, dt]
+    );
+  }
+  const nextTd = clearYandexStagingSessionFields({
+    ...td,
+    collected: stripped.collected,
+    completed_yx: stripped.completed_yx,
+  });
+  await updateProfile(client, uid, {
+    session_state: "bk_yx",
+    session_data: nextTd,
+  });
+  await logChat(client, uid, "user", `yx:review_edit:${editIndex}`);
+  profile = await ensureProfile(client, uid);
+  await promptYandexStep(ctx, client, uid, profile);
 }
 
 /** Telegram ba'zi klientlarda tugma matniga variation selector qo'shilishi mumkin. */

@@ -230,56 +230,185 @@ export function faqMenu(lang) {
   return Markup.inlineKeyboard(rows);
 }
 
-export function reviewKb(lang, bk = {}) {
+/**
+ * Yakuniy ko‘rib chiqish: faqat summaryda bor maydonlar uchun tahrir tugmalari.
+ * @param {object|null} profile — `user_profiles` qatori (phone, city, session_data).
+ */
+export function reviewKb(lang, profile) {
   const lg = normalizeBKLang(lang);
-  const rows = [
-    [Markup.button.callback(tBK(lg, "submit_btn"), "bk_R:send")],
-    [
-      Markup.button.callback(`📱 ${summaryTitle(lg, "phone")}`, "bk_R:e:phone"),
-      Markup.button.callback(`🚗 ${summaryTitle(lg, "category")}`, "bk_R:e:cat"),
-    ],
-  ];
-  if (bk.categoryKey === "car" || bk.categoryKey === "truck") {
+  const bk = profile?.session_data?.bk || {};
+  const completed = profile?.session_data?.completed_docs || [];
+  const comp = new Set(completed);
+  const phone = profile?.phone;
+  const city = profile?.city;
+  const smzCit = ["rf", "kg", "kz"].includes(bk.citizenship);
+
+  const rows = [[Markup.button.callback(tBK(lg, "submit_btn"), "bk_R:send")]];
+
+  const rowPhoneCat = [];
+  if (phone) {
+    rowPhoneCat.push(
+      Markup.button.callback(`📱 ${summaryTitle(lg, "phone")}`, "bk_R:e:phone")
+    );
+  }
+  if (bk.categoryLabel) {
+    rowPhoneCat.push(
+      Markup.button.callback(`🚗 ${summaryTitle(lg, "category")}`, "bk_R:e:cat")
+    );
+  }
+  if (rowPhoneCat.length) rows.push(rowPhoneCat);
+
+  if (bk.categoryKey === "car" && typeof bk.vehicleRf === "boolean") {
     rows.push([
       Markup.button.callback(`🚙 ${summaryTitle(lg, "vehicle")}`, "bk_R:e:veh"),
     ]);
   }
+
   if (bk.categoryKey === "truck") {
+    if (bk.truckDimensionLabel) {
+      rows.push([
+        Markup.button.callback(
+          `📐 ${summaryTitle(lg, "truck_dims")}`,
+          "bk_R:e:tdim"
+        ),
+      ]);
+    }
+    if (bk.truckPayloadKg != null && bk.truckPayloadKg !== "") {
+      rows.push([
+        Markup.button.callback(
+          `⚖️ ${summaryTitle(lg, "truck_payload")}`,
+          "bk_R:e:tpay"
+        ),
+      ]);
+    }
+    if (typeof bk.truckBranding === "boolean") {
+      rows.push([
+        Markup.button.callback(
+          `🏷 ${summaryTitle(lg, "truck_wrap")}`,
+          "bk_R:e:twrap"
+        ),
+      ]);
+    }
+  }
+
+  if (bk.categoryKey === "bike" && typeof bk.selfEmployed === "boolean") {
     rows.push([
-      Markup.button.callback(`📐 ${summaryTitle(lg, "truck_dims")}`, "bk_R:e:tdim"),
-      Markup.button.callback(`⚖️ ${summaryTitle(lg, "truck_payload")}`, "bk_R:e:tpay"),
-    ]);
-    rows.push([
-      Markup.button.callback(`🏷 ${summaryTitle(lg, "truck_wrap")}`, "bk_R:e:twrap"),
+      Markup.button.callback(
+        `🧾 ${summaryTitle(lg, "self_employed")}`,
+        "bk_R:e:bself"
+      ),
     ]);
   }
-  if (bk.categoryKey === "bike") {
-    rows.push([
-      Markup.button.callback(`🧾 ${summaryTitle(lg, "self_employed")}`, "bk_R:e:bself"),
-    ]);
-    if (bk.selfEmployed === true && bk.rfCitizen === true) {
+
+  if (bk.categoryKey === "bike" && bk.selfEmployed === true && bk.rfCitizen === true) {
+    if (bk.moyNalogPhone) {
       rows.push([
         Markup.button.callback(
           `📱 ${summaryTitle(lg, "bike_smz_phone")}`,
           "bk_R:e:bsmzphone"
         ),
+      ]);
+    }
+    if (bk.smzAddress) {
+      rows.push([
         Markup.button.callback(
           `📍 ${summaryTitle(lg, "bike_smz_address")}`,
           "bk_R:e:bsmzaddr"
         ),
       ]);
-    } else if (bk.selfEmployed === true) {
+    }
+  } else if (
+    bk.categoryKey === "bike" &&
+    bk.selfEmployed === true &&
+    bk.inn &&
+    bk.rfCitizen !== true
+  ) {
+    rows.push([
+      Markup.button.callback(`#️⃣ ${summaryTitle(lg, "inn")}`, "bk_R:e:binn"),
+    ]);
+  }
+
+  const rowCityCit = [];
+  if (city) {
+    rowCityCit.push(
+      Markup.button.callback(`🏙 ${summaryTitle(lg, "city")}`, "bk_R:e:city")
+    );
+  }
+  if (typeof bk.rfCitizen === "boolean") {
+    rowCityCit.push(
+      Markup.button.callback(`🪪 ${summaryTitle(lg, "citizenship")}`, "bk_R:e:cit")
+    );
+  }
+  if (rowCityCit.length) rows.push(rowCityCit);
+
+  if (smzCit && bk.selfEmployed === true) {
+    if (comp.has("reg_amina")) {
       rows.push([
-        Markup.button.callback(`#️⃣ ${summaryTitle(lg, "inn")}`, "bk_R:e:binn"),
+        Markup.button.callback(
+          `📎 ${summaryTitle(lg, "car_reg_amina")}`,
+          "bk_R:e:reg_amina"
+        ),
+      ]);
+    }
+    if (bk.moyNalogPhone && bk.categoryKey !== "bike") {
+      rows.push([
+        Markup.button.callback(
+          `📱 ${summaryTitle(lg, "car_smz_phone")}`,
+          "bk_R:e:mnlog"
+        ),
       ]);
     }
   }
-  rows.push([
-    Markup.button.callback(`🏙 ${summaryTitle(lg, "city")}`, "bk_R:e:city"),
-    Markup.button.callback(`🪪 ${summaryTitle(lg, "citizenship")}`, "bk_R:e:cit"),
-  ]);
-  rows.push([
-    Markup.button.callback(`🛂 ${summaryTitle(lg, "passport")}`, "bk_R:e:passport"),
-  ]);
+
+  /* reg_amina — yuqoridagi SMZ bloki (bir marta) */
+  const uploadCols = ["license", "sts", "tech_passport_front", "tech_passport_back"];
+  const uploadRow = [];
+  for (const dk of uploadCols) {
+    if (!comp.has(dk)) continue;
+    const label =
+      dk === "reg_amina" ? summaryTitle(lg, "car_reg_amina") : summaryTitle(lg, dk);
+    const icon =
+      dk === "license"
+        ? "🪪"
+        : dk === "sts"
+          ? "📋"
+          : dk.startsWith("tech")
+            ? "📄"
+            : "📎";
+    uploadRow.push(Markup.button.callback(`${icon} ${label}`, `bk_R:e:${dk}`));
+  }
+  for (let i = 0; i < uploadRow.length; i += 2) {
+    rows.push(uploadRow.slice(i, i + 2));
+  }
+
+  const passRow = [];
+  if (comp.has("passport_front")) {
+    passRow.push(
+      Markup.button.callback(
+        `🛂 ${summaryTitle(lg, "passport_front")}`,
+        "bk_R:e:pf"
+      )
+    );
+  }
+  if (comp.has("passport_back")) {
+    passRow.push(
+      Markup.button.callback(
+        `📄 ${summaryTitle(lg, "passport_back")}`,
+        "bk_R:e:pb"
+      )
+    );
+  }
+  if (passRow.length) {
+    rows.push(passRow);
+  }
+  if (comp.has("passport_front") && comp.has("passport_back")) {
+    rows.push([
+      Markup.button.callback(
+        `🔄 ${tBK(lg, "review_redo_passport_both")}`,
+        "bk_R:e:passport"
+      ),
+    ]);
+  }
+
   return Markup.inlineKeyboard(rows);
 }
