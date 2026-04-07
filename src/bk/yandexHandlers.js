@@ -20,7 +20,8 @@ import {
   initYandexSession,
   clearYandexCollected,
   clearYandexStagingSessionFields,
-  stripYandexTailFromCompleted,
+  mergeCompletedIfYxReviewRedoDone,
+  prepareYandexSingleReviewRedo,
   yxExtractFile,
   yxForbiddenMedia,
   validateYxText,
@@ -217,7 +218,7 @@ export async function applyYandexReviewEditFromIndex(ctx, client, uid, editIndex
     return;
   }
   const td = { ...(profile.session_data || {}) };
-  const stripped = stripYandexTailFromCompleted(td, editIndex);
+  const stripped = prepareYandexSingleReviewRedo(td, editIndex);
   if (!stripped) {
     await bkSendStepMessage(ctx, client, uid, profile, () =>
       ctx.reply(tBK(lg, "review_callback_stale"))
@@ -234,6 +235,8 @@ export async function applyYandexReviewEditFromIndex(ctx, client, uid, editIndex
     ...td,
     collected: stripped.collected,
     completed_yx: stripped.completed_yx,
+    yx_review_restore_tail: stripped.yx_review_restore_tail,
+    yx_review_redo_edit_index: stripped.yx_review_redo_edit_index,
   });
   await updateProfile(client, uid, {
     session_state: "bk_yx",
@@ -539,8 +542,14 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     if (chatId && prev.length) {
       await telegramDeleteMany(ctx, chatId, prev);
     }
-    const nextCompleted = [...completed, staged];
+    let nextCompleted = [...completed, staged];
+    const { completed: mergedComp, clearRedoMeta } = mergeCompletedIfYxReviewRedoDone(td, nextCompleted);
+    nextCompleted = mergedComp;
     const nextTd = clearYandexStagingSessionFields({ ...td, yx, completed_yx: nextCompleted });
+    if (clearRedoMeta) {
+      delete nextTd.yx_review_restore_tail;
+      delete nextTd.yx_review_redo_edit_index;
+    }
     profile = await updateProfile(client, uid, { session_data: nextTd });
     await logChat(client, uid, "user", `yx:cont:${staged}`);
     await promptYandexStep(ctx, client, uid, profile);
@@ -929,8 +938,18 @@ export async function handleYandexMessage(ctx, client, uid, profile, msg) {
     const marker = `__text__:${step.colKey}`;
     completed = completed.filter((x) => x !== marker);
     completed.push(marker);
+    const { completed: mergedText, clearRedoMeta: clearRedo } = mergeCompletedIfYxReviewRedoDone(
+      td,
+      completed
+    );
+    completed = mergedText;
+    const sessText = { ...td, yx, collected: coll, completed_yx: completed };
+    if (clearRedo) {
+      delete sessText.yx_review_restore_tail;
+      delete sessText.yx_review_redo_edit_index;
+    }
     const p2 = await updateProfile(client, uid, {
-      session_data: { ...td, yx, collected: coll, completed_yx: completed },
+      session_data: sessText,
     });
     await logChat(client, uid, "user", `yx:text:${step.colKey}`);
     await promptYandexStep(ctx, client, uid, p2);

@@ -16,7 +16,7 @@ export function initYandexSession(td, serviceKey, registeredPhone = null) {
       yx_col_contact_phone: phone,
     };
   }
-  return clearYandexStagingSessionFields({
+  const fresh = clearYandexStagingSessionFields({
     ...td,
     yx: {
       service: serviceKey,
@@ -31,6 +31,9 @@ export function initYandexSession(td, serviceKey, registeredPhone = null) {
     completed_yx: [],
     collected,
   });
+  delete fresh.yx_review_restore_tail;
+  delete fresh.yx_review_redo_edit_index;
+  return fresh;
 }
 
 export function clearYandexCollected(td) {
@@ -271,6 +274,51 @@ export function stripYandexTailFromCompleted(td, fromIndex) {
     completed_yx: newCompleted,
     collected: coll,
     docTypesToDelete,
+  };
+}
+
+/**
+ * Yakuniy tekshiruvdan faqat bitta qadamni qayta: keyingi qadamlar `completed_yx` va DB da saqlanadi.
+ * `session_data` ga `yx_review_restore_tail` va `yx_review_redo_edit_index` qo‘yiladi — qadam tugagach merge.
+ */
+export function prepareYandexSingleReviewRedo(td, editIndex) {
+  const completed = [...(td.completed_yx || [])];
+  if (editIndex < 0 || editIndex >= completed.length) return null;
+  const entry = completed[editIndex];
+  const prefix = completed.slice(0, editIndex);
+  const restoreTail = completed.slice(editIndex + 1);
+  const coll = { ...(td.collected || {}) };
+  const docTypesToDelete = [];
+  if (typeof entry === "string") {
+    if (entry.startsWith("__text__:")) {
+      const colKey = entry.slice("__text__:".length);
+      delete coll[colKey];
+    } else if (entry.startsWith("yx_")) {
+      docTypesToDelete.push(entry);
+    }
+  }
+  return {
+    completed_yx: prefix,
+    collected: coll,
+    docTypesToDelete,
+    yx_review_restore_tail: restoreTail,
+    yx_review_redo_edit_index: editIndex,
+  };
+}
+
+/** Faqat bitta qadam qayta oqimida: prefix + yangi qadam bo‘lganda tail ni qayta qo‘shadi. */
+export function mergeCompletedIfYxReviewRedoDone(td, completed) {
+  const tail = td.yx_review_restore_tail;
+  const idx = td.yx_review_redo_edit_index;
+  if (!Array.isArray(tail) || typeof idx !== "number" || idx < 0) {
+    return { completed, clearRedoMeta: false };
+  }
+  if (completed.length !== idx + 1) {
+    return { completed, clearRedoMeta: false };
+  }
+  return {
+    completed: [...completed, ...tail],
+    clearRedoMeta: true,
   };
 }
 

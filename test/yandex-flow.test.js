@@ -12,6 +12,8 @@ import {
   clearYandexStagingSessionFields,
   getYandexUiState,
   initYandexSession,
+  mergeCompletedIfYxReviewRedoDone,
+  prepareYandexSingleReviewRedo,
   stripYandexTailFromCompleted,
   validateYxText,
   yxExtractFile,
@@ -361,6 +363,56 @@ describe("stripYandexTailFromCompleted", () => {
   });
 });
 
+describe("prepareYandexSingleReviewRedo / mergeCompletedIfYxReviewRedoDone", () => {
+  test("faqat bitta indeks: tail saqlanadi, bitta hujjat o‘chirish", () => {
+    const td = {
+      completed_yx: ["yx_visa", "yx_reg", "yx_mig", "__text__:yx_col_req", "__text__:yx_col_card16"],
+      collected: { yx_col_req: "bank", yx_col_card16: "4111111111111111" },
+    };
+    const r = prepareYandexSingleReviewRedo(td, 2);
+    assert.deepEqual(r.completed_yx, ["yx_visa", "yx_reg"]);
+    assert.deepEqual(r.yx_review_restore_tail, ["__text__:yx_col_req", "__text__:yx_col_card16"]);
+    assert.equal(r.yx_review_redo_edit_index, 2);
+    assert.deepEqual(r.docTypesToDelete, ["yx_mig"]);
+    assert.equal(r.collected.yx_col_req, "bank");
+    assert.equal(r.collected.yx_col_card16, "4111111111111111");
+  });
+
+  test("matn qadamini qayta: faqat shu kalit collected dan yo‘qoladi", () => {
+    const td = {
+      completed_yx: ["yx_a", "__text__:yx_col_inn"],
+      collected: { yx_col_inn: "1234567890", yx_col_x: "keep" },
+    };
+    const r = prepareYandexSingleReviewRedo(td, 1);
+    assert.deepEqual(r.completed_yx, ["yx_a"]);
+    assert.deepEqual(r.yx_review_restore_tail, []);
+    assert.equal(r.yx_review_redo_edit_index, 1);
+    assert.equal(r.collected.yx_col_inn, undefined);
+    assert.equal(r.collected.yx_col_x, "keep");
+    assert.deepEqual(r.docTypesToDelete, []);
+  });
+
+  test("merge: prefix + 1 qadam bo‘lganda tail qo‘shiladi", () => {
+    const td = {
+      yx_review_restore_tail: ["tail_a", "tail_b"],
+      yx_review_redo_edit_index: 1,
+    };
+    const m = mergeCompletedIfYxReviewRedoDone(td, ["a", "b"]);
+    assert.deepEqual(m.completed, ["a", "b", "tail_a", "tail_b"]);
+    assert.equal(m.clearRedoMeta, true);
+  });
+
+  test("merge: indeks mos kelmasa — o‘zgarmaydi", () => {
+    const td = {
+      yx_review_restore_tail: ["t"],
+      yx_review_redo_edit_index: 2,
+    };
+    const m = mergeCompletedIfYxReviewRedoDone(td, ["a", "b"]);
+    assert.deepEqual(m.completed, ["a", "b"]);
+    assert.equal(m.clearRedoMeta, false);
+  });
+});
+
 describe("initYandexSession / clearYandexCollected", () => {
   test("init: yx va completed_yx nollanadi, bk saqlanadi", () => {
     const td = initYandexSession(
@@ -379,6 +431,8 @@ describe("initYandexSession / clearYandexCollected", () => {
     assert.equal(td.yx_staged_doc, undefined);
     assert.equal(td.yx_prompt_msg_ids, undefined);
     assert.equal(td.yx.useRegisteredPhone, false);
+    assert.equal(td.yx_review_restore_tail, undefined);
+    assert.equal(td.yx_review_redo_edit_index, undefined);
   });
 
   test("init: telefon berilsa — faqat yx_col_contact_phone (dublikat tm_contact yo‘q)", () => {

@@ -392,7 +392,7 @@ const BK_STRINGS = {
     yx_review_fix_btn: "📝 Hujjatni tuzatish",
     yx_review_pick_title: "Qaysi qadam noto‘g‘ri? Pastdan tanlang.",
     yx_review_fix_note:
-      "Tanlangan qadam va undan keyingi barcha qadamlar qayta so‘raladi (ma’lumotlar mos bo‘lishi uchun).",
+      "Faqat tanlangan qadam qayta so‘raladi — avval kiritilgan keyingi ma’lumotlar saqlanadi.",
 
     yx_rev_title: "Arizani tekshirish (Yandex)",
     yx_rev_service: "Servis",
@@ -856,7 +856,7 @@ const BK_STRINGS = {
     yx_review_fix_btn: "📝 Исправить документ",
     yx_review_pick_title: "Какой шаг перезагрузить? Выберите ниже.",
     yx_review_fix_note:
-      "Выбранный шаг и все следующие нужно пройти снова — так данные останутся согласованными.",
+      "Перезагрузится только выбранный шаг — уже введённые следующие данные сохранятся.",
 
     yx_ask_city:
       "Укажите Москву или Московскую область кнопкой ниже.",
@@ -1307,7 +1307,7 @@ const BK_STRINGS = {
     yx_review_fix_btn: "📝 Документти оңдоо",
     yx_review_pick_title: "Кайсы ката кадам? Төмөнкүдөн тандаңыз.",
     yx_review_fix_note:
-      "Тандалган кадам жана андан кийинкилер кайра суроолот — маалыматтар дал келиши үчүн.",
+      "Тандалган гана кадам кайра суроолот — киргизилген кийинки маалыматтар сакталат.",
 
     yx_rev_title: "Арызды текшерүү (Yandex)",
     yx_rev_service: "Сервис",
@@ -1646,7 +1646,7 @@ const BK_STRINGS = {
     yx_review_fix_btn: "📝 Документти оңдоо",
     yx_review_pick_title: "Кайсы кадам ката? Төмөнкүдөн тандаңыз.",
     yx_review_fix_note:
-      "Тандалган кадам жана андан кийинкилер кайра суроолот — маалыматтар шайкеш болушу үчүн.",
+      "Тандалган гана кадам кайра суроолот — киргизилген кийинки маалыматтар сакталат.",
 
     yx_final_thanks:
       "Маалымат үчүн рахмат. Арыз кабыл алынды; жакыныраак убакытта сиз менен байланышабыз.",
