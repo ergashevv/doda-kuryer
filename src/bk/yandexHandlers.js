@@ -529,6 +529,7 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
   const td = { ...(profile.session_data || {}) };
   const yx = { ...(td.yx || {}) };
   const completed = [...(td.completed_yx || [])];
+  const stCurrent = getYandexUiState(yx, completed.length, td);
 
   if (payload === "cont") {
     const staged = td.yx_staged_doc;
@@ -580,6 +581,10 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
   }
 
   if (payload.startsWith("city:")) {
+    if (stCurrent.ui !== "city") {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
     const ck = payload.slice(5);
     if (ck === "other") {
       const blockedMsg = tBK(lg, "yx_city_other_blocked");
@@ -600,6 +605,10 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     return true;
   }
   if (payload.startsWith("cit:")) {
+    if (stCurrent.ui !== "citizen") {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
     const c = payload.slice(4);
     const allowed = new Set([
       "uz",
@@ -627,6 +636,10 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     return true;
   }
   if (payload.startsWith("uz:")) {
+    if (stCurrent.ui !== "uz_doc") {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
     yx.uzDocKind = payload.slice(3);
     yx.regAmina = null;
     const cur = [...(td.completed_yx || [])];
@@ -644,6 +657,10 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     return true;
   }
   if (payload.startsWith("kz:")) {
+    if (stCurrent.ui !== "kz_doc") {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
     yx.kzDocKind = payload.slice(3) === "pass" ? "pass" : "id";
     yx.regAmina = null;
     profile = await updateProfile(client, uid, {
@@ -655,6 +672,14 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     return true;
   }
   if (payload.startsWith("tmkind:")) {
+    if (
+      stCurrent.ui !== "step" ||
+      stCurrent.step?.t !== "choice" ||
+      stCurrent.step.choiceId !== "visa_kind"
+    ) {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
     const raw = payload.slice(7);
     if (raw === "tourism") {
       const blocked = tBK(lg, "yx_tm_tourism_blocked");
@@ -675,6 +700,14 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
     return false;
   }
   if (payload === "ram:reg" || payload === "ram:amina") {
+    if (
+      stCurrent.ui !== "step" ||
+      stCurrent.step?.t !== "choice" ||
+      !String(stCurrent.step.choiceId || "").startsWith("ram_")
+    ) {
+      await ctx.reply(tBK(lg, "review_callback_stale"));
+      return true;
+    }
     yx.regAmina = payload === "ram:reg" ? "reg" : "amina";
     profile = await updateProfile(client, uid, {
       session_data: stripYandexReviewRedoMeta({ ...td, yx, completed_yx: completed }),
@@ -690,16 +723,23 @@ export async function applyBkYxPayload(ctx, client, uid, payload) {
 async function yxSendFileStepPrompt(ctx, client, uid, profile, caption, lg) {
   const chatId = ctx.chat?.id;
   let td = { ...(profile.session_data || {}) };
-  const toDel = [...(td.yx_prompt_msg_ids || []), ...(td.yx_preview_msg_ids || [])];
+  const toDel = [
+    ...(td.bk_ui_message_ids || []),
+    ...(td.yx_prompt_msg_ids || []),
+    ...(td.yx_preview_msg_ids || []),
+  ];
   if (chatId && toDel.length) {
     await telegramDeleteMany(ctx, chatId, toDel);
   }
+  td.bk_ui_message_ids = [];
   td.yx_prompt_msg_ids = [];
   td.yx_preview_msg_ids = [];
   profile = await updateProfile(client, uid, { session_data: td });
   const sent = await ctx.reply(caption, yxReplyOptions(yxEditOnlyInline(lg)));
   const ids = bkCollectMessageIds(sent);
-  await updateProfile(client, uid, { session_data_patch: { yx_prompt_msg_ids: ids } });
+  await updateProfile(client, uid, {
+    session_data_patch: { yx_prompt_msg_ids: ids, bk_ui_message_ids: ids },
+  });
 }
 
 async function replyYxStagedPreview(ctx, client, uid, profile, msg, step, lg) {
@@ -719,6 +759,7 @@ async function replyYxStagedPreview(ctx, client, uid, profile, msg, step, lg) {
   const ids = bkCollectMessageIds(sent);
   const td = { ...(profile.session_data || {}) };
   td.yx_preview_msg_ids = ids;
+  td.bk_ui_message_ids = ids;
   if (msg?.message_id != null) td.bk_pending_user_message_id = msg.message_id;
   await updateProfile(client, uid, { session_data: td });
 }

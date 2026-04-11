@@ -6,29 +6,27 @@ import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import {
   bkCollectMessageIds,
-  isBkDocWizardSessionState,
   telegramDeleteMany,
 } from "../src/bk/stepUi.js";
 
-/** `bkSendStepMessage` mantiqining mocki (`bk_doc_*` da eski bot UI o‘chadi). */
+/** `bkSendStepMessage` mantiqining mocki (single-active-UI). */
 async function simulateBkSendStepMessage(profile, send) {
   let sessionData = { ...(profile.session_data || {}) };
-  const docWizard = isBkDocWizardSessionState(profile.session_state);
   const prev = [...(sessionData.bk_ui_message_ids || [])];
-  const wouldDelete = docWizard ? [...prev] : [];
+  const wouldDelete = [...prev];
   sessionData.bk_ui_message_ids = [];
   const sent = await send();
-  const ids = docWizard ? bkCollectMessageIds(sent) : [];
+  const ids = bkCollectMessageIds(sent);
   sessionData.bk_ui_message_ids = ids;
   return { wouldDelete, sessionData };
 }
 
 describe("BK step UI (Telegramsiz simulyatsiya — qo‘lda ssenariylar)", () => {
-  test("ro‘yxatdan o‘tish: bot ID lar saqlanmaydi, eski xabarlar o‘chirilmaydi", async () => {
+  test("ro‘yxatdan o‘tish: eski active xabar o‘chadi, yangi active xabar yoziladi", async () => {
     const p0 = { session_state: "bk_city", session_data: { bk: {}, bk_ui_message_ids: [99] } };
     const r = await simulateBkSendStepMessage(p0, async () => ({ message_id: 100 }));
-    assert.deepEqual(r.wouldDelete, []);
-    assert.deepEqual(r.sessionData.bk_ui_message_ids, []);
+    assert.deepEqual(r.wouldDelete, [99]);
+    assert.deepEqual(r.sessionData.bk_ui_message_ids, [100]);
   });
 
   test("hujjat oqimi: eski ID yo‘q, yangi bitta xabar saqlanadi", async () => {

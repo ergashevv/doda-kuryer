@@ -105,6 +105,44 @@ function isBkContinueButtonText(lg, text) {
 }
 
 const BK_MAIN_MENU_PARK_STATES = new Set(["bk_main", "bk_yx", "bk_yx_review"]);
+const BK_CITY_STATES = new Set(["bk_city_pick", "bk_city_text"]);
+
+function dodaContAllowedForState(step, sessionState) {
+  const expected = dodaDocContStepFromOkState(sessionState);
+  if (!expected) return false;
+  return expected === step;
+}
+
+function callbackMessageId(ctx) {
+  return ctx.callbackQuery?.message?.message_id ?? null;
+}
+
+function activeCallbackMessageIdsForData(profile, data) {
+  const td = profile?.session_data || {};
+  const ids = new Set([...(td.bk_ui_message_ids || [])]);
+  if (data.startsWith("bk_YX:")) {
+    for (const id of td.yx_prompt_msg_ids || []) ids.add(id);
+    for (const id of td.yx_preview_msg_ids || []) ids.add(id);
+  }
+  return ids;
+}
+
+function isCallbackFromActiveMessage(profile, ctx, data) {
+  const mid = callbackMessageId(ctx);
+  if (mid == null) return true;
+  const ids = activeCallbackMessageIdsForData(profile, data);
+  if (ids.size === 0) return false;
+  return ids.has(mid);
+}
+
+async function answerStaleCallback(ctx, text) {
+  const t = text != null ? String(text).slice(0, 200) : undefined;
+  try {
+    await ctx.answerCbQuery(
+      t != null ? { text: t, show_alert: true } : { show_alert: true }
+    );
+  } catch (_) {}
+}
 
 /**
  * Asosiy menyu: `in` | `out` | `support` (matn yoki `bk_M:*` callback).
@@ -761,12 +799,24 @@ export function registerBkHandlers(bot) {
     const uid = ctx.from?.id;
     if (!data || !uid) return;
 
-    // Tezroq javob berish (loading holatini yopish)
-    if (!data.startsWith("bk_P:")) {
-      try {
-        await ctx.answerCbQuery();
-      } catch (e) {
-        console.warn("[bk] answerCbQuery:", e?.description || e?.message || e);
+    let profileNow = null;
+    try {
+      profileNow = await withTransaction(async (client) => {
+        await syncTelegramInfo(client, uid, ctx.from);
+        return ensureProfile(client, uid);
+      });
+    } catch (e) {
+      console.error("[bk] callback pre-read:", e?.stack || e?.message || e);
+      return;
+    }
+    const lgNow = langOf(profileNow);
+    const staleText = tBK(lgNow, "review_callback_stale");
+
+    // /start dan keyingi til tugmasi oldingi xabardan keladi; qolgan callbacklar aktiv xabardan bo‘lishi shart.
+    if (!data.startsWith("bk_L:")) {
+      if (!isCallbackFromActiveMessage(profileNow, ctx, data)) {
+        await answerStaleCallback(ctx, staleText);
+        return;
       }
     }
 
@@ -834,6 +884,10 @@ export function registerBkHandlers(bot) {
     if (data.startsWith("bk_M:")) {
       const sub = data.slice(5);
       if (!["in", "out", "support"].includes(sub)) return;
+      if (!BK_MAIN_MENU_PARK_STATES.has(profileNow.session_state)) {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       try {
         await withTransaction(async (client) => {
           const profile = await syncTelegramInfo(client, uid, ctx.from);
@@ -890,6 +944,10 @@ export function registerBkHandlers(bot) {
 
     if (data.startsWith("bk_F:")) {
       const id = data.slice(5);
+      if (profileNow.session_state !== "bk_faq") {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
         let profile = await ensureProfile(client, uid);
@@ -915,6 +973,10 @@ export function registerBkHandlers(bot) {
 
     if (data.startsWith("bk_C:")) {
       const cat = data.slice(5);
+      if (profileNow.session_state !== "bk_category") {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       await withTransaction(async (client) => {
         let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
@@ -953,6 +1015,10 @@ export function registerBkHandlers(bot) {
     }
 
     if (data.startsWith("bk_V:")) {
+      if (profileNow.session_state !== "bk_vehicle_rf") {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       const rf = data.endsWith(":1");
       await withTransaction(async (client) => {
         let profile = await ensureProfile(client, uid);
@@ -994,6 +1060,10 @@ export function registerBkHandlers(bot) {
     }
 
     if (data.startsWith("bk_G:")) {
+      if (!BK_CITY_STATES.has(profileNow.session_state)) {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       const payload = data.slice(5);
       await withTransaction(async (client) => {
         let profile = await syncTelegramInfo(client, uid, ctx.from);
@@ -1030,6 +1100,10 @@ export function registerBkHandlers(bot) {
     }
 
     if (data.startsWith("bk_Z:")) {
+      if (profileNow.session_state !== "bk_citizenship") {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       const code = data.slice(5);
       await withTransaction(async (client) => {
         let profile = await syncTelegramInfo(client, uid, ctx.from);
@@ -1057,6 +1131,10 @@ export function registerBkHandlers(bot) {
     }
 
     if (data.startsWith("bk_SE:")) {
+      if (profileNow.session_state !== "bk_self_employed") {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       const yes = data.endsWith(":1");
       await withTransaction(async (client) => {
         let profile = await syncTelegramInfo(client, uid, ctx.from);
@@ -1093,6 +1171,10 @@ export function registerBkHandlers(bot) {
 
     if (data.startsWith("bk_D:cont:")) {
       const step = data.slice(10);
+      if (!dodaContAllowedForState(step, profileNow.session_state)) {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       await withTransaction(async (client) => {
         await syncTelegramInfo(client, uid, ctx.from);
         await applyDodaDocContinue(ctx, client, uid, step);
@@ -1104,6 +1186,13 @@ export function registerBkHandlers(bot) {
       const parsed = parseBkTrCallbackData(data);
       if (!parsed) return;
       const { kind, val } = parsed;
+      const truckStateOk =
+        (kind === "d" && profileNow.session_state === "bk_truck_dimensions") ||
+        (kind === "b" && profileNow.session_state === "bk_truck_branding");
+      if (!truckStateOk) {
+        await answerStaleCallback(ctx, staleText);
+        return;
+      }
       await withTransaction(async (client) => {
         let profile = await syncTelegramInfo(client, uid, ctx.from);
         const lg = langOf(profile);
@@ -1726,13 +1815,15 @@ export function registerBkHandlers(bot) {
       }
       return;
     }
+
+    // Noma'lum yoki eskirgan callback: jim qolmaslik uchun har doim signal beramiz.
+    await answerStaleCallback(ctx, staleText);
   });
 
   bot.on("message", async (ctx) => {
     const uid = ctx.from?.id;
     const msg = ctx.message;
     if (!uid || !msg) return;
-    if (!msg.text && !msg.photo && !msg.document && !msg.contact && !msg.video) return;
     const text = (msg.text || "").trim();
 
     let deleteProcessedUserMessage = false;
@@ -2321,8 +2412,25 @@ export function registerBkHandlers(bot) {
         return;
       }
 
-      if (text && state !== "bk_faq") {
-        await logChat(client, uid, "user", text);
+      if (state !== "bk_faq") {
+        const nonTextMarker = text
+          ? text
+          : msg.sticker
+            ? "[sticker]"
+            : msg.voice
+              ? "[voice]"
+              : msg.video_note
+                ? "[video_note]"
+                : msg.animation
+                  ? "[animation]"
+                  : msg.audio
+                    ? "[audio]"
+                    : msg.location
+                      ? "[location]"
+                      : msg.contact
+                        ? "[contact]"
+                        : "[unsupported message]";
+        await logChat(client, uid, "user", nonTextMarker);
         await logChat(client, uid, "assistant", tBK(lg, "use_menu"));
         await bkSendStepMessage(ctx, client, uid, profile, () =>
           ctx.reply(tBK(lg, "use_menu"), replyRemoveWithInline(mainMenuInline(lg)))

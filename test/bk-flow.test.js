@@ -11,62 +11,75 @@ import {
 } from "../src/flow.js";
 
 describe("dodaDocSequence", () => {
-  test("car RF: license → sts → passport", () => {
+  test("car RF: vehicle pick → license → sts → passport front/back", () => {
     assert.deepEqual(dodaDocSequence("car", { vehicleRf: true }), [
+      "vehicle_rf_pick",
       "license",
       "sts",
-      "passport",
+      "passport_front",
+      "passport_back",
     ]);
   });
 
-  test("car foreign: license → 2× techпаспорт → passport", () => {
+  test("car foreign: vehicle pick → license → 2× techpassport → passport front/back", () => {
     assert.deepEqual(dodaDocSequence("car", { vehicleRf: false }), [
+      "vehicle_rf_pick",
       "license",
       "tech_passport_front",
       "tech_passport_back",
-      "passport",
+      "passport_front",
+      "passport_back",
     ]);
   });
 
-  test("truck: VU, СТС, then truck meta, passport", () => {
-    const s = dodaDocSequence("truck", {});
-    assert.equal(s[0], "license");
-    assert.equal(s[1], "sts");
+  test("truck: vehicle pick + docs + truck meta + passport front/back", () => {
+    const s = dodaDocSequence("truck", { vehicleRf: true });
+    assert.equal(s[0], "vehicle_rf_pick");
+    assert.equal(s[1], "license");
+    assert.equal(s[2], "sts");
     assert.ok(s.includes("truck_dimensions"));
-    assert.ok(s.includes("passport"));
-    assert.equal(s.at(-1), "passport");
+    assert.ok(s.includes("passport_front"));
+    assert.equal(s.at(-1), "passport_back");
   });
 
-  test("bike: self_employed → optional inn / СМЗ → passport", () => {
-    assert.deepEqual(dodaDocSequence("bike", { selfEmployed: false }), [
+  test("bike: RF/KG/KZ bo'lsa self-employed branch + passport front/back", () => {
+    assert.deepEqual(
+      dodaDocSequence("bike", { citizenship: "rf", selfEmployed: false }),
+      ["self_employed", "passport_front", "passport_back"]
+    );
+    assert.deepEqual(
+      dodaDocSequence("bike", { citizenship: "kz", selfEmployed: true }),
+      ["self_employed", "reg_amina", "moy_nalog_phone", "passport_front", "passport_back"]
+    );
+  });
+
+  test("bike: boshqa citizenship bo'lsa faqat passport front/back", () => {
+    assert.deepEqual(dodaDocSequence("bike", { citizenship: "uz" }), [
+      "passport_front",
+      "passport_back",
+    ]);
+  });
+
+  test("foot: bike bilan bir xil citizenship branch", () => {
+    assert.deepEqual(dodaDocSequence("foot", { citizenship: "rf", selfEmployed: true }), [
       "self_employed",
-      "passport",
+      "reg_amina",
+      "moy_nalog_phone",
+      "passport_front",
+      "passport_back",
     ]);
-    assert.deepEqual(
-      dodaDocSequence("bike", { selfEmployed: true, rfCitizen: false }),
-      ["self_employed", "inn", "passport"]
-    );
-    assert.deepEqual(
-      dodaDocSequence("bike", { selfEmployed: true, rfCitizen: true }),
-      [
-        "self_employed",
-        "bike_smz_phone",
-        "bike_smz_address",
-        "passport",
-      ]
-    );
+    assert.deepEqual(dodaDocSequence("foot", { citizenship: "tj" }), [
+      "passport_front",
+      "passport_back",
+    ]);
   });
 
-  test("foot: license → sts → passport", () => {
-    assert.deepEqual(dodaDocSequence("foot", {}), [
+  test("moto: license + passport front/back (STS yo'q)", () => {
+    assert.deepEqual(dodaDocSequence("moto", {}), [
       "license",
-      "sts",
-      "passport",
+      "passport_front",
+      "passport_back",
     ]);
-  });
-
-  test("moto: license → passport (СТС йўқ)", () => {
-    assert.deepEqual(dodaDocSequence("moto", {}), ["license", "passport"]);
   });
 });
 
@@ -84,22 +97,33 @@ describe("getFirstMissingDodaStepSync (bot qotmasligi)", () => {
     );
   });
 
-  test("truck: VU+STS+barcha meta to‘lsa — passport", () => {
+  test("truck: vehicle pick + VU+STS+barcha meta to‘lsa — passport_front", () => {
     const bk = {
       categoryKey: "truck",
+      vehicleRf: true,
       truckDimensionLabel: "M",
       truckPayloadKg: 1000,
       truckBranding: false,
     };
     assert.equal(
       getFirstMissingDodaStepSync(bk, new Set(["license", "sts"])),
-      "passport"
+      "passport_front"
     );
+  });
+
+  test("truck: vehicle pick tanlanmagan bo'lsa — vehicle_rf_pick", () => {
+    const bk = {
+      categoryKey: "truck",
+      truckPayloadKg: 1000,
+      truckBranding: true,
+    };
+    assert.equal(getFirstMissingDodaStepSync(bk, new Set(["license", "sts"])), "vehicle_rf_pick");
   });
 
   test("truck: gabarit yo‘q — truck_dimensions", () => {
     const bk = {
       categoryKey: "truck",
+      vehicleRf: true,
       truckPayloadKg: 1000,
       truckBranding: true,
     };
@@ -109,48 +133,29 @@ describe("getFirstMissingDodaStepSync (bot qotmasligi)", () => {
     );
   });
 
-  test("bike: self_employed tanlanmagan", () => {
-    const bk = { categoryKey: "bike" };
+  test("bike: RF bo'lsa self_employed tanlanmagan", () => {
+    const bk = { categoryKey: "bike", citizenship: "rf" };
     assert.equal(getFirstMissingDodaStepSync(bk, new Set()), "self_employed");
   });
 
-  test("bike: selfEmployed true, chet el — INN yo‘q", () => {
+  test("bike: selfEmployed true bo'lsa — reg_amina, keyin moy_nalog_phone", () => {
     const bk = {
       categoryKey: "bike",
+      citizenship: "rf",
       selfEmployed: true,
-      rfCitizen: false,
     };
-    assert.equal(
-      getFirstMissingDodaStepSync(bk, new Set(["passport"])),
-      "inn"
-    );
+    assert.equal(getFirstMissingDodaStepSync(bk, new Set()), "reg_amina");
+    assert.equal(getFirstMissingDodaStepSync(bk, new Set(["reg_amina"])), "moy_nalog_phone");
   });
 
-  test("bike: РФ + СМЗ — телефон keyin manzil", () => {
+  test("bike: branch to'lsa — passport_front", () => {
     const bk = {
       categoryKey: "bike",
+      citizenship: "rf",
       selfEmployed: true,
-      rfCitizen: true,
+      moyNalogPhone: "+79991234567",
     };
-    assert.equal(getFirstMissingDodaStepSync(bk, new Set(["passport"])), "bike_smz_phone");
-    assert.equal(
-      getFirstMissingDodaStepSync(
-        { ...bk, moyNalogPhone: "+79991234567" },
-        new Set(["passport"])
-      ),
-      "bike_smz_address"
-    );
-    assert.equal(
-      getFirstMissingDodaStepSync(
-        {
-          ...bk,
-          moyNalogPhone: "+79991234567",
-          smzAddress: "Москва, ул. Ленина 1, подъезд 2, кв. 3",
-        },
-        new Set()
-      ),
-      "passport"
-    );
+    assert.equal(getFirstMissingDodaStepSync(bk, new Set(["reg_amina"])), "passport_front");
   });
 
   test("hamma narsa to‘lsa — null (review)", () => {
@@ -159,19 +164,25 @@ describe("getFirstMissingDodaStepSync (bot qotmasligi)", () => {
       vehicleRf: true,
     };
     assert.equal(
-      getFirstMissingDodaStepSync(bk, new Set(["license", "sts", "passport"])),
+      getFirstMissingDodaStepSync(
+        bk,
+        new Set(["license", "sts", "passport_front", "passport_back"])
+      ),
       null
     );
   });
 
-  test("moto: VU dan keyin — passport (sts йўқ)", () => {
+  test("moto: VU dan keyin — passport_front (sts йўқ)", () => {
     const bk = { categoryKey: "moto" };
     assert.equal(
       getFirstMissingDodaStepSync(bk, new Set(["license"])),
-      "passport"
+      "passport_front"
     );
     assert.equal(
-      getFirstMissingDodaStepSync(bk, new Set(["license", "passport"])),
+      getFirstMissingDodaStepSync(
+        bk,
+        new Set(["license", "passport_front", "passport_back"])
+      ),
       null
     );
   });
@@ -215,9 +226,8 @@ describe("sequence ↔ getFirstMissing — barcha qadamlar qoplangan", () => {
         isDodaUploadDocKey(key) ||
         [
           "self_employed",
-          "inn",
-          "bike_smz_phone",
-          "bike_smz_address",
+          "vehicle_rf_pick",
+          "moy_nalog_phone",
           "truck_dimensions",
           "truck_payload",
           "truck_branding",
