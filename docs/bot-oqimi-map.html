@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bot oqimi</title>
+  <style>
+    :root {
+      --bg: #071018;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(88, 211, 179, 0.12), transparent 26%),
+        radial-gradient(circle at top right, rgba(240, 179, 94, 0.12), transparent 22%),
+        linear-gradient(180deg, #08131d 0%, var(--bg) 100%);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #e7e7e7;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .page {
+      width: min(1800px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 22px 0 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 46px;
+    }
+
+    .diagram {
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+
+    .diagram .mermaid {
+      min-width: 1180px;
+      text-align: center;
+    }
+
+    @media (max-width: 1024px) {
+      .page {
+        width: calc(100vw - 18px);
+        gap: 34px;
+      }
+
+      .diagram .mermaid {
+        min-width: 1060px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        width: calc(100vw - 14px);
+        padding: 16px 0 28px;
+        gap: 24px;
+      }
+
+      .diagram .mermaid {
+        min-width: 900px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .page {
+        width: calc(100vw - 10px);
+        padding: 12px 0 22px;
+        gap: 18px;
+      }
+
+      .diagram .mermaid {
+        min-width: 760px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TD
+  A["/start"] --> B["Tilni tanlaysiz"]
+  B --> C["Telefon raqamini yuborasiz"]
+  C --> D["Asosiy menyu"]
+
+  D --> E["😎 Men parkdaman"]
+  D --> F["🙏 Parkga ulanmoqchiman"]
+  D --> G["❓ Texnik yordam"]
+
+  E --> H["Savollar ro‘yxati"]
+  H --> I["Bir savolni bosasiz"]
+  I --> J["Javob chiqadi"]
+  J --> H
+  H --> K["◀️ Orqaga"]
+  K --> D
+
+  F --> L["Xizmat tanlash"]
+  L --> M["Doda kuryer"]
+  L --> N["Yandex Lavka"]
+  L --> O["Yandex Eda"]
+
+  M --> P["Doda yo‘li"]
+  N --> Q["Yandex yo‘li"]
+  O --> Q
+
+  G --> R["Muammoingizni yozasiz"]
+  R --> D
+      </pre>
+    </div>
+
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TD
+  D0["Doda yo‘li"] --> D1["Kategoriya tanlash"]
+
+  D1 --> CA0["🚗 Yengil avtomobil"]
+  D1 --> TR0["🚚 Yuk mashinasi"]
+  D1 --> MO0["🏍️ Mototransport"]
+  D1 --> BI0["🚲 Velosiped"]
+  D1 --> PI0["🚶 Piyoda"]
+
+  CA0 --> CA1["Shahar"]
+  CA1 --> CA2["Fuqarolik"]
+  CA2 --> CA3{"RF / Qozog'iston / Qirg'iziston?"}
+  CA3 -->|Ha| CA4["O'zini o'zi band qilganmisiz?"]
+  CA3 -->|Yo'q| CA7["Transport qayerda ro'yxatdan o'tgan?"]
+  CA4 -->|Ha| CA5["Registratsiya yoki Amina"] --> CA6["Moy nalog telefoni"]
+  CA4 -->|Yo'q| CA7
+  CA6 --> CA7
+  CA7 -->|Ha| CA8["Haydovchilik guvohnomasi"] --> CA9["Texpasport (asosiy beti)"]
+  CA7 -->|Yo‘q| CA10["Haydovchilik guvohnomasi"] --> CA11["Chet el texpasporti old"] --> CA12["Chet el texpasporti orqa"]
+  CA9 --> CA13["Pasport old sahifasi"]
+  CA12 --> CA13
+  CA13 --> CA14["Pasport orqa sahifasi"]
+  CA14 --> CA15["Ko‘rib chiqish"]
+  CA15 --> CA16["✅ Yuborish"]
+  CA15 --> CA17["Tahrirlash"]
+  CA17 --> CA15
+
+  TR0 --> TR1["Shahar"]
+  TR1 --> TR2["Fuqarolik"]
+  TR2 --> TR3{"RF / Qozog'iston / Qirg'iziston?"}
+  TR3 -->|Ha| TR4["O'zini o'zi band qilganmisiz?"]
+  TR3 -->|Yo'q| TR7["Transport qayerda ro'yxatdan o'tgan?"]
+  TR4 -->|Ha| TR5["Registratsiya yoki Amina"] --> TR6["Moy nalog telefoni"]
+  TR4 -->|Yo'q| TR7
+  TR6 --> TR7
+  TR7 -->|Ha| TR8["Haydovchilik guvohnomasi"] --> TR9["Texpasport (asosiy beti)"]
+  TR7 -->|Yo‘q| TR10["Haydovchilik guvohnomasi"] --> TR11["Chet el texpasporti old"] --> TR12["Chet el texpasporti orqa"]
+  TR9 --> TR13["O‘lcham"]
+  TR12 --> TR13
+  TR13 --> TR14["Yuk ko‘tarish"]
+  TR14 --> TR15["Brending"]
+  TR15 --> TR16["Pasport old sahifasi"]
+  TR16 --> TR17["Pasport orqa sahifasi"]
+  TR17 --> TR18["Ko‘rib chiqish"]
+  TR18 --> TR19["✅ Yuborish"]
+  TR18 --> TR20["Tahrirlash"]
+  TR20 --> TR18
+
+  MO0 --> MO1["Shahar"]
+  MO1 --> MO2["Fuqarolik"]
+  MO2 --> MO3{"RF / Qozog'iston / Qirg'iziston?"}
+  MO3 -->|Ha| MO4["O'zini o'zi band qilganmisiz?"]
+  MO3 -->|Yo'q| MO7["Haydovchilik guvohnomasi"]
+  MO4 -->|Ha| MO5["Registratsiya yoki Amina"] --> MO6["Moy nalog telefoni"]
+  MO4 -->|Yo'q| MO7
+  MO6 --> MO7
+  MO7 --> MO8["Pasport old sahifasi"]
+  MO8 --> MO9["Pasport orqa sahifasi"]
+  MO9 --> MO10["Ko‘rib chiqish"]
+  MO10 --> MO11["✅ Yuborish"]
+  MO10 --> MO12["Tahrirlash"]
+  MO12 --> MO10
+
+  BI0 --> BI1["Shahar"]
+  BI1 --> BI2["Fuqarolik"]
+  BI2 --> BI3{"RF / Qozog'iston / Qirg'iziston?"}
+  BI3 -->|Ha| BI4["O'zini o'zi band qilganmisiz?"]
+  BI3 -->|Yo'q| BI7["Pasport old sahifasi"]
+  BI4 -->|Ha| BI5["Registratsiya yoki Amina"] --> BI6["Moy nalog telefoni"]
+  BI4 -->|Yo'q| BI7
+  BI6 --> BI7
+  BI7 --> BI8["Pasport orqa sahifasi"]
+  BI8 --> BI9["Ko‘rib chiqish"]
+  BI9 --> BI10["✅ Yuborish"]
+  BI9 --> BI11["Tahrirlash"]
+  BI11 --> BI9
+
+  PI0 --> PI1["Shahar"]
+  PI1 --> PI2["Fuqarolik"]
+  PI2 --> PI3{"RF / Qozog'iston / Qirg'iziston?"}
+  PI3 -->|Ha| PI4["O'zini o'zi band qilganmisiz?"]
+  PI3 -->|Yo'q| PI7["Pasport old sahifasi"]
+  PI4 -->|Ha| PI5["Registratsiya yoki Amina"] --> PI6["Moy nalog telefoni"]
+  PI4 -->|Yo'q| PI7
+  PI6 --> PI7
+  PI7 --> PI8["Pasport orqa sahifasi"]
+  PI8 --> PI9["Ko‘rib chiqish"]
+  PI9 --> PI10["✅ Yuborish"]
+  PI9 --> PI11["Tahrirlash"]
+  PI11 --> PI9
+      </pre>
+    </div>
+
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TD
+  A["Yandex yo‘li"] --> B["Shahar"]
+  B --> C{"Moskva yoki Moskva viloyati?"}
+  C -->|Ha| D["Fuqarolik / holat"]
+  C -->|Yo‘q| B
+
+  D --> E["O‘zbekiston / Tojikiston"]
+  D --> F["Qozog‘iston / Qirg‘iziston"]
+  D --> G["Rossiya / boshqa"]
+  D --> H["Turkmaniston"]
+
+  E --> I["Pasport old sahifasi"]
+  I --> J["Hujjat turi"]
+  J --> K["Patent"]
+  J --> L["VNJ / RVP"]
+  J --> M["Talaba"]
+
+  K --> K1["Patent old"]
+  K1 --> K2["Patent orqa"]
+  K2 --> K3["Registratsiya yoki Amina"]
+  K3 --> K4["Migratsiya"]
+  K4 --> K5["Patent to‘lovi rasmi"]
+  K5 --> K6["Patent to‘lovi kvitansiyasi"]
+  K6 --> K7["Bank rekvizitlari"]
+  K7 --> K8["Karta raqami"]
+
+  L --> L1["VNJ / RVP old"]
+  L1 --> L2["VNJ / RVP orqa"]
+  L2 --> L3["INN"]
+  L3 --> L4["SNILS"]
+  L4 --> L5["Migratsiya"]
+  L5 --> L6["Bank rekvizitlari"]
+  L6 --> L7["Karta raqami"]
+
+  M --> M1["Talaba bileti"]
+  M1 --> M2["O‘qish joyidan ma’lumotnoma"]
+  M2 --> M3["Registratsiya yoki Amina"]
+  M3 --> M4["Migratsiya"]
+  M4 --> M5["Bank rekvizitlari"]
+  M5 --> M6["Karta raqami"]
+
+  F --> N["Pasport yoki ID"]
+  N --> O["Migratsiya"]
+  O --> P["Registratsiya yoki Amina"]
+  P --> Q["Bank rekvizitlari"]
+  Q --> R["Karta raqami"]
+
+  G --> S["Pasport old + propiska"]
+  S --> Q
+
+  H --> T["Viza turi"]
+  T --> U["Ishchi viza"]
+  T --> V["O‘qish vizasi"]
+  T --> W["Turizm viza"]
+  W --> X["Hozircha ulanmaydi"]
+  W --> T
+
+  U --> U1["Viza rasmi"]
+  U1 --> U2["Amina yoki registratsiya"]
+  U2 --> U3["Migratsiya"]
+  U3 --> U4["Bank rekvizitlari"]
+  U4 --> U5["Karta raqami"]
+
+  V --> V1["Viza rasmi"]
+  V1 --> V2["Talaba bileti"]
+  V2 --> V3["O‘qish joyidan ma’lumotnoma"]
+  V3 --> V4["Registratsiya yoki Amina"]
+  V4 --> V5["Migratsiya"]
+  V5 --> V6["Bank rekvizitlari"]
+  V6 --> V7["Karta raqami"]
+
+  K8 --> Y["Ko‘rib chiqish"]
+  L7 --> Y
+  M6 --> Y
+  R --> Y
+  U5 --> Y
+  V7 --> Y
+  Q --> Y
+
+  Y --> Z["✅ Yuborish"]
+  Y --> AA["Tahrirlash"]
+  AA --> Y
+      </pre>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!window.mermaid) return;
+      const compact = window.matchMedia("(max-width: 768px)").matches;
+      const small = window.matchMedia("(max-width: 540px)").matches;
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "base",
+        securityLevel: "loose",
+        themeVariables: {
+          background: "transparent",
+          primaryColor: "#2b3037",
+          primaryBorderColor: "#79abd6",
+          primaryTextColor: "#dedede",
+          lineColor: "#d6d6d6",
+          secondaryColor: "#2b3037",
+          tertiaryColor: "#2b3037",
+          fontFamily: '"Segoe UI", system-ui, sans-serif',
+          fontSize: small ? "12px" : compact ? "13px" : "15px",
+        },
+        flowchart: {
+          curve: "basis",
+          padding: small ? 8 : compact ? 10 : 12,
+          nodeSpacing: small ? 20 : compact ? 26 : 34,
+          rankSpacing: small ? 36 : compact ? 44 : 54,
+        },
+      });
+    });
+  </script>
+</body>
+</html>
