@@ -7,16 +7,16 @@
   <style>
     :root {
       --bg: #071018;
+      --panel: #131b23;
+      --panel-2: #0f151c;
+      --border: #3f566f;
+      --text: #e8e6e3;
+      --muted: #9aa7b3;
+      --accent: #7dd3fc;
+      --accent-2: #38bdf8;
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -25,72 +25,149 @@
         radial-gradient(circle at top right, rgba(240, 179, 94, 0.12), transparent 22%),
         linear-gradient(180deg, #08131d 0%, var(--bg) 100%);
       font-family: "Segoe UI", system-ui, sans-serif;
-      color: #e7e7e7;
+      color: var(--text);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
-
     .page {
       width: min(1800px, calc(100vw - 24px));
       margin: 0 auto;
-      padding: 22px 0 40px;
+      padding: 18px 0 40px;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 12px 0 14px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(12, 18, 25, 0.92);
+      border: 1px solid rgba(125, 211, 252, 0.2);
+      border-radius: 16px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+    }
+    .title {
       display: flex;
       flex-direction: column;
-      gap: 46px;
+      gap: 4px;
     }
-
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .lang-switch {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .lang-switch button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #202831;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.72rem 1rem;
+      min-width: 110px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+    .lang-switch button:hover { transform: translateY(-1px); }
+    .lang-switch button.active {
+      border-color: var(--accent);
+      background: rgba(125, 211, 252, 0.14);
+      color: #fff;
+      box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.18) inset;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 44px;
+    }
     .diagram {
       overflow-x: auto;
       overflow-y: visible;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 2px;
     }
-
     .diagram .mermaid {
       min-width: 1180px;
       text-align: center;
     }
-
+    .section-label {
+      margin: 0 0 10px;
+      color: #cdeafe;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
     @media (max-width: 1024px) {
-      .page {
-        width: calc(100vw - 18px);
-        gap: 34px;
-      }
-
-      .diagram .mermaid {
-        min-width: 1060px;
-      }
+      .page { width: calc(100vw - 18px); }
+      .content { gap: 34px; }
+      .diagram .mermaid { min-width: 1060px; }
     }
-
     @media (max-width: 768px) {
-      .page {
-        width: calc(100vw - 14px);
-        padding: 16px 0 28px;
-        gap: 24px;
-      }
-
-      .diagram .mermaid {
-        min-width: 900px;
-      }
+      .page { width: calc(100vw - 14px); padding: 14px 0 28px; }
+      .content { gap: 24px; }
+      .diagram .mermaid { min-width: 900px; }
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+      .lang-switch { justify-content: flex-start; }
     }
-
     @media (max-width: 540px) {
-      .page {
-        width: calc(100vw - 10px);
-        padding: 12px 0 22px;
-        gap: 18px;
-      }
-
-      .diagram .mermaid {
-        min-width: 760px;
-      }
+      .page { width: calc(100vw - 10px); padding: 12px 0 22px; }
+      .content { gap: 18px; }
+      .diagram .mermaid { min-width: 760px; }
+      .lang-switch button { min-width: 0; padding: 0.68rem 0.88rem; }
     }
   </style>
 </head>
 <body>
   <main class="page">
-    <div class="diagram">
-      <pre class="mermaid">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="title">
+          <h1 id="pageTitle">Bot oqimi</h1>
+          <div class="subtitle" id="pageSubtitle">Tilni tanlang</div>
+        </div>
+        <div class="lang-switch" id="langSwitch"></div>
+      </div>
+    </header>
+    <div class="content" id="content"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    const STORAGE_KEY = "bot-oqimi-lang";
+    const LANGS = ["uz", "ru"];
+
+    const TEXT = {
+      uz: {
+        pageTitle: "Bot oqimi",
+        pageSubtitle: "Tilni tanlang",
+        btnUz: "🇺🇿 O‘zbek",
+        btnRu: "🇷🇺 Русский",
+        sections: [
+          "1. Boshlanish",
+          "2. Doda yo‘li",
+          "3. Yandex yo‘li",
+        ],
+        diagram1: `
 flowchart TD
   A["/start"] --> B["Tilni tanlaysiz"]
   B --> C["Telefon raqamini yuborasiz"]
@@ -117,12 +194,8 @@ flowchart TD
   O --> Q
 
   G --> R["Muammoingizni yozasiz"]
-  R --> D
-      </pre>
-    </div>
-
-    <div class="diagram">
-      <pre class="mermaid">
+  R --> D`,
+        diagram2: `
 flowchart TD
   D0["Doda yo‘li"] --> D1["Kategoriya tanlash"]
 
@@ -212,12 +285,8 @@ flowchart TD
   PI8 --> PI9["Ko‘rib chiqish"]
   PI9 --> PI10["✅ Yuborish"]
   PI9 --> PI11["Tahrirlash"]
-  PI11 --> PI9
-      </pre>
-    </div>
-
-    <div class="diagram">
-      <pre class="mermaid">
+  PI11 --> PI9`,
+        diagram3: `
 flowchart TD
   A["Yandex yo‘li"] --> B["Shahar"]
   B --> C{"Moskva yoki Moskva viloyati?"}
@@ -299,19 +368,285 @@ flowchart TD
 
   Y --> Z["✅ Yuborish"]
   Y --> AA["Tahrirlash"]
-  AA --> Y
-      </pre>
-    </div>
-  </main>
+  AA --> Y`
+      },
+      ru: {
+        pageTitle: "Поток бота",
+        pageSubtitle: "Выберите язык",
+        btnUz: "🇺🇿 O‘zbek",
+        btnRu: "🇷🇺 Русский",
+        sections: [
+          "1. Начало",
+          "2. Путь Doda",
+          "3. Путь Yandex",
+        ],
+        diagram1: `
+flowchart TD
+  A["/start"] --> B["Выбираете язык"]
+  B --> C["Отправляете номер телефона"]
+  C --> D["Главное меню"]
 
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      if (!window.mermaid) return;
-      const compact = window.matchMedia("(max-width: 768px)").matches;
-      const small = window.matchMedia("(max-width: 540px)").matches;
+  D --> E["😎 Я в парке"]
+  D --> F["🙏 Хочу подключиться"]
+  D --> G["❓ Техподдержка"]
+
+  E --> H["Список вопросов"]
+  H --> I["Нажимаете вопрос"]
+  I --> J["Появляется ответ"]
+  J --> H
+  H --> K["◀️ Назад"]
+  K --> D
+
+  F --> L["Выбор сервиса"]
+  L --> M["Doda курьер"]
+  L --> N["Yandex Lavka"]
+  L --> O["Yandex Eda"]
+
+  M --> P["Путь Doda"]
+  N --> Q["Путь Yandex"]
+  O --> Q
+
+  G --> R["Пишете проблему"]
+  R --> D`,
+        diagram2: `
+flowchart TD
+  D0["Путь Doda"] --> D1["Выбор категории"]
+
+  D1 --> CA0["🚗 Легковая"]
+  D1 --> TR0["🚚 Грузовая"]
+  D1 --> MO0["🏍️ Мото"]
+  D1 --> BI0["🚲 Велосипед"]
+  D1 --> PI0["🚶 Пешком"]
+
+  CA0 --> CA1["Город"]
+  CA1 --> CA2["Гражданство"]
+  CA2 --> CA3{"РФ / Казахстан / Кыргызстан?"}
+  CA3 -->|Да| CA4["Самозанятый?"]
+  CA3 -->|Нет| CA7["Где зарегистрирован транспорт?"]
+  CA4 -->|Да| CA5["Регистрация или Амина"] --> CA6["Телефон Мой налог"]
+  CA4 -->|Нет| CA7
+  CA6 --> CA7
+  CA7 -->|Да| CA8["ВУ"] --> CA9["СТС"]
+  CA7 -->|Нет| CA10["ВУ"] --> CA11["Иностранный техпаспорт (лицо)"] --> CA12["Иностранный техпаспорт (оборот)"]
+  CA9 --> CA13["Паспорт (фото)"]
+  CA12 --> CA13
+  CA13 --> CA14["Паспорт (прописка)"]
+  CA14 --> CA15["Проверка"]
+  CA15 --> CA16["✅ Отправить"]
+  CA15 --> CA17["Исправить"]
+  CA17 --> CA15
+
+  TR0 --> TR1["Город"]
+  TR1 --> TR2["Гражданство"]
+  TR2 --> TR3{"РФ / Казахстан / Кыргызстан?"}
+  TR3 -->|Да| TR4["Самозанятый?"]
+  TR3 -->|Нет| TR7["Где зарегистрирован транспорт?"]
+  TR4 -->|Да| TR5["Регистрация или Амина"] --> TR6["Телефон Мой налог"]
+  TR4 -->|Нет| TR7
+  TR6 --> TR7
+  TR7 -->|Да| TR8["ВУ"] --> TR9["СТС"]
+  TR7 -->|Нет| TR10["ВУ"] --> TR11["Иностранный техпаспорт (лицо)"] --> TR12["Иностранный техпаспорт (оборот)"]
+  TR9 --> TR13["Размер"]
+  TR12 --> TR13
+  TR13 --> TR14["Грузоподъемность"]
+  TR14 --> TR15["Брендинг"]
+  TR15 --> TR16["Паспорт (фото)"]
+  TR16 --> TR17["Паспорт (прописка)"]
+  TR17 --> TR18["Проверка"]
+  TR18 --> TR19["✅ Отправить"]
+  TR18 --> TR20["Исправить"]
+  TR20 --> TR18
+
+  MO0 --> MO1["Город"]
+  MO1 --> MO2["Гражданство"]
+  MO2 --> MO3{"РФ / Казахстан / Кыргызстан?"}
+  MO3 -->|Да| MO4["Самозанятый?"]
+  MO3 -->|Нет| MO7["ВУ"]
+  MO4 -->|Да| MO5["Регистрация или Амина"] --> MO6["Телефон Мой налог"]
+  MO4 -->|Нет| MO7
+  MO6 --> MO7
+  MO7 --> MO8["Паспорт (фото)"]
+  MO8 --> MO9["Паспорт (прописка)"]
+  MO9 --> MO10["Проверка"]
+  MO10 --> MO11["✅ Отправить"]
+  MO10 --> MO12["Исправить"]
+  MO12 --> MO10
+
+  BI0 --> BI1["Город"]
+  BI1 --> BI2["Гражданство"]
+  BI2 --> BI3{"РФ / Казахстан / Кыргызстан?"}
+  BI3 -->|Да| BI4["Самозанятый?"]
+  BI3 -->|Нет| BI7["Паспорт (фото)"]
+  BI4 -->|Да| BI5["Регистрация или Амина"] --> BI6["Телефон Мой налог"]
+  BI4 -->|Нет| BI7
+  BI6 --> BI7
+  BI7 --> BI8["Паспорт (прописка)"]
+  BI8 --> BI9["Проверка"]
+  BI9 --> BI10["✅ Отправить"]
+  BI9 --> BI11["Исправить"]
+  BI11 --> BI9
+
+  PI0 --> PI1["Город"]
+  PI1 --> PI2["Гражданство"]
+  PI2 --> PI3{"РФ / Казахстан / Кыргызстан?"}
+  PI3 -->|Да| PI4["Самозанятый?"]
+  PI3 -->|Нет| PI7["Паспорт (фото)"]
+  PI4 -->|Да| PI5["Регистрация или Амина"] --> PI6["Телефон Мой налог"]
+  PI4 -->|Нет| PI7
+  PI6 --> PI7
+  PI7 --> PI8["Паспорт (прописка)"]
+  PI8 --> PI9["Проверка"]
+  PI9 --> PI10["✅ Отправить"]
+  PI9 --> PI11["Исправить"]
+  PI11 --> PI9`,
+        diagram3: `
+flowchart TD
+  A["Путь Yandex"] --> B["Город"]
+  B --> C{"Москва или Московская область?"}
+  C -->|Да| D["Гражданство / статус"]
+  C -->|Нет| B
+
+  D --> E["Узбекистан / Таджикистан"]
+  D --> F["Казахстан / Кыргызстан"]
+  D --> G["Россия / другое"]
+  D --> H["Туркменистан"]
+
+  E --> I["Паспорт (фото)"]
+  I --> J["Тип документа"]
+  J --> K["Патент"]
+  J --> L["ВНЖ / РВП"]
+  J --> M["Студент"]
+
+  K --> K1["Патент (лицо)"]
+  K1 --> K2["Патент (оборот)"]
+  K2 --> K3["Регистрация или Амина"]
+  K3 --> K4["Миграция"]
+  K4 --> K5["Фото оплаты патента"]
+  K5 --> K6["Квитанция об оплате патента"]
+  K6 --> K7["Банковские реквизиты"]
+  K7 --> K8["Номер карты"]
+
+  L --> L1["ВНЖ / РВП (лицо)"]
+  L1 --> L2["ВНЖ / РВП (оборот)"]
+  L2 --> L3["ИНН"]
+  L3 --> L4["СНИЛС"]
+  L4 --> L5["Миграция"]
+  L5 --> L6["Банковские реквизиты"]
+  L6 --> L7["Номер карты"]
+
+  M --> M1["Студенческий билет"]
+  M1 --> M2["Справка с места учёбы"]
+  M2 --> M3["Регистрация или Амина"]
+  M3 --> M4["Миграция"]
+  M4 --> M5["Банковские реквизиты"]
+  M5 --> M6["Номер карты"]
+
+  F --> N["Паспорт или ID"]
+  N --> O["Миграция"]
+  O --> P["Регистрация или Амина"]
+  P --> Q["Банковские реквизиты"]
+  Q --> R["Номер карты"]
+
+  G --> S["Паспорт (фото) + прописка"]
+  S --> Q
+
+  H --> T["Тип визы"]
+  T --> U["Рабочая виза"]
+  T --> V["Учебная виза"]
+  T --> W["Туристическая виза"]
+  W --> X["Пока не подключаем"]
+  W --> T
+
+  U --> U1["Фото визы"]
+  U1 --> U2["Амина или регистрация"]
+  U2 --> U3["Миграция"]
+  U3 --> U4["Банковские реквизиты"]
+  U4 --> U5["Номер карты"]
+
+  V --> V1["Фото визы"]
+  V1 --> V2["Студенческий билет"]
+  V2 --> V3["Справка с места учёбы"]
+  V3 --> V4["Регистрация или Амина"]
+  V4 --> V5["Миграция"]
+  V5 --> V6["Банковские реквизиты"]
+  V6 --> V7["Номер карты"]
+
+  K8 --> Y["Проверка"]
+  L7 --> Y
+  M6 --> Y
+  R --> Y
+  U5 --> Y
+  V7 --> Y
+  Q --> Y
+
+  Y --> Z["✅ Отправить"]
+  Y --> AA["Исправить"]
+  AA --> Y`
+      }
+    };
+
+    const fallbackLang = "uz";
+
+    function getLang() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return LANGS.includes(saved) ? saved : fallbackLang;
+    }
+
+    function setLang(lang) {
+      localStorage.setItem(STORAGE_KEY, lang);
+      render();
+    }
+
+    function esc(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderButtons(lang) {
+      const el = document.getElementById("langSwitch");
+      const t = TEXT[lang];
+      el.innerHTML = `
+        <button type="button" class="${lang === "uz" ? "active" : ""}" data-lang="uz">${esc(t.btnUz)}</button>
+        <button type="button" class="${lang === "ru" ? "active" : ""}" data-lang="ru">${esc(t.btnRu)}</button>
+      `;
+      el.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => setLang(btn.dataset.lang));
+      });
+    }
+
+    function section(title, diagram) {
+      return `
+        <section class="diagram-wrap">
+          <div class="section-label">${esc(title)}</div>
+          <div class="diagram">
+            <pre class="mermaid">${diagram}</pre>
+          </div>
+        </section>`;
+    }
+
+    async function render() {
+      const lang = getLang();
+      const t = TEXT[lang];
+
+      document.documentElement.lang = lang;
+      document.title = t.pageTitle;
+      document.getElementById("pageTitle").textContent = t.pageTitle;
+      document.getElementById("pageSubtitle").textContent = t.pageSubtitle;
+      renderButtons(lang);
+
+      const content = document.getElementById("content");
+      content.innerHTML = [
+        section(t.sections[0], t.diagram1),
+        section(t.sections[1], t.diagram2),
+        section(t.sections[2], t.diagram3),
+      ].join("");
+
       mermaid.initialize({
-        startOnLoad: true,
+        startOnLoad: false,
         theme: "base",
         securityLevel: "loose",
         themeVariables: {
@@ -323,16 +658,20 @@ flowchart TD
           secondaryColor: "#2b3037",
           tertiaryColor: "#2b3037",
           fontFamily: '"Segoe UI", system-ui, sans-serif',
-          fontSize: small ? "12px" : compact ? "13px" : "15px",
+          fontSize: window.matchMedia("(max-width: 540px)").matches ? "12px" : window.matchMedia("(max-width: 768px)").matches ? "13px" : "15px",
         },
         flowchart: {
           curve: "basis",
-          padding: small ? 8 : compact ? 10 : 12,
-          nodeSpacing: small ? 20 : compact ? 26 : 34,
-          rankSpacing: small ? 36 : compact ? 44 : 54,
+          padding: window.matchMedia("(max-width: 540px)").matches ? 8 : window.matchMedia("(max-width: 768px)").matches ? 10 : 12,
+          nodeSpacing: window.matchMedia("(max-width: 540px)").matches ? 20 : window.matchMedia("(max-width: 768px)").matches ? 26 : 34,
+          rankSpacing: window.matchMedia("(max-width: 540px)").matches ? 36 : window.matchMedia("(max-width: 768px)").matches ? 44 : 54,
         },
       });
-    });
+
+      await mermaid.run({ nodes: Array.from(content.querySelectorAll(".mermaid")) });
+    }
+
+    window.addEventListener("DOMContentLoaded", render);
   </script>
 </body>
 </html>
